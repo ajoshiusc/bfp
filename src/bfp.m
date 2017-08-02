@@ -6,6 +6,7 @@ t1 = '/home/ajoshi/coding_ground/bfp/data/sub-01_T1w.nii.gz';
 fmri{1} = '/home/ajoshi/coding_ground/bfp/data/sub-01_ses-movie_task-movie_run-1_bold.nii.gz';
 subbasename = '~/coding_ground/bfp/data/sub-01-run1/sub-01-run1';
 BrainSuitePath='/home/ajoshi/BrainSuite17a';
+bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
 RMFLAG=1;
 
 fprintf('OS:%s\n',computer);
@@ -46,9 +47,19 @@ unix(cmd);
  
 %% Coregister t1 to MNI Space
 bsenew=fullfile(anatDir,'mprage_skullstripped.nii.gz');
-
-% 
+BSA=fullfile(BrainSuitePath,'svreg/BrainSuiteAtlas1/mri.bfc.nii.gz');
+cmd=sprintf('flirt -ref %s -in %s -out %s',BSA,bseout,bsenew);
+unix(cmd);
+bsemask=fullfile(anatDir,'mprage_skullstripped.mask.nii.gz');
+cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
+unix(cmd);
+bsenew2=fullfile(anatDir,'mprage_skullstripped.bse.nii.gz');
+copyfile(bsenew,bsenew2);
+ 
 %% Run BrainSuite
+subbasename=fullfile(anatDir,'mprage_skullstripped');
+cmd=sprintf('%s %s',bst_exe,subbasename);
+unix(cmd)
 % 
 %% Run Batch_Process Pipeline
 % 

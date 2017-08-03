@@ -76,6 +76,7 @@ unix(cmd);
 fprintf('Transferring data from subject to atlas\n');
 resample2surf(subbasename,fmri)
 %% Produce Surface Grayordinates
+generateSurfGOrdfMRI(GOrdIndFile,subbasename)
 % Need to convert python code to matlab
 %% Apply fNIRT or Inverse map to map vol data to USCBrain atlas
 % 

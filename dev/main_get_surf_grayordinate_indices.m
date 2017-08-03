@@ -6,17 +6,17 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/big_disk/ajoshi/freesurfer/matlab'));
 
 
-g_32k = gifti('/home/ajoshi/Downloads/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii');
+g_32k = gifti('fs_LR-deformed_to-fsaverage.R.sphere.32k_fs_LR.surf.gii');
 [bci.vertices, bci.faces] = freesurfer_read_surf('/big_disk/ajoshi/data/BCI_DNI_Atlas/surf/rh.sphere.reg');
 tic
 [ind_right,d] = dsearchn(bci.vertices,g_32k.vertices);
 toc
 
-g_32k = gifti('/home/ajoshi/Downloads/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii');
+g_32k = gifti('fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii');
 [bci.vertices, bci.faces] = freesurfer_read_surf('/big_disk/ajoshi/data/BCI_DNI_Atlas/surf/lh.sphere.reg');
 tic
 [ind_left,d] = dsearchn(bci.vertices,g_32k.vertices);
 toc
 % g_32k.vertices=bci.vertices(ind_left,:);
 % view_patch(g_32k)
-save('bci_grayordinates.mat','ind_left','ind_right');
+save('bci_grayordinates_surf_ind.mat','ind_left','ind_right');

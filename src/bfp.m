@@ -91,8 +91,9 @@ fprintf('Generating Volumetric Grayordinates\n');
 for ind = 1:length(fmri)
     outdir=fullfile(subdir,sprintf('func-%d',ind));
     GOrdVolFile=fullfile(outdir,'fmri2Vol_GOrd.mat');
+    GOrdFile=fullfile(outdir,'fmri.32k.nii.gz');
     generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fullfile(outdir,'fmri.nii.gz'),GOrdVolFile);
-    combineSurfVolGOrdfMRI(GOrdSurfIndFile,GOrdVolFile);
+    combineSurfVolGOrdfMRI(GOrdSurfIndFile,GOrdVolFile,GOrdFile);
 end
 
 

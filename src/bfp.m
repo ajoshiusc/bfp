@@ -9,6 +9,7 @@ BrainSuitePath='/home/ajoshi/BrainSuite17a';
 bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg/svreg.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+GOrdIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
 RMFLAG=1;
 
 fprintf('OS:%s\n',computer);

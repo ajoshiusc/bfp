@@ -9,7 +9,10 @@ BrainSuitePath='/home/ajoshi/BrainSuite17a';
 bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg/svreg.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
-GOrdIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
+
+GOrdSurfIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
+GOrdVolIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_vol_ind.mat';
+
 RMFLAG=1;
 
 fprintf('OS:%s\n',computer);
@@ -42,7 +45,7 @@ for ind = 1:length(fmri)
     outdir=fullfile(subdir,sprintf('func-%d',ind));
     fprintf('Creating Dir:%s\n',outdir);
     mkdir(outdir);    
-    copyfile(fmri{ind},outdir);
+    copyfile(fmri{ind},fullfile(outdir,'fmri.nii.gz'));
 end
 %% Skull Strip MRI
 
@@ -53,18 +56,18 @@ cmd=sprintf('%s --auto -i %s -o %s',bse,t1ds,bseout);
 unix(cmd);
  
 %% Coregister t1 to MNI Space
-bsenew=fullfile(anatDir,'mprage_skullstripped.nii.gz');
+bsenew=fullfile(anatDir,'t1.nii.gz');
 BSA=fullfile(BrainSuitePath,'svreg/BrainSuiteAtlas1/mri.bfc.nii.gz');
 cmd=sprintf('flirt -ref %s -in %s -out %s',BSA,bseout,bsenew);
 unix(cmd);
-bsemask=fullfile(anatDir,'mprage_skullstripped.mask.nii.gz');
+bsemask=fullfile(anatDir,'t1.mask.nii.gz');
 cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
 unix(cmd);
-bsenew2=fullfile(anatDir,'mprage_skullstripped.bse.nii.gz');
+bsenew2=fullfile(anatDir,'t1.bse.nii.gz');
 copyfile(bsenew,bsenew2);
  
 %% Run BrainSuite
-subbasename=fullfile(anatDir,'mprage_skullstripped');
+subbasename=fullfile(anatDir,'t1');
 cmd=sprintf('%s %s',bst_exe,subbasename);
 unix(cmd)
 cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
@@ -73,15 +76,25 @@ unix(cmd);
 % 
 %% Run Batch_Process Pipeline
 % 
-%% Transfer data to Surface and then to USCBrain atlas surface
+%% Transfer data to surface and then to USCBrain atlas surface and produce surface grayordinates
 fprintf('Transferring data from subject to atlas\n');
-resample2surf(subbasename,fmri)
-%% Produce Surface Grayordinates
-generateSurfGOrdfMRI(GOrdIndFile,subbasename)
-% Need to convert python code to matlab
-%% Apply fNIRT or Inverse map to map vol data to USCBrain atlas
-% 
-%% Generate Volumetric Grayordinates
-% 
-% 
+for ind = 1:length(fmri)
+    outdir=fullfile(subdir,sprintf('func-%d',ind));
+    fmri2surfFile=fullfile(outdir,'fmri2surf.mat');
+    GOrdsurfFile=fullfile(outdir,'fmri2surf_GOrd.mat');
+    resample2surf(subbasename,fullfile(outdir,'fmri.nii.gz'),fmri2surfFile);
+    generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdsurfFile);
+end
+
+%% Transfer data to volumetric grayordinates
+fprintf('Generating Volumetric Grayordinates\n');
+for ind = 1:length(fmri)
+    outdir=fullfile(subdir,sprintf('func-%d',ind));
+    GOrdVolFile=fullfile(outdir,'fmri2Vol_GOrd.mat');
+    generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fullfile(outdir,'fmri.nii.gz'),GOrdVolFile);
+    combineSurfVolGOrdfMRI(GOrdSurfIndFile,GOrdVolFile);
+end
+
+
+%% Combine Surface and Volumetric Grayordinates and write gifti file
 %

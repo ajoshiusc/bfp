@@ -1,9 +1,8 @@
-% clc;clear cll;close all;
-% restoredefaultpath;
-% addpath(genpath('/home/ajoshi/coding_ground/svreg/src'))
-% addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'))
-
-function resample2surf(subbasename,fmri)
+% This file resamples fmri to surface
+% subbasename is for the structural T1 image
+%fmri is the file name of the fmri
+% 
+function resample2surf(subbasename,fmri,fmri2surfFile)
 
 subpath=fileparts(subbasename);
 
@@ -36,6 +35,6 @@ parfor j=1:size(v.img,4)
     fprintf('%d,',j);    
 end
 
-save([subbasename,'_fmri2surf.mat'],'datal_atlas','datar_atlas','datal','datar');
+save(fmri2surfFile,'datal_atlas','datar_atlas','datal','datar');
 
 

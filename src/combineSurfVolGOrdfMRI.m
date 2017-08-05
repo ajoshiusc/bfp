@@ -1,6 +1,6 @@
-function combineSurfVolGOrdfMRI(GOrdSurfIndFile,GOrdVolFile,GOrdFile)
+function combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile)
 
-load(GOrdSurfIndFile);
+load(GOrdSurfFile);
 load(GOrdVolFile);
 lsz=size(left_GO_fMRI,1);
 rsz=size(right_GO_fMRI,1);

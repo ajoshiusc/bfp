@@ -1,13 +1,13 @@
 %% BFP: BrainSuite fMRI Pipeline
-
+%%TBD make names BIDS compatible
 %% User Inputs
-
+setenv('LD_LIBRARY_PATH','/usr/lib/fsl/5.0:/usr/lib/nx/X11/Xinerama:/usr/lib/nx/X11')
 t1 = '/home/ajoshi/coding_ground/bfp/data/sub-01_T1w.nii.gz';
 fmri{1} = '/home/ajoshi/coding_ground/bfp/data/sub-01_ses-movie_task-movie_run-1_bold.nii.gz';
 subbasename = '~/coding_ground/bfp/data/sub-01-run1/sub-01-run1';
 BrainSuitePath='/home/ajoshi/BrainSuite17a';
 bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
-svreg_exe=fullfile(BrainSuitePath,'svreg/svreg.sh');
+svreg_exe=fullfile(BrainSuitePath,'svreg/bin/svreg.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
 
 GOrdSurfIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
@@ -81,9 +81,9 @@ fprintf('Transferring data from subject to atlas\n');
 for ind = 1:length(fmri)
     outdir=fullfile(subdir,sprintf('func-%d',ind));
     fmri2surfFile=fullfile(outdir,'fmri2surf.mat');
-    GOrdsurfFile=fullfile(outdir,'fmri2surf_GOrd.mat');
-    resample2surf(subbasename,fullfile(outdir,'fmri.nii.gz'),fmri2surfFile);
-    generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdsurfFile);
+    GOrdSurfFile=fullfile(outdir,'fmri2surf_GOrd.mat');
+    resample2surf(subbasename,fullfile(outdir,'fmri2standard.nii.gz'),fmri2surfFile);
+    generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
 end
 
 %% Transfer data to volumetric grayordinates
@@ -92,8 +92,8 @@ for ind = 1:length(fmri)
     outdir=fullfile(subdir,sprintf('func-%d',ind));
     GOrdVolFile=fullfile(outdir,'fmri2Vol_GOrd.mat');
     GOrdFile=fullfile(outdir,'fmri.32k.nii.gz');
-    generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fullfile(outdir,'fmri.nii.gz'),GOrdVolFile);
-    combineSurfVolGOrdfMRI(GOrdSurfIndFile,GOrdVolFile,GOrdFile);
+    generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fullfile(outdir,'fmri2standard.nii.gz'),GOrdVolFile);
+    combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
 end
 
 

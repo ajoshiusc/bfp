@@ -1,23 +1,24 @@
 %% BFP: BrainSuite fMRI Pipeline
 %%TBD make names BIDS compatible
 %% User Inputs
-setenv('LD_LIBRARY_PATH','/usr/lib/fsl/5.0:/usr/lib/nx/X11/Xinerama:/usr/lib/nx/X11')
+%setenv('LD_LIBRARY_PATH','/usr/lib/fsl/5.0:/usr/lib/nx/X11/Xinerama:/usr/lib/nx/X11')
 t1 = '/home/ajoshi/coding_ground/bfp/data/sub-01_T1w.nii.gz';
 fmri{1} = '/home/ajoshi/coding_ground/bfp/data/sub-01_ses-movie_task-movie_run-1_bold.nii.gz';
-subbasename = '~/coding_ground/bfp/data/sub-01-run1/sub-01-run1';
-BrainSuitePath='/home/ajoshi/BrainSuite17a';
-bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
-svreg_exe=fullfile(BrainSuitePath,'svreg/bin/svreg.sh');
-BCIbasename=fullfile(BrainSuitePath,'svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
-BSA=fullfile(BrainSuitePath,'svreg/BrainSuiteAtlas1/mri.bfc.nii.gz');
+outsubdir = '~/coding_ground/bfp/data/sub-01-run1';
+configfile = 'config.ini';
 
-GOrdSurfIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
-GOrdVolIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_vol_ind.mat';
+%%Read configuration file and 
+config=ini2struct(configfile);
 
-RMFLAG=1;
-
-config=ini2struct('config.ini');
-
+setenv('LD_LIBRARY_PATH',config.ld_library_path);
+BrainSuitePath=config.BrainSuitePath;
+bse_exe=config.config;
+svreg_exe=config.svreg_exe;
+BCIbasename=config.BCIbasename;
+BSA=config.BSA;
+GOrdSurfIndFile=config.gordsurfindfile;
+GOrdVolIndFile=config.gordvolindfile;
+RMFLAG=config.rmflag;
 
 fprintf('OS:%s\n',computer);
 if ~strcmp(computer,'GLNXA64')
@@ -31,7 +32,7 @@ end
 
 %% Create Directory Structure
 fprintf('Creating Directory Structure\n');
-subdir=fileparts(subbasename);
+subdir=outsubdir;
 if RMFLAG && exist(subdir,'dir')
     rmdir(subdir,'s')
 end

@@ -16,6 +16,9 @@ GOrdVolIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_vol_ind.mat
 
 RMFLAG=1;
 
+config=ini2struct('config.ini');
+
+
 fprintf('OS:%s\n',computer);
 if ~strcmp(computer,'GLNXA64')
     error('OS is not supported!')

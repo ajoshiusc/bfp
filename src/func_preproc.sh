@@ -23,6 +23,8 @@ TRend=450
 ## TR
 TR=2
 nuisance_template=/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
+## number of time points
+n_vols=451
 
 echo $TR 
 ## set your desired spatial smoothing FWHM - we use 6 (acquisition voxel size is 3x3x4mm)
@@ -97,12 +99,20 @@ fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
 
 ## 12.FUNC->T1
 ## You may want to change some of the options
-flirt -ref ${t1}.bfc.nii.gz -in example_func.nii.gz -out example_func2t1.nii.gz -omat example_func2t1.mat -cost corratio -dof 6 -interp trilinear
+flirt -ref ${t1}.bfc.nii.gz -in example_func.nii.gz -out example_func2t1.nii.gz -omat example_func2t1.mat -cost corratio -dof 12 -interp trilinear
 # Create mat file for conversion from subject's anatomical to functional
 convert_xfm -inverse -omat t12example_func.mat example_func2t1.mat
 ## TBD
+
+## 12.FUNC->standard (3mm)
+## You may want to change some of the options
+flirt -ref standard.nii.gz -in example_func.nii.gz -out example_func2standard.nii.gz -omat example_func2standard.mat -cost corratio -dof 12 -interp trilinear
+# Create mat file for conversion from subject's anatomical to functional
+convert_xfm -inverse -omat standard2example_func.mat example_func2standard.mat
+## TBD
+
 ## apply registration
-flirt -ref standard -in example_func -out example_func2standard -applyxfm -init example_func2standard.mat -interp trilinear
+#flirt -ref standard -in example_func -out example_func2standard -applyxfm -init example_func2standard.mat -interp trilinear
 
 
 
@@ -131,7 +141,6 @@ awk '{print $6}' ${fmri}_mc.1D > ${nuisance_dir}/mc6.1D
 echo "Extracting global signal for ${subject}"
 3dmaskave -mask ${fmri}_pp_mask.nii.gz -quiet ${fmri}_pp.nii.gz > ${nuisance_dir}/global.1D
 
-#I am here
 ## 17. csf
 flirt -ref example_func.nii.gz -in ${t1}.pvc.label.nii.gz -out ${t1}.func.pvc.label.nii.gz -applyxfm -init t12example_func.mat -interp nearestneighbour
 
@@ -153,23 +162,23 @@ sed -e s:nuisance_dir:"${nuisance_dir}":g <${nuisance_template} >${nuisance_dir}
 sed -e s:nuisance_model_outputdir:"${nuisance_dir}/residuals.feat":g <${nuisance_dir}/temp1 >${nuisance_dir}/temp2
 sed -e s:nuisance_model_TR:"${TR}":g <${nuisance_dir}/temp2 >${nuisance_dir}/temp3
 sed -e s:nuisance_model_numTRs:"${n_vols}":g <${nuisance_dir}/temp3 >${nuisance_dir}/temp4
-sed -e s:nuisance_model_input_data:"${func_dir}/${rest}_pp.nii.gz":g <${nuisance_dir}/temp4 >${nuisance_dir}/nuisance.fsf 
+sed -e s:nuisance_model_input_data:"${func_dir}/${fmri}_pp.nii.gz":g <${nuisance_dir}/temp4 >${nuisance_dir}/nuisance.fsf 
 
 rm ${nuisance_dir}/temp*
 
 echo "Running feat model"
 feat_model ${nuisance_dir}/nuisance
 
-minVal=`3dBrickStat -min -mask ${fmri}_pp_mask.nii.gz ${t1}_pp.nii.gz`
+minVal=`3dBrickStat -min -mask ${fmri}_pp_mask.nii.gz ${fmri}_pp.nii.gz`
 
 ## 7. Get residuals
 echo "Running film to get residuals"
-film_gls -rn ${nuisance_dir}/stats -noest -sa -ms 5 ${fmri}_pp.nii.gz ${nuisance_dir}/nuisance.mat ${minVal}
+film_gls --rn=${nuisance_dir}/stats --noest --sa --ms=5 --in=${fmri}_pp.nii.gz --pd=${nuisance_dir}/nuisance.mat --thr=${minVal}
 
 ## 8. Demeaning residuals and ADDING 100
 3dTstat -mean -prefix ${nuisance_dir}/stats/res4d_mean.nii.gz ${nuisance_dir}/stats/res4d.nii.gz
-3dcalc -a ${nuisance_dir}/stats/res4d.nii.gz -b ${nuisance_dir}/stats/res4d_mean.nii.gz -expr '(a-b)+100' -prefix ${func_dir}/${rest}_res.nii.gz
+3dcalc -a ${nuisance_dir}/stats/res4d.nii.gz -b ${nuisance_dir}/stats/res4d_mean.nii.gz -expr '(a-b)+100' -prefix ${fmri}_res.nii.gz
 
 ## 9. Resampling residuals to MNI space
-flirt -ref ${reg_dir}/standard -in ${func_dir}/${rest}_res -out ${func_dir}/${rest}_res2standard -applyxfm -init ${reg_dir}/example_func2standard.mat -interp trilinear
+flirt -ref ${func_dir}/standard -in ${fmri}_res -out ${fmri}_res2standard -applyxfm -init ${func_dir}/example_func2standard.mat -interp trilinear
 

@@ -9,6 +9,7 @@ BrainSuitePath='/home/ajoshi/BrainSuite17a';
 bst_exe=fullfile('/home/ajoshi/coding_ground/bfp/src/cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg/bin/svreg.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+BSA=fullfile(BrainSuitePath,'svreg/BrainSuiteAtlas1/mri.bfc.nii.gz');
 
 GOrdSurfIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_surf_ind.mat';
 GOrdVolIndFile='/home/ajoshi/coding_ground/bfp/dev/bci_grayordinates_vol_ind.mat';
@@ -46,6 +47,10 @@ for ind = 1:length(fmri)
     fprintf('Creating Dir:%s\n',outdir);
     mkdir(outdir);    
     copyfile(fmri{ind},fullfile(outdir,'fmri.nii.gz'));
+    %% Generate 3mm BSA brain as a standard template
+    cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',BSA,BSA,fullfile(outdir,'standard.nii.gz'));
+    fprintf('Creating 3mm isotropic standard brains\n');
+    unix(cmd);
 end
 %% Skull Strip MRI
 
@@ -57,7 +62,6 @@ unix(cmd);
  
 %% Coregister t1 to MNI Space
 bsenew=fullfile(anatDir,'t1.nii.gz');
-BSA=fullfile(BrainSuitePath,'svreg/BrainSuiteAtlas1/mri.bfc.nii.gz');
 cmd=sprintf('flirt -ref %s -in %s -out %s',BSA,bseout,bsenew);
 unix(cmd);
 bsemask=fullfile(anatDir,'t1.mask.nii.gz');
@@ -65,6 +69,7 @@ cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
 unix(cmd);
 bsenew2=fullfile(anatDir,'t1.bse.nii.gz');
 copyfile(bsenew,bsenew2);
+
  
 %% Run BrainSuite
 subbasename=fullfile(anatDir,'t1');

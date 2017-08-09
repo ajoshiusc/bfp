@@ -31,7 +31,8 @@ TR=$6
 nuisance_template=$7
 #/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
 ## number of time points
-n_vols=451
+n_vols=$8
+#451
 
 echo $TR 
 ## set your desired spatial smoothing FWHM - we use 6 (acquisition voxel size is 3x3x4mm)

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo $@
 
 ##########################################################################################################################
 ## SCRIPT TO PREPROCESS THE FUNCTIONAL SCAN
@@ -20,10 +21,10 @@ fmri=$2
 func_dir=$3
 #/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
 ## first timepoint (remember timepoint numbering starts from 0)
-TRstart= $4
+TRstart=$4
 #0
 ## last timepoint
-TRend= $5
+TRend=$5
 #450
 ## TR
 TR=$6
@@ -172,7 +173,7 @@ sed -e s:nuisance_model_TR:"${TR}":g <${nuisance_dir}/temp2 >${nuisance_dir}/tem
 sed -e s:nuisance_model_numTRs:"${n_vols}":g <${nuisance_dir}/temp3 >${nuisance_dir}/temp4
 sed -e s:nuisance_model_input_data:"${func_dir}/${fmri}_pp.nii.gz":g <${nuisance_dir}/temp4 >${nuisance_dir}/nuisance.fsf 
 
-rm ${nuisance_dir}/temp*
+#rm ${nuisance_dir}/temp*
 
 echo "Running feat model"
 feat_model ${nuisance_dir}/nuisance

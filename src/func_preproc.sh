@@ -11,18 +11,25 @@
 
 ## anatomical image
 #t1=$1
-t1=/home/ajoshi/coding_ground/bfp/data/sub-01-run1/anat/t1
+t1=$1
+#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/anat/t1
 ## name of the fMRI scan
-fmri=/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1/fmri
+fmri=$2
+#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1/fmri
 ## fmri scan directory
-func_dir=/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
+func_dir=$3
+#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
 ## first timepoint (remember timepoint numbering starts from 0)
-TRstart=0
+TRstart= $4
+#0
 ## last timepoint
-TRend=450
+TRend= $5
+#450
 ## TR
-TR=2
-nuisance_template=/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
+TR=$6
+#2
+nuisance_template=$7
+#/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
 ## number of time points
 n_vols=451
 

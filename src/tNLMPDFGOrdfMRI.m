@@ -1,5 +1,5 @@
 function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile)
 
-v=load_nii(v,GOrdInFile);
-v.img=tNLMPDF(v.img);
+v=load_nii(GOrdInFile);
+v.img=tNLMPdf(v.img);
 save_nii(v,GOrdOutFile);

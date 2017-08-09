@@ -113,7 +113,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     end
     
     if numV > numSpKE
-        dataN3 = dataN2(randsample(numV, numSpKE), :);
+        dataN3 = dataN2(randsample(numV-sum(idxNaN), numSpKE), :);
     else
         dataN3 = dataN2;
     end

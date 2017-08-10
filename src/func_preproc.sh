@@ -21,20 +21,22 @@ fmri=$2
 func_dir=$3
 #/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
 ## first timepoint (remember timepoint numbering starts from 0)
-TRstart=$4
+#TRstart=$4
 #0
 ## last timepoint
-TRend=$5
+#TRend=$5
 #450
 ## TR
-TR=$6
+TR=$4
 #2
-nuisance_template=$7
+nuisance_template=$5
 #/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
 ## number of time points
-n_vols=$8
+#n_vols=$8
 #451
-
+n_vols=$(3dinfo -nv ${fmri}.nii.gz)
+TRstart=0
+TRend=$((n_vols-1))
 echo $TR 
 ## set your desired spatial smoothing FWHM - we use 6 (acquisition voxel size is 3x3x4mm)
 FWHM=6

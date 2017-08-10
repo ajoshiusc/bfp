@@ -9,6 +9,7 @@ data = data + 3 * randn(1000, T);
 option = tNLMPdf();
 option.isPlot = true;
 option.isVerbose = true;
+option.memoryLimit = 'auto';
 option.SCBFile = fullfile(pwd, 'SCB.mat');
 
 %%

@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.2.2
+%     9.3.2
 % Date:
-%     2017/08/03
+%     2017/08/09
 %
 
 function [dataSm, output] = tNLMPdf(data, option)
@@ -31,8 +31,8 @@ function [dataSm, output] = tNLMPdf(data, option)
         option.FPR = 1e-3;
         option.memoryLimit = 'auto';
         option.isPlot = false;
-        option.isVerbose = false;
-        option.SCBFile = fullfile(pwd, 'SCB.mat');
+        option.isVerbose = true;
+		option.SCBFile = fullfile(pwd, 'SCB.mat');
         dataSm = option;
         return;
     end
@@ -42,20 +42,32 @@ function [dataSm, output] = tNLMPdf(data, option)
     end
     
     if option.isVerbose
-        disp('estimating memory requirement');
+        disp('pre-processing data');
     end
     
     [numV, numT] = size(data);
     
+    dataN = zeroMeanUnitVariance(data, 2);
+    idxNaN = any(~isfinite(dataN), 2);
+    data2 = data(~idxNaN, :);
+    dataN2 = dataN(~idxNaN, :);
+    clear data dataN;
+    
+    numV2 = size(data2, 1);
+    
+    if option.isVerbose
+        disp('estimating memory requirement');
+    end
+    
     % minimum and recommended number of samples for kernel estimation
-    minNumSpKE = min(numV, 1e4);
-    recomNumSpKE = min(numV, 2.3e4);
+    minNumSpKE = min(numV2, 1e4);
+    recomNumSpKE = min(numV2, 2.3e4);
     
     numSpKE = recomNumSpKE;
     
-    memReq = estimateVarSize('double', numV*numT*4 + minNumSpKE^2, 'GB');
-    memRec = estimateVarSize('double', numV*numT*4 + recomNumSpKE^2, 'GB');
-    memFullCorrMat = estimateVarSize('double', numV*numV, 'GB');
+    memReq = estimateVarSize('double', minNumSpKE^2 * 2, 'GB');
+    memRec = estimateVarSize('double', recomNumSpKE^2 * 2, 'GB');
+    memFullCorrMat = estimateVarSize('double', numV2*numV2, 'GB');
     
     % only work for linux now
     memInfo = getMemoryInfo();
@@ -98,29 +110,19 @@ function [dataSm, output] = tNLMPdf(data, option)
     end
     
     if option.isVerbose
-        disp('pre-processing data');
-    end
-    
-    dataN = zeroMeanUnitVariance(data, 2);
-    idxNaN = any(~isfinite(dataN), 2);
-    data2 = data(~idxNaN, :);
-    dataN2 = dataN(~idxNaN, :);
-    clear data dataN;
-    
-    if option.isVerbose
         disp('estimating the kernel');
         disp('downsample dataset and calculate the correlation matrix');
     end
     
-    if numV > numSpKE
-        dataN3 = dataN2(randsample(numV-sum(idxNaN), numSpKE), :);
+    if numV2 > numSpKE
+        dataN3 = dataN2(randsample(numV2, numSpKE), :);
     else
         dataN3 = dataN2;
     end
     
     A = corr(dataN3'); clear dataN3;
-    A2 = A(:); clear A;
-    A2(A2 == 1) = [];
+    A = A(:);
+    A(A == 1) = [];
     
     if option.isVerbose
         disp('fit the conditional distribution');
@@ -135,7 +137,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     
     binRes = 0.001;
     binEdge = (-1-binRes/2):binRes:(1+binRes/2);
-    ct = histcounts(A2, binEdge); clear A2;
+    ct = histcounts(A, binEdge); clear A;
     ct2 = ct(:) ./ sum(ct); % empirical distribution
     
     AtA = basis' * basis;
@@ -199,10 +201,8 @@ function [dataSm, output] = tNLMPdf(data, option)
         ax1.XTick = -1:0.2:1;
         ax1.YLim = [-0.1 1.1];
         xlabel('r');
-        legend(ax1, 'Sample Correlation Histogram', ...
-                    'Noise distribution', ...
-                    'Filtering weights', ...
-                    'Location', 'NorthWest');
+        legend(ax1, 'Sample Correlation Histogram', 'Noise distribution', ...
+                    'Filtering weights', 'Location', 'NorthWest');
     end
     
     clear PJoint PPost basis AtA;
@@ -211,20 +211,23 @@ function [dataSm, output] = tNLMPdf(data, option)
         disp('tNLM-pdf filtering');
     end
     
-    % subtract memory used for storing dataset
-    memLim = memLim - estimateVarSize('double', numV*numT*4, 'GB');
-    
     % use 95% avaiable memory to avoid freezing
-    memLim = memLim * 0.95;
+    memLim = memLim * 0.9;
     
     % multiply by 2 because A and B simutaneously exist below for a short
     % time
     numBlk = ceil(memFullCorrMat / memLim * 2);
     if option.isVerbose
-        disp(['based on the memory limitation, we will have ' num2str(numBlk) ' iterations']);
+        str = ['based on the memory limitation, we will have ' num2str(numBlk)];
+        if numBlk == 1
+            str = [str ' iteration'];
+        elseif numBlk > 1
+            str = [str ' iterations'];
+        end
+        disp(str);
     end
     
-    szBlk = ceil(numV / numBlk);
+    szBlk = ceil(numV2 / numBlk);
     
     data3 = zeros(size(data2));
     

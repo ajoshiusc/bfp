@@ -23,11 +23,14 @@ bci_BST.vertices(:, 3) = bci_BST.vertices(:, 3)-192*0.546875;
 tic
 [ind_right,d] = dsearchn(bci_BST.vertices,bci_inner_fs.vertices(ind_right,:));
 toc
-bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.right.mid.cortex_smooth10.dfs');
+bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.right.mid.cortex.dfs');
 
-bci32kright.faces=g.faces;
+bci32kright.faces=double(g.faces);
 bci32kright.vertices=bci_BST.vertices(ind_right,:);
+bci32kright=smooth_cortex_fast(bci32kright,.1,75);
+
 view_patch(bci32kright);
+writedfs('../supp_data/bci32kright.dfs',bci32kright);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Resample from one sphere to the other (Left)
@@ -48,11 +51,14 @@ bci_BST.vertices(:, 3) = bci_BST.vertices(:, 3)-192*0.546875;
 tic
 [ind_left,d] = dsearchn(bci_BST.vertices,bci_inner_fs.vertices(ind_left,:));
 toc
-bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.mid.cortex_smooth10.dfs');
+bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.mid.cortex.dfs');
 
-bci32kleft.faces=g.faces;
+bci32kleft.faces=double(g.faces);
 bci32kleft.vertices=bci_BST.vertices(ind_left,:);
+
+bci32kleft=smooth_cortex_fast(bci32kleft,.1,75);
 view_patch(bci32kleft);
 
+writedfs('../supp_data/bci32kleft.dfs',bci32kleft);
 
-save('../src/bci_grayordinates_surf_ind.mat','ind_left','ind_right');
+save('../supp_data/bci_grayordinates_surf_ind.mat','ind_left','ind_right');

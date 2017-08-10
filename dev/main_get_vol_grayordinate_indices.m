@@ -35,3 +35,8 @@ bci_vol_ind(ind)=sub2ind(SZ(1:3),mp1,mp2,mp3);
 
 save('../supp_data/bci_grayordinates_vol_ind.mat','bci_vol_ind');
 
+v=load_nii_BIG_Lab('/home/ajoshi/coding_ground/svreg-matlab/BCI-DNI_brain_atlas/BCI-DNI_brain.nii.gz');
+v.hdr.dime.datatype=2;v.img=0*v.img;
+v.img(bci_vol_ind(ind))=255;
+save_untouch_nii_gz(v,'../supp_data/Vol_BCI_grayord32k.mask.nii.gz');
+

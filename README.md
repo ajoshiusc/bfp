@@ -11,7 +11,7 @@
  * Open bfp.mtx in Matlab Live Notebook and edit *User Inputs* section
  * open config.ini and set paths make sure that the paths of the programs are 
  correct.
- * Run bfp.mtx
+ * For preprocessing fMRI, run src/preproc/bfp.mtx
 
 ## Issues/TBD
  * Global Signal Regression is on for now. We need to figure out what signals 

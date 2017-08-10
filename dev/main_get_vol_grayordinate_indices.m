@@ -33,7 +33,5 @@ mp3 = max(1,round(mapz(id1)));
 bci_vol_ind=nan(length(voxc),1);
 bci_vol_ind(ind)=sub2ind(SZ(1:3),mp1,mp2,mp3);
 
-save('bci_grayordinates_vol_ind.mat','bci_vol_ind');
-
-
+save('../supp_data/bci_grayordinates_vol_ind.mat','bci_vol_ind');
 

@@ -8,7 +8,6 @@ GO_fmri=Vol_GO_fmri;
 GO_fmri(1:lsz,:)=left_GO_fMRI;
 GO_fmri(1+lsz:lsz+rsz,:)=right_GO_fMRI;
 
-v=make_nii(GO_fmri);
-
-save_nii(v,GOrdFile);
+dtseries=GO_fmri;
+save(GOrdFile,'dtseries');
 

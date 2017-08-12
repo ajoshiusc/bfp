@@ -26,9 +26,9 @@ g1.dtseries=g1.dtseries(msk.LR_flag,:);
 g2.dtseries=g2.dtseries(msk.LR_flag,:);
 
 
-LBO = getLaplaceBeltramiOperator(sl);
-g1.dtseries = laplaceBeltramiSmooth(LBO, g1.dtseries, 6);
-g2.dtseries = laplaceBeltramiSmooth(LBO, g2.dtseries, 6);
+% LBO = getLaplaceBeltramiOperator(sl);
+% g1.dtseries = laplaceBeltramiSmooth(LBO, g1.dtseries, 6);
+% g2.dtseries = laplaceBeltramiSmooth(LBO, g2.dtseries, 6);
 
 
 g1.dtseries=normalizeData(g1.dtseries')';

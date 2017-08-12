@@ -79,6 +79,7 @@ function Result = ini2struct(FileName)
 %   "Any string that exceeds NAMELENGTHMAX is truncated". (doc genvarname)
 % Period.
 % 
+%% MODIFICATION: Removed 'lower' by Anand A Joshi so that variable names are preserved.
 % =========================================================================
 Result = [];                            % we have to return something
 CurrMainField = '';                     % it will be used later
@@ -96,7 +97,7 @@ while ~feof(f)                          % and read until it ends
     end;
     if ( s(1)=='[' ) && (s(end)==']' )
         % We found section
-        CurrMainField = genvarname(lower(s(2:end-1)));
+        CurrMainField = genvarname((s(2:end-1)));
         Result.(CurrMainField) = [];    % Create field in Result
     else
         % ??? This is not a section start
@@ -104,10 +105,10 @@ while ~feof(f)                          % and read until it ends
         val = CleanValue(val);
         if ~isempty(CurrMainField)
             % But we found section before and have to fill it
-            Result.(CurrMainField).(lower(genvarname(par))) = val;
+            Result.(CurrMainField).((genvarname(par))) = val;
         else
             % No sections found before. Orphan value
-            Result.(lower(genvarname(par))) = val;
+            Result.((genvarname(par))) = val;
         end
     end
 end

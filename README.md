@@ -7,7 +7,7 @@
 Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/mint/debian), 8GB RAM recommended. 
 
 ## Installation and Setup
- * Install AFNI (Ver. Jun 12 2017) and FSL 5.0. We recommend using neurodebian (http://neuro.debian.net) as it makes the installation process easier. 
+ * Install AFNI (Ver. Jun 12 2017) and FSL 5.0. We recommend using [NeuroDebian](http://neuro.debian.net) as it makes the installation process easier. 
  * Install BrainSuite 17a (http://brainsuite.org).
  * Install Matlab 2017a
  * Download bfp, unzip

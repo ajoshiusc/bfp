@@ -1,7 +1,8 @@
 # BFP: BrainSuite fMRI Pipeline
  This pipeline takes fMRI and anatomical data and processes them using a series 
- of scripts from BrainSuite, FSL and AFNI. The functional processing script is 
- based on batch_process.sh script from fcon1000.
+ of scripts from AFNI(https://afni.nimh.nih.gov/) , [BrainSuite](http://brainsuite.org/) and [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki). The functional processing script is 
+ based on `batch_process.sh` script from [fcon1000](http://fcon_1000.projects.nitrc.org/).
+ 
 ## System Requirements
 Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/mint/debian), 8GB RAM recommended. 
 

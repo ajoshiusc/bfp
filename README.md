@@ -13,21 +13,3 @@
  correct.
  * For preprocessing fMRI, run src/preproc/bfp.mtx
 
-## Issues/TBD
- * Global Signal Regression is on for now. We need to figure out what signals 
- to regress. The current pipeline regresses global, WM and GM signals.
- * Surface corresponding to 32k need to be finalized and distributed with the 
- BFP distribution.
- * Visualization of Grayordinate data: How to do this?
- * Current pipeline includes volumetric smoothing with 6mm FWHM. This corresponds 
- to 3mm isotropic voxels in fmri data. Is this required, considering that we 
- do tNLMPDF filtering at the end.
- * tNLMPDF filtering is done at the end. Is this appropriate place for this?
- * BrainSync is not included in this pipeline yet. We have to decide how to 
- include it since this pipeline is for single subject.
- * Most scans don't cover full cerebellum, so there are NaNs in the grayordinates. 
- We need to make sure that this is accounted in the further processing.
- * There are several outputs generated. Should we keep them all or delete them 
- once done.
- * Should we support partial runs or continuation of full runs of the pipeline?
- * Documentation needs to be done

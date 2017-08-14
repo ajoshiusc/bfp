@@ -3,13 +3,14 @@
  of scripts from BrainSuite, FSL and AFNI. The functional processing script is 
  based on batch_process.sh script from fcon1000.
 ## System Requirements
- * Debian based linux distribution, 16GB RAM. 
+Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/mint/debian), 8GB RAM recommended. 
+
 ## Installation and Setup
- * Install AFNI (Ver. Jun 12 2017), FSL 5.0 using neurodebian (http://neuro.debian.net). Install BrainSuite 17a (http://brainsuite.org).
+ * Install AFNI (Ver. Jun 12 2017) and FSL 5.0. We recommend using neurodebian (http://neuro.debian.net) as it makes the installation process easier. 
+ * Install BrainSuite 17a (http://brainsuite.org).
  * Install Matlab 2017a
  * Download bfp, unzip
- * Open bfp.mtx in Matlab Live Notebook and edit *User Inputs* section
- * open config.ini and set paths make sure that the paths of the programs are 
- correct.
+ * Open bfp.mtx in Matlab Live Notebook and edit *User Inputs* section.
+ * open config.ini and set paths for FSL, AFNI and BrainSuite.
  * For preprocessing fMRI, run src/preproc/bfp.mtx
 

@@ -12,7 +12,13 @@ The analtomical processing pipeline in BFP is based on [BrainSuite](http://brain
 * The brain registration and labeling is performed using [SVReg](http://brainsuite.org/processing/svreg/).
 
 ## Functional Processing
-* We generate 3mm isotropic representation of BrainSuiteAtlas1 as a standard reference
+The functional data is processed using several tools from [AFNI](https://afni.nimh.nih.gov/) and [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) as detailed below. 
+* We generate 3mm isotropic representation of BrainSuiteAtlas1 as a standard reference. fMRI data is coregistered to this template. This steps puts subjects T1 and fMRI data in a common space.
+* The fMRI data is deobliqued. This step changes some of the information inside a fmri dataset's header and is reoriented in FSL friendly space. 
+* The motion correction is performed to average of time series. This is followed by skull stripping.
+* Spatial smoothing is performed with Gaussian kernel and FWHM of 6mm.
+* This is followed by [grand mean scaling](http://dbic.dartmouth.edu/wiki/index.php/Global_Scaling) to account for signal differences across sessions.
+* A temporal band pass filtering is then applied with bandwidth of 0.005-0.1 Hz.
 
 ## fMRI analysis tools
 

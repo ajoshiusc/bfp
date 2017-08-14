@@ -1,9 +1,9 @@
-## BFP Workflow
+# BFP Workflow
 
-# Anatomical Processing
+## Anatomical Processing
+The analtomical processing pipeline in BFP is based on [BrainSuite](http://brainsuite.org)
+## Functional Processing
 
-# Functional Processing
-
-# fMRI analysis tools
+## fMRI analysis tools
 
 

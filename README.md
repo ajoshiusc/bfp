@@ -15,3 +15,8 @@ Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/
  * open config.ini and set paths for FSL, AFNI and BrainSuite.
  * For preprocessing fMRI, run src/preproc/bfp.mtx
 
+## Usage
+### Matlab
+bfp()
+
+### Binary

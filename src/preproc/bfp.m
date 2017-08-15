@@ -31,6 +31,7 @@ if nargin ~=7
    disp('bfp configfile t1 fmri studydir subid sessionid TR');
    disp('t1: ' )
    
+   
    error('exiting');
 end
 disp('hi');
@@ -58,8 +59,20 @@ else
     fmri{1}=fmri;
 end
 
+if ischar(class(sessionid)) % This is for command line input when fmri data is cell string
+    if contains(sessionid,'{')
+        eval(['sessionid = ' fmri]);
+    end
+else
+    sessionid{1}=fmri;
+end
+
 for i = 1:size(fmri,2)
     fprintf('fmri %d:%s\n',fmri{i});
+end
+
+for i = 1:size(sessionid,2)
+    fprintf('sessionid %d:%s\n',sessionid{i});
 end
 %% Check if OS is supported
 %%

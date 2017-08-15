@@ -18,14 +18,23 @@ Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/
 ## Usage
 ### Matlab
 bfp(configfile,t1,fmri,studydir,subid,sessionid,TR)
-* configfile: Configuration file that you edited during installation, (<bfpdir>/supp_data/config.ini) 
-* t1: T1 image in NIFTI-1 format e.g. 'sub01-bold.nii.gz'
-* fmri: string or cell array of fMRI NIFTI-1 formatted files e.g. 'sub_01_rest_bold.nii.gz'
-* studydir, subid: Outputs will be saved in the studydir/subid for each subject e.g. studydir='mystudy', subid='sub-01'
-* sessionid: string or cell array of session id for the input fmris e.g. 'rest' for resting state
+
+ configfile: Configuration file that you edited during installation, (<bfpdir>/supp_data/config.ini) 
+ 
+ t1: T1 image in NIFTI-1 format e.g. 'sub01-bold.nii.gz'
+
+ fmri: string or cell array of fMRI NIFTI-1 formatted files e.g. 'sub_01_rest_bold.nii.gz'
+
+ studydir, subid: Outputs will be saved in the studydir/subid for each subject e.g. studydir='mystudy', subid='sub-01'
+
+ sessionid: string or cell array of session id for the input fmris e.g. 'rest' for resting state
+ 
+ 
  e.g.
 bfp /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/ajoshi/sub-01_rest.nii.gz /home/ajoshi/mystudy sub-01 rest 2
 
 
 ### Binary
+You can run BFP from the bash shell using the command mentioned below.
+
 bfp.sh /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/ajoshi/sub-01_rest.nii.gz /home/ajoshi/mystudy sub-01 rest 2

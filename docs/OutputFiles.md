@@ -1,4 +1,8 @@
-studydir|-<sub2>
-        |-<sub2>
-        |
+Output directory structure is as follows:
+
+<studydir>|-<sub2>.nii.gz--|-<session1>.nii.gz ...
+        |-<sub2>.nii.gz    |-<session2>.nii.gz ...
+        |                  |-... 
         .
+
+Subject directory is given in 

@@ -35,4 +35,6 @@ bfp /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/a
 
 
 ### Binary
+You can run BFP from the bash shell using the command mentioned below.
+
 bfp.sh /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/ajoshi/sub-01_rest.nii.gz /home/ajoshi/mystudy sub-01 rest 2

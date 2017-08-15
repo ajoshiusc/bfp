@@ -4,10 +4,11 @@
  based on `batch_process.sh` script from [fcon1000](http://fcon_1000.projects.nitrc.org/).
  
 ## System Requirements
-Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/mint/debian), 8GB RAM recommended. 
+Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/mint/debian), 8GB RAM recommended. For windows users, you can try using virtual machine or docker, but we have not done testing on such configurations, so we do not support it at the moment, contributions are welcome.
 
 ## Installation and Setup
- * Install AFNI (Ver. Jun 12 2017) and FSL 5.0. We recommend using [NeuroDebian](http://neuro.debian.net) as it makes the installation process easier. 
+* Install AFNI (Ver. Jun 12 2017 or newer) and FSL 5.0. We recommend using [NeuroDebian](http://neuro.debian.net) as it makes the installation process easier. BFP has been tested with this configuration, but it should work for other versions of Linux and other softwares. However we recommend and support the above mentioned versions.
+ 
  * Install [BrainSuite 17a](http://brainsuite.org).
  * Install Matlab 2017a if you want to run it from Matlab
  * Download bfp, unzip

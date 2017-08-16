@@ -39,7 +39,7 @@ hFig = figure;
 % your patch command here, p1, p2 are the handlers
 % you only need to plot the surface once
 subaxis(1, 2, 1,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-3,3]);colormap(cmap);
-p1 = patch('faces',dfs_refL.faces,'vertices',dfs_refL.vertices,'facevertexcdata', dataL(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(-90,0);camlight;material dull;
+p1 = patch('faces',dfs_refL.faces,'vertices',dfs_refL.vertices,'facevertexcdata', dataL(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(-90,0);camlight;material dull;lighting phong;
 subaxis(1, 2, 2,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-3,3]);colormap(cmap);
 pr1 = patch('faces',dfs_refR.faces,'vertices',dfs_refR.vertices,'facevertexcdata', dataR(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(90,0);camlight;material dull;lighting phong;
 set(gcf,'color','w', 'Units', 'Inches', 'Position', [0, 0, 14, 4], 'PaperUnits', 'Inches', 'PaperSize', [7.25, 9.125])

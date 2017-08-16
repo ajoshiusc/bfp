@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.3.2
+%     9.3.3
 % Date:
-%     2017/08/09
+%     2017/08/16
 %
 
 function [dataSm, output] = tNLMPdf(data, option)
@@ -32,7 +32,8 @@ function [dataSm, output] = tNLMPdf(data, option)
         option.memoryLimit = 'auto';
         option.isPlot = false;
         option.isVerbose = true;
-		option.SCBFile = fullfile(pwd, 'SCB.mat');
+        option.SCBFile = '/home/andrew/Developer/Matlab/icMatBox/signal_processing/SCB.mat';
+%         option.SCBFile = fullfile(pwd, 'SCB.mat');
         dataSm = option;
         return;
     end
@@ -71,7 +72,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     
     % only work for linux now
     memInfo = getMemoryInfo();
-    if ~isempty(memInfo)
+    if ~isempty(memInfo.available)
         isDetected = true;
         memLim = memInfo.available;
     else
@@ -80,16 +81,25 @@ function [dataSm, output] = tNLMPdf(data, option)
     
     if isscalar(option.memoryLimit) && (option.memoryLimit > 0)
         if isDetected && (memLim < option.memoryLimit)
-            disp('you have less available memory than the specified limit, try to use as much as possible');
+            disp('you have less available memory than the specified limit');
         else
             memLim = option.memoryLimit;
         end
     elseif ischar(option.memoryLimit) && strcmp(option.memoryLimit, 'auto')
         if ~isDetected
-            disp('could not detect memory information automatically');
-            disp('specify option.memoryLimit manually in GB and then try again');
-            dataSm = []; output = [];
-            return;
+            str = {'Can not detect memory information automatically.', ...
+                   'You need to specify option.memoryLimit manually in GB and try again.', ...
+                   sprintf('Or you may proceed with assumption that you have at least %s GB available.', num2str(memReq)), ...
+                   'Note that this may be significantly slower than usual or even causing crash if the assumption is not satisfied', ...
+                   'Would you like to proceed anyway? (Default is No)'};
+            choice = questdlg(str, 'Memory Information Not Available', 'Yes', 'No', 'No');
+            switch choice
+                case 'Yes'
+                    memLim = memReq * 1.0001;
+                case 'No'
+                    dataSm = []; output = [];
+                    return;
+            end
         end
     else
         error('set memory limit to a postive number in GB or auto');
@@ -106,7 +116,7 @@ function [dataSm, output] = tNLMPdf(data, option)
         numSpKE = minNumSpKE;
         disp(['we recommend you have at least ' num2str(memRec) ' GB memory']);
         disp('this recommendation is not satisfied, will try to proceed in memory-saving mode');
-        disp('however, in this mode, the estimation of the kernel may not be accurate and the filtering process may be very slow');
+        disp('however, in this mode, the estimation of the kernel may not be accurate and the filtering process may be slower than usual');
     end
     
     if option.isVerbose

@@ -46,6 +46,9 @@ sigma=`echo "scale=10 ; ${FWHM}/2.3548" | bc`
 hp=0.005
 lp=0.1
 
+## Example func image
+example=${fmri}_example
+
 ## directory setup
 
 ##########################################################################################################################
@@ -83,7 +86,7 @@ echo "Skull stripping"
 
 ##6. Get eighth image for use in registration
 echo "Getting example_func for registration"
-3dcalc -a ${fmri}_ss.nii.gz[7] -expr 'a' -prefix example_func.nii.gz
+3dcalc -a ${fmri}_ss.nii.gz[7] -expr 'a' -prefix ${example}_func.nii.gz
 
 ##7. Spatial smoothing
 echo "Smoothing"
@@ -110,25 +113,25 @@ fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
 
 ## 12.FUNC->T1
 ## You may want to change some of the options
-flirt -ref ${t1}.bfc.nii.gz -in example_func.nii.gz -out example_func2t1.nii.gz -omat example_func2t1.mat -cost corratio -dof 12 -interp trilinear
+flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
 # Create mat file for conversion from subject's anatomical to functional
-convert_xfm -inverse -omat t12example_func.mat example_func2t1.mat
+convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
 ## TBD
 
 ## 12.FUNC->standard (3mm)
 ## You may want to change some of the options
-flirt -ref standard.nii.gz -in example_func.nii.gz -out example_func2standard.nii.gz -omat example_func2standard.mat -cost corratio -dof 12 -interp trilinear
+flirt -ref standard.nii.gz -in ${example}_func.nii.gz -out ${example}_func2standard.nii.gz -omat ${example}_func2standard.mat -cost corratio -dof 12 -interp trilinear
 # Create mat file for conversion from subject's anatomical to functional
-convert_xfm -inverse -omat standard2example_func.mat example_func2standard.mat
+convert_xfm -inverse -omat standard2${example}_func.mat ${example}_func2standard.mat
 ## TBD
 
 ## apply registration
-#flirt -ref standard -in example_func -out example_func2standard -applyxfm -init example_func2standard.mat -interp trilinear
+#flirt -ref standard -in ${example}_func -out ${example}_func2standard -applyxfm -init ${example}_func2standard.mat -interp trilinear
 
 
 
 ## 13. 
-nuisance_dir=${func_dir}/nuisance
+nuisance_dir=${func_dir}/nuisance_${fmri}
 
 echo --------------------------------------------
 echo !!!! RUNNING NUISANCE SIGNAL REGRESSION !!!!
@@ -153,7 +156,7 @@ echo "Extracting global signal for ${subject}"
 3dmaskave -mask ${fmri}_pp_mask.nii.gz -quiet ${fmri}_pp.nii.gz > ${nuisance_dir}/global.1D
 
 ## 17. csf
-flirt -ref example_func.nii.gz -in ${t1}.pvc.label.nii.gz -out ${t1}.func.pvc.label.nii.gz -applyxfm -init t12example_func.mat -interp nearestneighbour
+flirt -ref ${example}_func.nii.gz -in ${t1}.pvc.label.nii.gz -out ${t1}.func.pvc.label.nii.gz -applyxfm -init t12${example}_func.mat -interp nearestneighbour
 
 fslmaths ${t1}.func.pvc.label.nii.gz -thr 5.5 -bin ${t1}.func.csf.mask.nii.gz
 fslmaths ${t1}.func.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ${t1}.func.wm.mask.nii.gz
@@ -191,5 +194,5 @@ film_gls --rn=${nuisance_dir}/stats --noest --sa --ms=5 --in=${fmri}_pp.nii.gz -
 3dcalc -a ${nuisance_dir}/stats/res4d.nii.gz -b ${nuisance_dir}/stats/res4d_mean.nii.gz -expr '(a-b)+100' -prefix ${fmri}_res.nii.gz
 
 ## 9. Resampling residuals to MNI space
-flirt -ref ${func_dir}/standard -in ${fmri}_res -out ${fmri}_res2standard -applyxfm -init ${func_dir}/example_func2standard.mat -interp trilinear
+flirt -ref ${func_dir}/standard -in ${fmri}_res -out ${fmri}_res2standard -applyxfm -init ${func_dir}/${example}_func2standard.mat -interp trilinear
 

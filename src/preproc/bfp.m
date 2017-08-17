@@ -112,7 +112,6 @@ func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
 fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
-CONTINUE_RUNS=config.CONTINUE_RUNS;
 fprintf(" done\n");
 %% Create Directory Structure
 % This directory structure is in BIDS format

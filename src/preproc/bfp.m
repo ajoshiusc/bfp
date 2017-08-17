@@ -113,13 +113,13 @@ func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
 fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
-continueRun=str2double(config.CONTINUERUN)
+continueRun=str2double(config.CONTINUERUN);
 fprintf(" done\n");
 %% Create Directory Structure
 % This directory structure is in BIDS format
 %%
 fprintf('## Creating Directory Structure\n');
-if exist(subdir,'dir')&& continueRun==0
+if exist(subdir,'dir') && continueRun==0
     error('The subject directory (%s) exists!\n Please check that directory for previous runs and delete it if necessary\n',subdir);
 end
 

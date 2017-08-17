@@ -1,6 +1,6 @@
 %% BFP: BrainSuite fMRI Pipeline
-% This pipeline takes fMRI and anatomical data and processes them using a series 
-% of scripts from BrainSuite, FSL and AFNI. The functional processing script is 
+% This pipeline takes fMRI and anatomical data and processes them using a series
+% of scripts from BrainSuite, FSL and AFNI. The functional processing script is
 % based on batch_process. sh script from fcon1000.
 %% Inputs/Outputs
 % * Inputs: Unprocessed T1/fMRI images in NIFTI format
@@ -26,13 +26,13 @@
 function bfp(configfile,t1,fmri,studydir,subid,sessionid,TR)
 
 if nargin ~=7
-   disp('Incorrect number of input arguments (7 required)');
-   disp('Usage:');
-   disp('bfp configfile t1 fmri studydir subid sessionid TR');
-   disp('t1: ' )
-   
-   
-   error('exiting');
+    disp('Incorrect number of input arguments (7 required)');
+    disp('Usage:');
+    disp('bfp configfile t1 fmri studydir subid sessionid TR');
+    disp('t1: ' )
+    
+    
+    error('exiting');
 end
 disp('hi');
 p=inputParser;
@@ -44,6 +44,8 @@ addRequired(p,'studydir',@ischar);
 addRequired(p,'subid',@ischar);
 addRequired(p,'sessionid',@(x) ischar(x)||iscellstr(x));
 addRequired(p,'TR',@(x) isnumeric(x)||ischar(x));
+%addOptional(p,'contprevrun',@(x) isnumeric(x)||ischar(x));
+
 parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 %%
 subdir=fullfile(studydir,subid);
@@ -106,35 +108,48 @@ BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain
 ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.nii.gz');
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 GOrdVolIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_vol_ind.mat');
-RMFLAG='0';%depricated
 nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
 func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
 fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
+continueRun=str2double(config.CONTINUERUN)
 fprintf(" done\n");
 %% Create Directory Structure
 % This directory structure is in BIDS format
 %%
 fprintf('## Creating Directory Structure\n');
-if str2double(RMFLAG) && exist(subdir,'dir')
-    %rmdir(subdir,'s');
-    fprintf('RMFLAG is a depricated and is a placeholder.\nDeletion of subject directory by this flag is disabled for now.\n')
-end
-if exist(subdir,'dir')
+if exist(subdir,'dir')&& continueRun==0
     error('The subject directory (%s) exists!\n Please check that directory for previous runs and delete it if necessary\n',subdir);
 end
-    
-mkdir(subdir)
+
+if ~exist(subdir,'dir')
+    mkdir(subdir)
+end
 fprintf('Creating Dir:%s\n',anatDir);
-mkdir(anatDir);
+
+if ~exist(anatDir,'dir')
+    mkdir(anatDir);
+end
+
 t1hires=fullfile(anatDir,sprintf('%s.orig.hires.nii.gz',subid));
-t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid)); 
-copyfile(t1,t1hires);
+t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid));
+
+if ~exist(t1hires,'file')
+    copyfile(t1,t1hires);
+end
+
 fprintf('Creating Dir:%s\n',funcDir);
-mkdir(funcDir);    
+if ~exist(funcDir,'dir')
+    mkdir(funcDir);
+end
+
 for ind = 1:length(fmri)
-    copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
+    if ~exist(fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
+        copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
+    else
+        fprintf('Already done\n');
+    end
 end
 fprintf('done\n');
 %% Generate 3mm BCI-DNI_brain brain as a standard template
@@ -142,14 +157,22 @@ fprintf('done\n');
 %%
 cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(funcDir,'standard.nii.gz'));
 fprintf('Creating 3mm isotropic standard brain\n');
-unix(cmd);
+if ~exist(fullfile(funcDir,'standard.nii.gz'),'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
 fprintf('done\n');
 %% Resample T1w image to 1mm cubic resolution
 % BrainSuite works best at this resolution
 %%
 fprintf('## Resample T1w image to 1mm cubic resolution \n')
 cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
-unix(cmd);
+if ~exist(t1ds,'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
 fprintf('done\n');
 %% Skull Strip MRI
 %%
@@ -157,67 +180,120 @@ fprintf('## Performing Skull Extraction\n');
 bse=fullfile(BrainSuitePath,'bin','bse');
 bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
 cmd=sprintf('%s --auto -i %s -o %s',bse,t1ds,bseout);
-unix(cmd);
+if ~exist(bseout,'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
 fprintf('done\n');
 %% Coregister t1 to BCI-DNI Space
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
 cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS,bseout,bsenew);
-unix(cmd);
+if ~exist(bsenew,'file')
+    unix(cmd);
+end
 bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
 cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
-unix(cmd);
+if ~exist(bsemask,'file')
+    unix(cmd);
+end
 bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
-copyfile(bsenew,bsenew2);
+if ~exist(bsenew2,'file')
+    copyfile(bsenew,bsenew2);
+else
+    fprintf('Already ');
+end
 fprintf('done\n');
 %% Run BrainSuite and SVReg
 %%
 fprintf('## Running BrainSuite CSE\n');
 cmd=sprintf('%s %s',bst_exe,subbasename);
-unix(cmd);
+if ~exist(fullfile(subbasename,'.right.pial.cortex.dfs'),'file')
+    unix(cmd);
+end
 fprintf('Running SVReg');
 cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
-unix(cmd);
+if ~exist(fullfile(subbasename,'.svreg.label.nii.gz'),'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
 fprintf('done\n');
 %% Run Batch_Process Pipeline for fMRI
 %%
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
-    unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
+    if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
+        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
+    else
+        fprintf('Already done\n');
+    end
 end
 fprintf('done\n');
 %% Grayordinate representation
-% Transfer data to surface and then to USCBrain atlas surface and produce surface 
+% Transfer data to surface and then to USCBrain atlas surface and produce surface
 % grayordinates and then Transfer data to volumetric grayordinates.
-% 
-% The Grayordinate data is in the same format as HCP data on 32k surfaces. 
+%
+% The Grayordinate data is in the same format as HCP data on 32k surfaces.
 % The filename of grayordinate data is fmri_bold.32k.GOrd.nii.gz
 %%
 fprintf('## Transferring data from subject to atlas...\n');
 for ind = 1:length(fmri)
-    fmri2surfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf.mat',subid,sessionid{ind}));    
+    fmri2surfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf.mat',subid,sessionid{ind}));
     GOrdSurfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf_GOrd.mat',subid,sessionid{ind}));
-    fmri2standard=fullfile(funcDir,sprintf('%s_%s_bold_res2standard.nii.gz',subid,sessionid{ind})); 
+    fmri2standard=fullfile(funcDir,sprintf('%s_%s_bold_res2standard.nii.gz',subid,sessionid{ind}));
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol_GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
-    resample2surf(subbasename,fmri2standard,fmri2surfFile);
-    generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
-    generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
-    combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);      
+    fprintf('Resampling fMRI to surface\n')
+    if ~exist(fmri2surfFile,'file')
+        resample2surf(subbasename,fmri2standard,fmri2surfFile);
+    else
+        fprintf('Already ');
+    end
+    
+    fprintf('done\n');
+    fprintf('Generating Surface Grayordinates\n');
+    if ~exist(fmri2surfFile,'file')
+        generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+    else
+        fprintf('Already ');
+    end
+    fprintf('done\n');
+    fprintf('Generating Volume Grayordinates\n');
+    if ~exist(GOrdVolFile,'file')
+        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+    else
+        fprintf('Already ');
+    end
+    fprintf('done\n');
+    fprintf('Combining Surface and Volume Grayordinates\n');
+    if ~exist(GOrdFile,'file')
+        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+    else
+        fprintf('Already ');
+    end
+    fprintf('done\n');
 end
 fprintf('The grayordinates file is: %s\n',GOrdFile);
 %% tNLMPDF
-% This part of the code takes grayordinate data generated by the previous pipeline 
-% and performs tNLMPdf filtering. 
-% 
+% This part of the code takes grayordinate data generated by the previous pipeline
+% and performs tNLMPdf filtering.
+%
 % The output is stored in <fmri fmri>.32k.GOrd.filt.nii.gz
 %%
 fprintf('## tNLMPDF Filtering...\n');
 for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
-    tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile);
+    fprintf('tNLMPdf filtering...\n');
+    if ~exist(GOrdFiltFile,'file')
+        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile);
+    else
+        fprintf('Already ');
+    end
+    fprintf('done\n');
 end
 fprintf('The output filtered grayordinates file is: %s\n All done\n!! Good Night!\n',GOrdFiltFile);

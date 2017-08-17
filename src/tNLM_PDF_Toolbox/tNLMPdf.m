@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.3.3
+%     9.3.4
 % Date:
-%     2017/08/16
+%     2017/08/17
 %
 
 function [dataSm, output] = tNLMPdf(data, option)
@@ -32,7 +32,6 @@ function [dataSm, output] = tNLMPdf(data, option)
         option.memoryLimit = 'auto';
         option.isPlot = false;
         option.isVerbose = true;
-%        option.SCBFile = '/home/andrew/Developer/Matlab/icMatBox/signal_processing/SCB.mat';
         option.SCBFile = fullfile(pwd, 'SCB.mat');
         dataSm = option;
         return;

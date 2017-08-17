@@ -11,5 +11,7 @@ configfile='/home/ajoshi/coding_ground/bfp/supp_data/config.ini';
  % fMRI files will be saved in BIDS format with sessionid in fmri names
  sessionid{1}='ses-movie_task-movie_run-1';
  TR=2;
+ 
+ 
  bfp(configfile,t1,fmri,studydir,subid,sessionid,TR);
  

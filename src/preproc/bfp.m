@@ -42,7 +42,7 @@ addRequired(p,'t1',@ischar);
 addRequired(p,'fmri',@iscellstr);
 addRequired(p,'studydir',@ischar);
 addRequired(p,'subid',@ischar);
-addRequired(p,'sessionid',@(x) ischar(x)|| iscellstr(x));
+addRequired(p,'sessionid',@(x) ischar(x)||iscellstr(x));
 addRequired(p,'TR',@(x) isnumeric(x)||ischar(x));
 parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 %%
@@ -112,6 +112,7 @@ func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
 fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
+CONTINUE_RUNS=config.CONTINUE_RUNS;
 fprintf(" done\n");
 %% Create Directory Structure
 % This directory structure is in BIDS format

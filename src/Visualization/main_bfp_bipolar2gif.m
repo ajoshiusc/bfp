@@ -1,7 +1,7 @@
 clear all;close all;clc;
 restoredefaultpath;
 bfpdir='/home/ajoshi/coding_ground/bfp';
-fmridatfile='/home/ajoshi/coding_ground/bfp/data/sub-01/func/sub-01_ses-movie_task-movie_run-1_bold.32k.GOrd.mat';
+fmridatfile='/home/ajoshi/coding_ground/bfp/data/sub-01.old/func/sub-01_ses-movie_task-movie_run-1_bold.32k.GOrd.mat';
 outgiffile='fmri_Movie.gif';
 TR=2;
 
@@ -41,11 +41,17 @@ hFig = figure;
 %whitebg(1,'k');
 % your patch command here, p1, p2 are the handlers
 % you only need to plot the surface once
-subaxis(1, 2, 1,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
-p1 = patch('faces',dfs_refL.faces,'vertices',dfs_refL.vertices,'facevertexcdata', dataL(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(-90,0);camlight;material dull;lighting phong;
-subaxis(1, 2, 2,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
-pr1 = patch('faces',dfs_refR.faces,'vertices',dfs_refR.vertices,'facevertexcdata', dataR(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(90,0);camlight;material dull;lighting phong;
-set(gcf,'color','w', 'Units', 'Inches', 'Position', [0, 0, 14, 4], 'PaperUnits', 'Inches', 'PaperSize', [7.25, 9.125])
+subaxis(1, 4, 1,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
+p1 = patch('faces',dfs_refL.faces,'vertices',dfs_refL.vertices,'facevertexcdata', dataL(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(90,0);camlight;material dull;lighting phong;
+subaxis(1, 4, 2,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
+p2 = patch('faces',dfs_refL.faces,'vertices',dfs_refL.vertices,'facevertexcdata', dataL(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(-90,0);camlight;material dull;lighting phong;
+subaxis(1, 4, 3,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
+p3 = patch('faces',dfs_refR.faces,'vertices',dfs_refR.vertices,'facevertexcdata', dataR(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(90,0);camlight;material dull;lighting phong;
+subaxis(1, 4, 4,'Margin',0.01,'Spacing', 0.01, 'Padding', 0);caxis([-1.5,1.5]);colormap(cmap);
+p4 = patch('faces',dfs_refR.faces,'vertices',dfs_refR.vertices,'facevertexcdata', dataR(:,1),'edgecolor','none','facecolor','interp');axis equal;axis tight;axis off;view(-90,0);camlight;material dull;lighting phong;
+
+set(gcf,'color','w', 'Units', 'Inches', 'Position', [0, 0, 14, 2.5], 'PaperUnits', 'Inches', 'PaperSize', [7.25, 10.125])
+
 
 for k = 1:numF
     % make sure plotting in the same figure
@@ -53,7 +59,10 @@ for k = 1:numF
     
     % just replace the vertex data
     p1.FaceVertexCData = dataL(:, k);
-    pr1.FaceVertexCData = dataR(:, k);
+    p2.FaceVertexCData = dataL(:, k);
+    % just replace the vertex data
+    p3.FaceVertexCData = dataR(:, k);
+    p4.FaceVertexCData = dataR(:, k);
 
     % draw the image and take the frame and put into the video object
     drawnow;

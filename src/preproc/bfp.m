@@ -159,9 +159,9 @@ bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
 cmd=sprintf('%s --auto -i %s -o %s',bse,t1ds,bseout);
 unix(cmd);
 fprintf('done\n');
-%% Coregister t1 to MNI Space
+%% Coregister t1 to BCI-DNI Space
 %%
-fprintf('## Coregister t1 to MNI Space\n');
+fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
 cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS,bseout,bsenew);
 unix(cmd);

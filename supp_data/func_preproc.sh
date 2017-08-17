@@ -50,7 +50,8 @@ lp=$11
 #0.1
 
 ## Example func image
-example=${fmri}_example
+
+example=$(basename "$fmri")_example
 
 ## directory setup
 
@@ -119,6 +120,8 @@ fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
 flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
 # Create mat file for conversion from subject's anatomical to functional
 convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
+echo t12${example}_func.mat 
+
 ## TBD
 
 ## 12.FUNC->standard (3mm)
@@ -134,7 +137,7 @@ convert_xfm -inverse -omat standard2${example}_func.mat ${example}_func2standard
 
 
 ## 13. 
-nuisance_dir=${func_dir}/nuisance_${fmri}
+nuisance_dir=${func_dir}/nuisance_$(basename "$fmri")
 
 echo --------------------------------------------
 echo !!!! RUNNING NUISANCE SIGNAL REGRESSION !!!!

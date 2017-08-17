@@ -68,11 +68,11 @@ else
 end
 
 for i = 1:size(fmri,2)
-    fprintf('fmri %d:%s\n',fmri{i});
+    fprintf('fmri %d:%s\n',i,fmri{i});
 end
 
 for i = 1:size(sessionid,2)
-    fprintf('sessionid %d:%s\n',sessionid{i});
+    fprintf('sessionid %d:%s\n',i,sessionid{i});
 end
 %% Check if OS is supported
 %%

@@ -32,8 +32,8 @@ function [dataSm, output] = tNLMPdf(data, option)
         option.memoryLimit = 'auto';
         option.isPlot = false;
         option.isVerbose = true;
-        option.SCBFile = '/home/andrew/Developer/Matlab/icMatBox/signal_processing/SCB.mat';
-%         option.SCBFile = fullfile(pwd, 'SCB.mat');
+%        option.SCBFile = '/home/andrew/Developer/Matlab/icMatBox/signal_processing/SCB.mat';
+        option.SCBFile = fullfile(pwd, 'SCB.mat');
         dataSm = option;
         return;
     end

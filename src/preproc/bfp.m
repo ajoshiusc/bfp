@@ -42,7 +42,7 @@ addRequired(p,'t1',@ischar);
 addRequired(p,'fmri',@iscellstr);
 addRequired(p,'studydir',@ischar);
 addRequired(p,'subid',@ischar);
-addRequired(p,'sessionid',@ischar);
+addRequired(p,'sessionid',@(x) ischar(x)|| iscellstr(x));
 addRequired(p,'TR',@(x) isnumeric(x)||ischar(x));
 parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 %%
@@ -103,13 +103,15 @@ BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain');
-BSA=fullfile(BrainSuitePath,'svreg','BrainSuiteAtlas1','mri.bfc.nii.gz');
+ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.nii.gz');
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 GOrdVolIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_vol_ind.mat');
 RMFLAG='0';%depricated
 nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
 func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
-
+fwhm=config.FWHM;
+hp=config.HIGHPASS;
+lp=config.LOWPASS;
 fprintf(" done\n");
 %% Create Directory Structure
 % This directory structure is in BIDS format
@@ -135,10 +137,10 @@ for ind = 1:length(fmri)
     copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
 end
 fprintf('done');
-%% Generate 3mm BrainSuiteAtlas1 brain as a standard template
+%% Generate 3mm BCI-DNI_brain brain as a standard template
 % This is used a template for fMRI data
 %%
-cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',BSA,BSA,fullfile(funcDir,'standard.nii.gz'));
+cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(funcDir,'standard.nii.gz'));
 fprintf('Creating 3mm isotropic standard brain\n');
 unix(cmd);
 fprintf('done\n');
@@ -161,7 +163,7 @@ fprintf('done');
 %%
 fprintf('## Coregister t1 to MNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -ref %s -in %s -out %s',BSA,bseout,bsenew);
+cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS,bseout,bsenew);
 unix(cmd);
 bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
 cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
@@ -183,7 +185,7 @@ fprintf('done');
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
-    unix(sprintf('%s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template));
+    unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
 end
 fprintf('done\n');
 %% Grayordinate representation

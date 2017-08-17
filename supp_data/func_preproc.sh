@@ -39,12 +39,15 @@ TRstart=0
 TRend=$((n_vols-1))
 echo $TR 
 ## set your desired spatial smoothing FWHM - we use 6 (acquisition voxel size is 3x3x4mm)
-FWHM=6
+FWHM=$9
+#6
 sigma=`echo "scale=10 ; ${FWHM}/2.3548" | bc`
 
 ## Set high pass and low pass cutoffs for temporal filtering
-hp=0.005
-lp=0.1
+hp=$10
+#0.005
+lp=$11
+#0.1
 
 ## Example func image
 example=${fmri}_example

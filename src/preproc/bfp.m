@@ -137,7 +137,7 @@ mkdir(funcDir);
 for ind = 1:length(fmri)
     copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
 end
-fprintf('done');
+fprintf('done\n');
 %% Generate 3mm BCI-DNI_brain brain as a standard template
 % This is used a template for fMRI data
 %%
@@ -159,7 +159,7 @@ bse=fullfile(BrainSuitePath,'bin','bse');
 bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
 cmd=sprintf('%s --auto -i %s -o %s',bse,t1ds,bseout);
 unix(cmd);
-fprintf('done');
+fprintf('done\n');
 %% Coregister t1 to MNI Space
 %%
 fprintf('## Coregister t1 to MNI Space\n');
@@ -180,7 +180,7 @@ unix(cmd);
 fprintf('Running SVReg');
 cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
 unix(cmd);
-fprintf('done');
+fprintf('done\n');
 %% Run Batch_Process Pipeline for fMRI
 %%
 fprintf('## Run fmri preprocessing script\n');
@@ -221,4 +221,4 @@ for ind = 1:length(fmri)
     GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
     tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile);
 end
-fprintf('The output filtered grayordinates file is: %s\n All done!! Good Night!\n',GOrdFiltFile);
+fprintf('The output filtered grayordinates file is: %s\n All done\n!! Good Night!\n',GOrdFiltFile);

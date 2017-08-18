@@ -10,12 +10,15 @@ dfs_refL = readdfs(fullfile(bfpdir,'supp_data/bci32kleft.dfs'));
 nV=length(dfs_refL.vertices);
 
 dfs_refR = readdfs(fullfile(bfpdir,'supp_data/bci32kright.dfs'));
+lab=load(fullfile(bfpdir,'supp_data','HCP_32k_Label.mat'));
+llab=lab.brainstructure(1:nV);
+rlab=lab.brainstructure((1+nV):2*nV);
 
 %load('/deneb_disk/studyforrest/sub-01-run2/fmrit_reduce3_v2.mat');
 load(fmridatfile)
 % dataL and dataR are fMRI data on two hemispheres, N x T
 dataL=dtseries(1:nV,:);dataR=dtseries((1+nV):(2*nV),:);
-
+dataL(isnan(llab),:)=0;dataR(isnan(rlab),:)=0;
 dataL=normalizeData(dataL')';dataL=dataL*sqrt(size(dataL,2));
 dataR=normalizeData(dataR')';dataR=dataR*sqrt(size(dataR,2));
 % interpolate data to 10 fps 

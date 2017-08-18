@@ -256,7 +256,7 @@ for ind = 1:length(fmri)
     
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
-    if ~exist(fmri2surfFile,'file')
+    if ~exist(GOrdSurfFile,'file')
         generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
     else
         fprintf('Already ');

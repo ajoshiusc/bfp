@@ -1,5 +1,5 @@
 clc;clear all;close all;restoredefaultpath;
-addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
+addpath(genpath('/home/dakarai/bfp/src'));
 % Configuration file
 configfile='/home/ajoshi/coding_ground/bfp/supp_data/config.ini';
 %T1 and fMRI images in NIFTI-1 format (nii.gz)

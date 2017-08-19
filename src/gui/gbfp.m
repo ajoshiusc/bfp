@@ -22,7 +22,7 @@ function varargout = gbfp(varargin)
 
 % Edit the above text to modify the response to help gbfp
 
-% Last Modified by GUIDE v2.5 16-Aug-2017 10:46:15
+% Last Modified by GUIDE v2.5 18-Aug-2017 16:46:37
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -172,85 +172,58 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in pushbutton2.
-function pushbutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton2 (see GCBO)
+% --- Executes on button press in fslBrowse.
+function fslBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to fslBrowse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 folder = uigetdir(get(handles.fslDir,'String'));
 textLabel = sprintf('%s', folder);
 set(handles.fslDir, 'string', textLabel);
-% create string to append to config.ini
-fslpath = sprintf('fslpath=%s',textLabel);
-% write to config.ini
-fileID = fopen('supp_data/config.ini','a');
-fprintf(fileID,'%s\n',fslpath);
-fclose(fileID);
 
 
-% --- Executes on button press in pushbutton3.
-function pushbutton3_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton3 (see GCBO)
+
+
+% --- Executes on button press in afniBrowse.
+function afniBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to afniBrowse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % User to select afni directory
 folder = uigetdir(get(handles.afniDir,'String'));
-% save folder directory in a string
+% load folder directory in a string
 textLabel = sprintf('%s', folder);
 % display user selected directory in GUI
 set(handles.afniDir, 'string', textLabel);
-% create string to append to config.ini
-afnipath = sprintf('afnipath=%s',textLabel);
-% write to config.ini
-fileID = fopen('supp_data/config.ini','a');
-fprintf(fileID,'%s\n',afnipath);
-fclose(fileID);
 
 
-% --- Executes on button press in pushbutton4.
-function pushbutton4_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton4 (see GCBO)
+
+
+% --- Executes on button press in BrainSuiteBrowse.
+function BrainSuiteBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to BrainSuiteBrowse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 folder = uigetdir(get(handles.BrainSuiteDir,'String'));
 textLabel = sprintf('%s', folder);
 set(handles.BrainSuiteDir, 'string', textLabel); 
-% create string to append to config.ini
-brainsuitepath = sprintf('brainsuitepath=%s',textLabel);
-% write to config.ini
-fileID = fopen('supp_data/config.ini','a');
-fprintf(fileID,'%s\n',brainsuitepath);
-fclose(fileID);
 
 
-% --- Executes on button press in pushbutton5.
-function pushbutton5_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton5 (see GCBO)
+% --- Executes on button press in T1Browse.
+function T1Browse_Callback(hObject, eventdata, handles)
+% hObject    handle to T1Browse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [file,path,~] = uigetfile({'*.nii.gz','Compressed NIFTI files (*.nii.gz)'}, ...
     'Choose Structural Image(s)','MultiSelect','on');
 textLabel = sprintf('%s%s', path ,file);
 set(handles.structural, 'string', textLabel);  
-% T1 = sprintf('t1=%s',textLabel);
-% % write to config.ini
-% fileID = fopen('src/preproc/bfp.mlx','a');
-% fprintf(fileID,'%s\n',T1);
-% fclose(fileID);
-%% This section is supposed to save the T1 and fmri files to the bfp.mlx file.. need to discuss with Anand.
-
-% FileName = 'src/preproc/bfp.mlx';
-% S = fileread(FileName);
-% S = [textLabel, '\n', S];
-% FID = fopen(FileName, 'w');
-% if FID == -1, error('Cannot open file %s', FileName); end
-% fwrite(FID, S, 'char');
-% fclose(FID);
 
 
-% --- Executes on button press in pushbutton6.
-function pushbutton6_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton6 (see GCBO)
+
+% --- Executes on button press in fmriBrowse.
+function fmriBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to fmriBrowse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [file,path,~] = uigetfile({'*.nii.gz','Compressed NIFTI files (*.nii.gz)'}, ...
@@ -258,9 +231,9 @@ function pushbutton6_Callback(hObject, eventdata, handles)
 textLabel = sprintf('%s%s', path, file);
 set(handles.functional, 'string', textLabel); 
 
-% --- Executes on button press in pushbutton7.
-function pushbutton7_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton7 (see GCBO)
+% --- Executes on button press in subjectBrowse.
+function subjectBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to subjectBrowse (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
@@ -291,7 +264,7 @@ end
 
 function functional_Callback(hObject, eventdata, handles)
 % hObject    handle to functional (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
+% eventdata  reserved - to btextLabele defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'String') returns contents of functional as text
@@ -312,18 +285,18 @@ end
 
 
 
-function ID_Callback(hObject, eventdata, handles)
-% hObject    handle to ID (see GCBO)
+function SubjectID_Callback(hObject, eventdata, handles)
+% hObject    handle to SubjectID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of ID as text
-%        str2double(get(hObject,'String')) returns contents of ID as a double
+% Hints: get(hObject,'String') returns contents of SubjectID as text
+%        str2double(get(hObject,'String')) returns contents of SubjectID as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function ID_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to ID (see GCBO)
+function SubjectID_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SubjectID (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -334,13 +307,13 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on button press in Save.
-function Save_Callback(hObject, eventdata, handles)
-% hObject    handle to Save (see GCBO)
+% --- Executes on button press in Load.
+function Load_Callback(hObject, eventdata, handles)
+% hObject    handle to Load (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Needs to get data from updated fields. 6 total. 
+
 
 
 % --- Executes on button press in Run.
@@ -349,7 +322,8 @@ function Run_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % Needs to execute the entie program. Include path to bfp suite
-run('src/preproc/bfp.mlx')
+MyConfig(hObject,handles);
+
 
 
 
@@ -359,3 +333,154 @@ function stage_Callback(hObject, eventdata, handles)
 % hObject    handle to stage (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in Continue.
+function Continue_Callback(hObject, eventdata, handles)
+% hObject    handle to Continue (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of Continue
+
+
+% --- Executes on button press in FSLoutput.
+function FSLoutput_Callback(hObject, eventdata, handles)
+% hObject    handle to FSLoutput (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of FSLoutput
+
+
+% --- Executes on button press in LowPass.
+function LowPass_Callback(hObject, eventdata, handles)
+% hObject    handle to LowPass (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of LowPass
+
+
+% --- Executes on button press in HighPass.
+function HighPass_Callback(hObject, eventdata, handles)
+% hObject    handle to HighPass (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of HighPass
+
+
+
+function fwhm_Callback(hObject, eventdata, handles)
+% hObject    handle to fwhm (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fwhm as text
+%        str2double(get(hObject,'String')) returns contents of fwhm as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function fwhm_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fwhm (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function SessionID_Callback(hObject, eventdata, handles)
+% hObject    handle to SessionID (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of SessionID as text
+%        str2double(get(hObject,'String')) returns contents of SessionID as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function SessionID_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to SessionID (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function TR_Callback(hObject, eventdata, handles)
+% hObject    handle to TR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of TR as text
+%        str2double(get(hObject,'String')) returns contents of TR as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function TR_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+function MyConfig(hObject, handles)
+if handles.HighPass.Value == 1
+    fsloutput = 'FSLOUTPUTTYPE=NIFTI_GZ';
+else
+    disp('Make sure to check NIFTI.GZ')
+    disp('Current version only supports nifti.gz fsl output types')
+    error('Make sure to check nifti.gz checkbox')
+end
+
+% If your LD library path is in another directory change it here.
+lib = 'LD_LIBRARY_PATH=/usr/lib/fsl/5.0';
+
+fslPath = sprintf('FSLPATH=%s', get(handles.fslDir,'string'));
+afniPath = sprintf('AFNIPATH=%s', get(handles.afniDir,'string'));
+brainSuitePath = sprintf('BrainSuitePath=%s', get(handles.BrainSuiteDir,'string'));
+fwhm = sprintf('FWHM=%s', get(handles.fwhm,'string'));
+high = sprintf('HIGHPASS=%s', get(handles.HighPass,'string'));
+low  = sprintf('LOWPASS=%s', get(handles.LowPass,'string'));
+proceed = sprintf('CONTINUERUN=%s', get(handles.Continue,'string'));
+bfppath = uigetdir('../../','Choose bfp Root Directory');
+addpath(genpath(bfppath));
+bfpPath = sprintf('BFPPATH=%s', bfppath);
+
+t1 = sprintf('T1=%s', get(handles.structural,'string'));
+fmri = sprintf('fmri=%s', get(handles.functional,'string'));
+subid = sprintf('subid=%s', char(get(handles.SubjectID, 'string')));
+TR = sprintf('TR=%s', char(get(handles.TR, 'string')));
+sessionid = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
+
+% write to config.ini
+str = input('Enter name of configuration file:\n','s');
+configName = sprintf('%s.ini',str);
+studydir = uigetdir('.','Choose Output Directory');
+studyDir = sprintf('studydir=%s', studydir);
+keys = {'','','',char(bfpPath);'','','',char(afniPath);'','','',char(fslPath); ...
+        '','','',char(brainSuitePath);'','','',char(studyDir);'','','',char(lib); ...
+        '','','',char(fsloutput);'','','',char(fwhm);'','','',char(high);'','', '',char(low);...
+        '','','',char(proceed);'','','',char(t1);'','','',char(fmri);'','','',char(subid); ...
+        '','','',char(TR); '','','',char(sessionid)};
+PWD = pwd;
+cd(studydir);
+inifile(configName,'write',keys,'plain');
+configfile = fullfile(studydir,configName);
+cd(PWD);

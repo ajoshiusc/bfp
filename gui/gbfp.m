@@ -464,10 +464,10 @@ addpath(genpath(bfppath));
 bfpPath = sprintf('BFPPATH=%s', bfppath);
 
 t1 = sprintf('T1=%s', get(handles.structural,'string'));
-fmri = sprintf('fmri=%s', get(handles.functional,'string'));
+fmri{1} = sprintf('fmri=%s', get(handles.functional,'string'));
 subid = sprintf('subid=%s', char(get(handles.SubjectID, 'string')));
 TR = sprintf('TR=%s', char(get(handles.TR, 'string')));
-sessionid = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
+sessionid{1} = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
 
 % write to config.ini
 str = input('Enter name of configuration file:\n','s');
@@ -484,3 +484,7 @@ cd(studydir);
 inifile(configName,'write',keys,'plain');
 configfile = fullfile(studydir,configName);
 cd(PWD);
+bfp(configfile,char(get(handles.structural,'string')),cellstr(get(handles.functional,'string'))...
+    ,studydir,char(get(handles.SubjectID, 'string')),cellstr(get(handles.SessionID,'string'))...
+    ,char(get(handles.TR, 'string')))
+

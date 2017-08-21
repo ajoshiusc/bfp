@@ -22,7 +22,7 @@ function varargout = gbfp(varargin)
 
 % Edit the above text to modify the response to help gbfp
 
-% Last Modified by GUIDE v2.5 18-Aug-2017 16:46:37
+% Last Modified by GUIDE v2.5 21-Aug-2017 15:19:05
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -312,6 +312,39 @@ function Load_Callback(hObject, eventdata, handles)
 % hObject    handle to Load (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+loadData(handles)
+
+
+function loadData(handles) 
+% Choose directory for configuration file
+[config,configPath,~] = uigetfile('*.ini','Choose Configuration file');
+
+% List all params and input them to the GUI
+params = ini2struct([configPath config]);
+
+
+set(handles.fslDir, 'string', params.FSLPATH)
+set(handles.afniDir, 'string', params.AFNIPATH)
+set(handles.BrainSuiteDir, 'string', params.BrainSuitePath)
+set(handles.structural, 'string', params.T1)
+set(handles.functional, 'string', params.fmri)
+set(handles.SubjectID, 'string', params.subid)
+set(handles.SessionID, 'string', params.sessionid)
+set(handles.HighPass, 'string', params.HIGHPASS)
+set(handles.LowPass, 'string', params.LOWPASS)
+set(handles.fwhm, 'string', params.FWHM)
+set(handles.TR, 'string', params.TR)
+set(handles.FSLoutput, 'string', params.FSLOUTPUTTYPE)
+set(handles.Continue, 'value', params.CONTINUERUN)
+params.studydir = uigetdir(params.studydir,'Verify Study Directory');
+addpath(genpath(params.BFPPATH));
+
+% fmri and sessionid needs to be in a cellstr format.  Why not T1 in the
+% same format as well? 
+
+addpath(genpath(uigetdir('~','Choose bfp Root Directory')))
+
+
 
 
 
@@ -342,6 +375,12 @@ function Continue_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of Continue
+status = get(hObject,'Value');
+if status == 1 
+    set(hObject,'Value',1)
+else
+    set(hObject,'Value',0)
+end
 
 
 % --- Executes on button press in FSLoutput.
@@ -392,7 +431,7 @@ function fwhm_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-
+string
 
 
 function SessionID_Callback(hObject, eventdata, handles)
@@ -441,7 +480,7 @@ end
 
 
 function MyConfig(hObject, handles)
-if handles.HighPass.Value == 1
+if handles.FSLoutput.Value == 1
     fsloutput = 'FSLOUTPUTTYPE=NIFTI_GZ';
 else
     disp('Make sure to check NIFTI.GZ')
@@ -458,16 +497,16 @@ brainSuitePath = sprintf('BrainSuitePath=%s', get(handles.BrainSuiteDir,'string'
 fwhm = sprintf('FWHM=%s', get(handles.fwhm,'string'));
 high = sprintf('HIGHPASS=%s', get(handles.HighPass,'string'));
 low  = sprintf('LOWPASS=%s', get(handles.LowPass,'string'));
-proceed = sprintf('CONTINUERUN=%s', get(handles.Continue,'string'));
+proceed = sprintf('CONTINUERUN=%s', get(handles.Continue,'Value'));
 bfppath = uigetdir('../../','Choose bfp Root Directory');
 addpath(genpath(bfppath));
 bfpPath = sprintf('BFPPATH=%s', bfppath);
-
 t1 = sprintf('T1=%s', get(handles.structural,'string'));
-fmri = sprintf('fmri=%s', get(handles.functional,'string'));
+fmri{1} = sprintf('fmri=%s', get(handles.functional,'string'));
 subid = sprintf('subid=%s', char(get(handles.SubjectID, 'string')));
 TR = sprintf('TR=%s', char(get(handles.TR, 'string')));
-sessionid = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
+sessionid{1} = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
+
 
 % write to config.ini
 str = input('Enter name of configuration file:\n','s');
@@ -484,3 +523,6 @@ cd(studydir);
 inifile(configName,'write',keys,'plain');
 configfile = fullfile(studydir,configName);
 cd(PWD);
+bfp(configfile,char(get(handles.structural,'string')),cellstr(get(handles.functional,'string'))...
+    ,studydir,char(get(handles.SubjectID, 'string')),cellstr(get(handles.SessionID,'string'))...
+    ,char(get(handles.TR, 'string')))

@@ -13,6 +13,9 @@ function varargout = gbfp(varargin)
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before gbfp_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
+% 
+% <<FILENAME.PNG>>
+% 
 %      stop.  All inputs are passed to gbfp_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
@@ -22,7 +25,7 @@ function varargout = gbfp(varargin)
 
 % Edit the above text to modify the response to help gbfp
 
-% Last Modified by GUIDE v2.5 21-Aug-2017 15:19:05
+% Last Modified by GUIDE v2.5 21-Aug-2017 17:25:46
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -318,7 +321,7 @@ loadData(handles)
 function loadData(handles) 
 % Choose directory for configuration file
 [config,configPath,~] = uigetfile('*.ini','Choose Configuration file');
-
+addpath(genpath(uigetdir('~','Choose BFP Root Directory')));
 % List all params and input them to the GUI
 params = ini2struct([configPath config]);
 
@@ -334,19 +337,12 @@ set(handles.HighPass, 'string', params.HIGHPASS)
 set(handles.LowPass, 'string', params.LOWPASS)
 set(handles.fwhm, 'string', params.FWHM)
 set(handles.TR, 'string', params.TR)
-set(handles.FSLoutput, 'string', params.FSLOUTPUTTYPE)
-set(handles.Continue, 'value', params.CONTINUERUN)
-params.studydir = uigetdir(params.studydir,'Verify Study Directory');
-addpath(genpath(params.BFPPATH));
-
-% fmri and sessionid needs to be in a cellstr format.  Why not T1 in the
-% same format as well? 
-
-addpath(genpath(uigetdir('~','Choose bfp Root Directory')))
-
-
-
-
+set(handles.Continue, 'value', str2double(params.CONTINUERUN))
+set(handles.bfpDir, 'string',params.BFPPATH)
+set(handles.studyDir,'string',params.studydir)
+set(handles.config,'string',params.configName)
+set(handles.fpr,'string',params.fpr)
+set(handles.memory,'string',params.memory)
 
 
 % --- Executes on button press in Run.
@@ -356,9 +352,6 @@ function Run_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % Needs to execute the entie program. Include path to bfp suite
 MyConfig(hObject,handles);
-
-
-
 
 
 % --- Executes on button press in stage.
@@ -377,9 +370,9 @@ function Continue_Callback(hObject, eventdata, handles)
 % Hint: get(hObject,'Value') returns toggle state of Continue
 status = get(hObject,'Value');
 if status == 1 
-    set(hObject,'Value',1)
+    set(hObject,'Value',str2num('1'))
 else
-    set(hObject,'Value',0)
+    set(hObject,'Value',str2num('0'))
 end
 
 
@@ -480,49 +473,180 @@ end
 
 
 function MyConfig(hObject, handles)
-if handles.FSLoutput.Value == 1
-    fsloutput = 'FSLOUTPUTTYPE=NIFTI_GZ';
-else
-    disp('Make sure to check NIFTI.GZ')
-    disp('Current version only supports nifti.gz fsl output types')
-    error('Make sure to check nifti.gz checkbox')
-end
 
 % If your LD library path is in another directory change it here.
 lib = 'LD_LIBRARY_PATH=/usr/lib/fsl/5.0';
-
+fsloutput = 'FSLOUTPUTTYPE=NIFTI_GZ';
 fslPath = sprintf('FSLPATH=%s', get(handles.fslDir,'string'));
 afniPath = sprintf('AFNIPATH=%s', get(handles.afniDir,'string'));
 brainSuitePath = sprintf('BrainSuitePath=%s', get(handles.BrainSuiteDir,'string'));
 fwhm = sprintf('FWHM=%s', get(handles.fwhm,'string'));
 high = sprintf('HIGHPASS=%s', get(handles.HighPass,'string'));
 low  = sprintf('LOWPASS=%s', get(handles.LowPass,'string'));
-proceed = sprintf('CONTINUERUN=%s', get(handles.Continue,'Value'));
-bfppath = uigetdir('../../','Choose bfp Root Directory');
-addpath(genpath(bfppath));
-bfpPath = sprintf('BFPPATH=%s', bfppath);
+proceed = sprintf('CONTINUERUN=%s', num2str(get(handles.Continue,'Value')));
+bfpPath = sprintf('BFPPATH=%s', get(handles.bfpDir,'string'));
+addpath(genpath(get(handles.bfpDir,'string')))
 t1 = sprintf('T1=%s', get(handles.structural,'string'));
 fmri{1} = sprintf('fmri=%s', get(handles.functional,'string'));
 subid = sprintf('subid=%s', char(get(handles.SubjectID, 'string')));
 TR = sprintf('TR=%s', char(get(handles.TR, 'string')));
 sessionid{1} = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
-
+memory = sprintf('memory=%s',char(get(handles.memory,'string')));
+fpr = sprintf('fpr=%s',get(handles.fpr,'string'));
 
 % write to config.ini
-str = input('Enter name of configuration file:\n','s');
-configName = sprintf('%s.ini',str);
-studydir = uigetdir('.','Choose Output Directory');
+configName = get(handles.config,'string');
+configname = sprintf('configName=%s',configName);
+studydir = get(handles.studyDir,'string');
 studyDir = sprintf('studydir=%s', studydir);
 keys = {'','','',char(bfpPath);'','','',char(afniPath);'','','',char(fslPath); ...
         '','','',char(brainSuitePath);'','','',char(studyDir);'','','',char(lib); ...
         '','','',char(fsloutput);'','','',char(fwhm);'','','',char(high);'','', '',char(low);...
         '','','',char(proceed);'','','',char(t1);'','','',char(fmri);'','','',char(subid); ...
-        '','','',char(TR); '','','',char(sessionid)};
+        '','','',char(TR); '','','',char(sessionid);'','','',char(memory);'','','',char(fpr); ...
+        '','','',char(configname)};
 PWD = pwd;
 cd(studydir);
 inifile(configName,'write',keys,'plain');
 configfile = fullfile(studydir,configName);
 cd(PWD);
+
+% ANAND, you may want to include parameters for memory and fpr ini the bfp
+% function call. It depends on how the program is designed to handle this.
 bfp(configfile,char(get(handles.structural,'string')),cellstr(get(handles.functional,'string'))...
     ,studydir,char(get(handles.SubjectID, 'string')),cellstr(get(handles.SessionID,'string'))...
     ,char(get(handles.TR, 'string')))
+
+
+
+function config_Callback(hObject, eventdata, handles)
+% hObject    handle to config (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of config as text
+%        str2double(get(hObject,'String')) returns contents of config as a double
+
+% --- Executes during object creation, after setting all properties.
+function config_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to config (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function studyDir_Callback(hObject, eventdata, handles)
+% hObject    handle to studyDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of studyDir as text
+%        str2double(get(hObject,'String')) returns contents of studyDir as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function studyDir_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to studyDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in StudyBrowse.
+function StudyBrowse_Callback(hObject, eventdata, handles)
+% hObject    handle to StudyBrowse (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+folder = uigetdir('~','Choose Output Study Directory');
+textLabel = sprintf('%s', folder);
+set(handles.studyDir, 'string', textLabel); 
+
+% --- Executes on selection change in memory.
+function memory_Callback(hObject, eventdata, handles)
+% hObject    handle to memory (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns memory contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from memory
+
+
+% --- Executes during object creation, after setting all properties.
+function memory_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to memory (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function fpr_Callback(hObject, eventdata, handles)
+% hObject    handle to fpr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of fpr as text
+%        str2double(get(hObject,'String')) returns contents of fpr as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function fpr_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to fpr (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function bfpDir_Callback(hObject, eventdata, handles)
+% hObject    handle to bfpDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of bfpDir as text
+%        str2double(get(hObject,'String')) returns contents of bfpDir as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function bfpDir_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to bfpDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in bfp.
+function bfp_Callback(hObject, eventdata, handles)
+% hObject    handle to bfp (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+folder = uigetdir('~','Choose BFP root Directory');
+textLabel = sprintf('%s', folder);
+set(handles.bfpDir, 'string', textLabel); 
+addpath(genpath(textLabel));

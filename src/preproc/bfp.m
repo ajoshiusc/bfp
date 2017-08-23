@@ -84,7 +84,7 @@ if ~strcmp(computer,'GLNXA64')
 end
 %% Read configuration file and set environment variables
 %%
-fprintf("# Starting BFP Run");
+fprintf("# Starting BFP Run\n");
 if ~exist(configfile,'file')
     error('Config file: %s \n: File does not exist\n',configfile);
 end

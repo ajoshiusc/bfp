@@ -25,7 +25,7 @@ function varargout = gbfp(varargin)
 
 % Edit the above text to modify the response to help gbfp
 
-% Last Modified by GUIDE v2.5 21-Aug-2017 17:25:46
+% Last Modified by GUIDE v2.5 23-Aug-2017 17:18:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -66,6 +66,15 @@ set(handles.afniDir, 'string', afniPath);
 BrainSuitePath = "~/BrainSuite/BrainSuite17a"; 
 set(handles.BrainSuiteDir, 'string', BrainSuitePath);
 
+current = pwd;
+cd('../../')
+bfpRoot = sprintf('%s',pwd);
+cd(current);
+
+set(handles.bfpDir,'string',bfpRoot);
+
+scbdir = bfpRoot;
+set(handles.scbDir,'string',scbdir);
 % Update handles structure
 guidata(hObject, handles);
 
@@ -325,7 +334,6 @@ addpath(genpath(uigetdir('~','Choose BFP Root Directory')));
 % List all params and input them to the GUI
 params = ini2struct([configPath config]);
 
-
 set(handles.fslDir, 'string', params.FSLPATH)
 set(handles.afniDir, 'string', params.AFNIPATH)
 set(handles.BrainSuiteDir, 'string', params.BrainSuitePath)
@@ -343,7 +351,7 @@ set(handles.studyDir,'string',params.studydir)
 set(handles.config,'string',params.configName)
 set(handles.fpr,'string',params.fpr)
 set(handles.memory,'string',params.memory)
-
+set(handles.scbDir,'string',params.scbPath)
 
 % --- Executes on button press in Run.
 function Run_Callback(hObject, eventdata, handles)
@@ -493,7 +501,7 @@ TR = sprintf('TR=%s', char(get(handles.TR, 'string')));
 sessionid{1} = sprintf('sessionid=%s',char(get(handles.SessionID,'string')));
 memory = sprintf('memory=%s',char(get(handles.memory,'string')));
 fpr = sprintf('fpr=%s',get(handles.fpr,'string'));
-
+scbPath = sprintf('scbPath=%s',get(handles.scbDir,'string'));
 % write to config.ini
 configName = get(handles.config,'string');
 configname = sprintf('configName=%s',configName);
@@ -504,15 +512,14 @@ keys = {'','','',char(bfpPath);'','','',char(afniPath);'','','',char(fslPath); .
         '','','',char(fsloutput);'','','',char(fwhm);'','','',char(high);'','', '',char(low);...
         '','','',char(proceed);'','','',char(t1);'','','',char(fmri);'','','',char(subid); ...
         '','','',char(TR); '','','',char(sessionid);'','','',char(memory);'','','',char(fpr); ...
-        '','','',char(configname)};
+        '','','',char(configname);'','','',char(scbPath)};
 PWD = pwd;
 cd(studydir);
 inifile(configName,'write',keys,'plain');
 configfile = fullfile(studydir,configName);
 cd(PWD);
 
-% ANAND, you may want to include parameters for memory and fpr ini the bfp
-% function call. It depends on how the program is designed to handle this.
+
 bfp(configfile,char(get(handles.structural,'string')),cellstr(get(handles.functional,'string'))...
     ,studydir,char(get(handles.SubjectID, 'string')),cellstr(get(handles.SessionID,'string'))...
     ,char(get(handles.TR, 'string')))
@@ -650,3 +657,36 @@ folder = uigetdir('~','Choose BFP root Directory');
 textLabel = sprintf('%s', folder);
 set(handles.bfpDir, 'string', textLabel); 
 addpath(genpath(textLabel));
+
+
+
+function scbDir_Callback(hObject, eventdata, handles)
+% hObject    handle to scbDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of scbDir as text
+%        str2double(get(hObject,'String')) returns contents of scbDir as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function scbDir_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to scbDir (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in scb.
+function scb_Callback(hObject, eventdata, handles)
+% hObject    handle to scb (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+folder = uigetdir('~','Choose SCB root Directory');
+textLabel = sprintf('%s', folder);
+set(handles.scbDir, 'string', textLabel); 

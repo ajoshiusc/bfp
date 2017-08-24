@@ -110,6 +110,7 @@ while ~feof(f)                          % and read until it ends
             % No sections found before. Orphan value
             Result.((genvarname(par))) = val;
         end
+       
     end
 end
 fclose(f);

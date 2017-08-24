@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.3.4
+%     9.3.5
 % Date:
-%     2017/08/17
+%     2017/08/24
 %
 
 function [dataSm, output] = tNLMPdf(data, option)
@@ -240,7 +240,9 @@ function [dataSm, output] = tNLMPdf(data, option)
     
     data3 = zeros(size(data2));
     
-    strLen = progressTracker(0, numBlk, 0, 50);
+    if option.isVerbose
+        strLen = progressTracker(0, numBlk, 0, 50);
+    end
     
     for m = 1:numBlk
         idxS = (m-1)*szBlk+1;
@@ -276,7 +278,9 @@ function [dataSm, output] = tNLMPdf(data, option)
         data3(idxS:idxE, :) = B * data2;
         clear B d;
         
-        strLen = progressTracker(m, numBlk, strLen, 50);
+        if option.isVerbose
+            strLen = progressTracker(m, numBlk, strLen, 50);
+        end
     end
     
     if option.isVerbose

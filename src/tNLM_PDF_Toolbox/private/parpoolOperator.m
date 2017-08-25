@@ -15,9 +15,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.2.5
+%     1.3.1
 % Date:
-%     2017/08/16
+%     2017/08/17
 %
 
 function res = parpoolOperator(mode)
@@ -29,10 +29,14 @@ function res = parpoolOperator(mode)
     numCores = findNumberOfCores();
     poolSize = numCores * 2 - 2;
     
+    c = parcluster();
+    c.NumWorkers = numCores * 2;
+    c.NumThreads = 1;
+
     if strcmpi(mode, 'open')
         
         if isempty(poolobj)
-            parpool(poolSize);
+            parpool(c, poolSize);
         else
             warning('a parallel pool exists');
         end
@@ -43,7 +47,7 @@ function res = parpoolOperator(mode)
             delete(poolobj);
         end
         
-        parpool(poolSize);
+        parpool(c, poolSize);
         
     elseif strcmpi(mode, 'close')
         

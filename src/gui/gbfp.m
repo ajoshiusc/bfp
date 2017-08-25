@@ -57,13 +57,13 @@ function gbfp_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for gbfp
 handles.output = hObject;
-fslPath = "/usr/share/fsl/5.0/bin"; 
+fslPath = '/usr/share/fsl/5.0/bin'; 
 set(handles.fslDir, 'string', fslPath);
 
-afniPath = "/usr/lib/afni/bin"; 
+afniPath = '/usr/lib/afni/bin'; 
 set(handles.afniDir, 'string', afniPath);
 
-BrainSuitePath = "~/BrainSuite/BrainSuite17a"; 
+BrainSuitePath = '~/BrainSuite/BrainSuite17a'; 
 set(handles.BrainSuiteDir, 'string', BrainSuitePath);
 
 current = pwd;
@@ -74,7 +74,7 @@ cd(current);
 set(handles.bfpDir,'string',bfpRoot);
 
 scbdir = bfpRoot;
-set(handles.scbDir,'string',scbdir);
+set(handles.scbDir,'string', fullfile(scbdir, 'SCB.mat'));
 % Update handles structure
 guidata(hObject, handles);
 
@@ -432,7 +432,6 @@ function fwhm_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
-string
 
 
 function SessionID_Callback(hObject, eventdata, handles)

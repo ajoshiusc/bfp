@@ -210,12 +210,12 @@ fprintf('done\n');
 %%
 fprintf('## Running BrainSuite CSE\n');
 cmd=sprintf('%s %s',bst_exe,subbasename);
-if ~exist(fullfile(subbasename,'.right.pial.cortex.dfs'),'file')
+if ~exist([subbasename,'.right.pial.cortex.dfs'],'file')
     unix(cmd);
 end
 fprintf('Running SVReg');
 cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
-if ~exist(fullfile(subbasename,'.svreg.label.nii.gz'),'file')
+if ~exist([subbasename,'.svreg.label.nii.gz'],'file')
     unix(cmd);
 else
     fprintf('Already ');
@@ -256,7 +256,7 @@ for ind = 1:length(fmri)
     
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
-    if ~exist(fmri2surfFile,'file')
+    if ~exist(GOrdSurfFile,'file')
         generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
     else
         fprintf('Already ');

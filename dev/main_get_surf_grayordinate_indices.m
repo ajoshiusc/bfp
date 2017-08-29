@@ -28,6 +28,9 @@ bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_br
 
 bci32kright.faces=double(g.faces);
 bci32kright.vertices=bci_BST.vertices(ind_right,:);
+
+writedfs('../supp_data/bci32kright_orig.dfs',bci32kright);
+
 bci32kright=smooth_cortex_fast(bci32kright,.1,75);
 
 view_patch(bci32kright);
@@ -57,6 +60,8 @@ bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_br
 
 bci32kleft.faces=double(g.faces);
 bci32kleft.vertices=bci_BST.vertices(ind_left,:);
+
+writedfs('../supp_data/bci32kleft_orig.dfs',bci32kleft);
 
 bci32kleft=smooth_cortex_fast(bci32kleft,.1,75);
 view_patch(bci32kleft);

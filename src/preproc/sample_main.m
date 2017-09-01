@@ -13,7 +13,7 @@ configfile='/home/rcf-40/ajoshi/aaj/git_sandbox/bfp/supp_data/hpcconfig.ini';
  TR='2';
  
  bfpcommand = sprintf('disp %s %s %s %s %s %s %s', configfile, t1, fmri, studydir, subid, sessionid, TR);
-cmd1=sprintf('/usr/usc/matlab/default/bin/matlab -nodisplay -nosplash -r "addpath(genpath(''/home/rcf-proj2/aaj/git_sandbox/svreg-matlab/src''));try; %s;catch;end;exit;"',bfpcommand);
+cmd1=sprintf('/usr/usc/matlab/default/bin/matlab -nodisplay -nosplash -r "addpath(genpath(''/home/rcf-proj2/aaj/git_sandbox/svreg-matlab/src''));%s;exit;"',bfpcommand);
 
 fprintf(cmd1);
 unix(cmd1);

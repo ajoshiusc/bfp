@@ -330,7 +330,6 @@ loadData(handles)
 function loadData(handles) 
 % Choose directory for configuration file
 [config,configPath,~] = uigetfile('*.ini','Choose Configuration file');
-addpath(genpath(uigetdir('~','Choose BFP Root Directory')));
 % List all params and input them to the GUI
 params = ini2struct([configPath config]);
 

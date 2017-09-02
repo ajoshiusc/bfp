@@ -163,6 +163,22 @@ else
     fprintf('Already ');
 end
 fprintf('done\n');
+
+
+%% Generate 1mm BCI-DNI_brain brain as a standard template
+% This is used a template for anatomical T1 data
+%%
+ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
+cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
+fprintf('Creating 1mm isotropic standard brain\n');
+if ~exist(fullfile(anatDir,'standard1mm.nii.gz'),'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
+fprintf('done\n');
+
+
 %% Resample T1w image to 1mm cubic resolution
 % BrainSuite works best at this resolution
 %%
@@ -190,7 +206,7 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS,bseout,bsenew);
+cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
 if ~exist(bsenew,'file')
     unix(cmd);
 end

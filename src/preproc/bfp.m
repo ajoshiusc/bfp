@@ -39,7 +39,7 @@ p=inputParser;
 
 addRequired(p,'configfile',@ischar);
 addRequired(p,'t1',@ischar);
-addRequired(p,'fmri',@iscellstr);
+addRequired(p,'fmri',@(x) ischar(x)||iscellstr(x));
 addRequired(p,'studydir',@ischar);
 addRequired(p,'subid',@ischar);
 addRequired(p,'sessionid',@(x) ischar(x)||iscellstr(x));
@@ -63,10 +63,10 @@ end
 
 if ischar(class(sessionid)) % This is for command line input when fmri data is cell string
     if contains(sessionid,'{')
-        eval(['sessionid = ' fmri]);
+        eval(['sessionid = ' sessionid]);
     end
 else
-    sessionid{1}=fmri;
+    sessionid{1}=sessionid;
 end
 
 for i = 1:size(fmri,2)
@@ -84,17 +84,17 @@ if ~strcmp(computer,'GLNXA64')
 end
 %% Read configuration file and set environment variables
 %%
-fprintf("# Starting BFP Run\n");
+fprintf('# Starting BFP Run\n');
 if ~exist(configfile,'file')
     error('Config file: %s \n: File does not exist\n',configfile);
 end
 
-fprintf("## Reading config file\n");
+fprintf('## Reading config file\n');
 config=ini2struct(configfile);
-fprintf(" done\n");
+fprintf(' done\n');
 %% Setting up the environment
 %%
-fprintf("## Setting up the environment\n");
+fprintf('## Setting up the environment\n');
 setenv('PATH', [getenv('PATH'),':',config.FSLPATH,':',config.FSLPATH,'/bin']);
 setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
@@ -114,7 +114,7 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
-fprintf(" done\n");
+fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
 %%

@@ -10,6 +10,8 @@ dfs_refL = readdfs(fullfile(bfpdir,'supp_data/bci32kleft.dfs'));
 nV=length(dfs_refL.vertices);
 
 dfs_refR = readdfs(fullfile(bfpdir,'supp_data/bci32kright.dfs'));
+dfs_refR=smooth_cortex_fast(dfs_refR,0.1,300);
+
 lab=load(fullfile(bfpdir,'supp_data','HCP_32k_Label.mat'));
 llab=lab.brainstructure(1:nV);
 rlab=lab.brainstructure((1+nV):2*nV);

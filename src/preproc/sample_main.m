@@ -17,3 +17,4 @@ cmd1=sprintf('/usr/usc/matlab/default/bin/matlab -nodisplay -nosplash -r "addpat
 
 fprintf(cmd1);
 unix(cmd1);
+

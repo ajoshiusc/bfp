@@ -53,20 +53,21 @@ anatDir=fullfile(subdir,'anat');
 funcDir=fullfile(subdir,sprintf('func'));
 subbasename=fullfile(anatDir,sprintf('%s_T1w',subid));
 
-if ischar(class(fmri)) % This is for command line input when fmri data is cell string
+if ischar(fmri) % This is for command line input when fmri data is cell string
     if contains(fmri,'{')
         eval(['fmri = ' fmri]);
+    else
+        fmri{1}=fmri;
     end
-else
-    fmri{1}=fmri;
+    
 end
 
-if ischar(class(sessionid)) % This is for command line input when fmri data is cell string
+if ischar(sessionid) % This is for command line input when fmri data is cell string
     if contains(sessionid,'{')
         eval(['sessionid = ' sessionid]);
+    else
+        sessionid{1}=sessionid;
     end
-else
-    sessionid{1}=sessionid;
 end
 
 for i = 1:size(fmri,2)
@@ -306,7 +307,7 @@ for ind = 1:length(fmri)
     GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
     fprintf('tNLMPdf filtering...\n');
     if ~exist(GOrdFiltFile,'file')
-        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile);
+        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
     else
         fprintf('Already ');
     end

@@ -7,6 +7,6 @@ configfile='/home/rcf-proj2/aaj/git_sandbox/bfp/supp_data/hpcconfig.ini';
 lst=dir('/home/rcf-proj2/aaj/Beijing_Zang/sub*');
 
 for jj=1:length(lst)
-   unix(['qsub -v subid=',lst(jj).name,' /home/rcf-proj2/aaj/git_sandbox/bfp/supp_data/fcon1000_qsub.sh &']);
+   unix(['qsub -v subid=',lst(jj).name,' /home/rcf-proj2/aaj/git_sandbox/bfp/supp_data/fcon1000_qsub.sh']);
 end
 

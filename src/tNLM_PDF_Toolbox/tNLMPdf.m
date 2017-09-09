@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.3.5
+%     9.4.5
 % Date:
-%     2017/08/24
+%     2017/09/08
 %
 
 function [dataSm, output] = tNLMPdf(data, option)
@@ -131,7 +131,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     
     A = corr(dataN3'); clear dataN3;
     A = A(:);
-    A(A == 1) = [];
+    A = A(A < 1 - 1e-6);
     
     if option.isVerbose
         disp('fit the conditional distribution');
@@ -140,8 +140,10 @@ function [dataSm, output] = tNLMPdf(data, option)
     % get basis <=> conditional distribution P(r|rho)
     [basis, r, rhos] = getSampleCorrelationBasis(numT, option.SCBFile);
     
-    % boundary of H0
-    thH0 = 0.011;
+    % get boundary of H0 based on theoretical h0 distribution 50% prob
+    p00 = basis(:, 101);
+    t = cumsum(p00);
+    thH0 = abs(r(find(t > 0.25, 1, 'first')));
     idxH0 = (rhos >= -thH0) & (rhos <= thH0);
     
     binRes = 0.001;
@@ -152,6 +154,12 @@ function [dataSm, output] = tNLMPdf(data, option)
     AtA = basis' * basis;
     Atb = basis' * ct2;
     coef = fastNNLS(AtA, Atb); % prior distribution P(rho)
+    
+    if sum(coef(idxH0)) < 1e-3
+        disp('could not estimate noise distribution correctly, no filtering performed');
+        dataSm = []; output = [];
+        return;
+    end
     
     PJoint = bsxfun(@times, basis, coef'); % joint dist P(r, rho)
     Pr = sum(PJoint, 2); % fitted P(r)

@@ -1,5 +1,9 @@
-function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile)
+function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config)
 
 load(GOrdInFile);
-dtseries=tNLMPdf(dtseries);
+option = tNLMPdf();
+option.FPR = config.fpr;
+option.memoryLimit = config.memory;
+option.SCBFile = config.scbPath;
+dtseries=tNLMPdf(dtseries, option);
 save(GOrdOutFile,'dtseries');

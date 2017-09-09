@@ -63,7 +63,7 @@ set(handles.fslDir, 'string', fslPath);
 afniPath = '/usr/lib/afni/bin'; 
 set(handles.afniDir, 'string', afniPath);
 
-BrainSuitePath = '~/BrainSuite/BrainSuite17a'; 
+BrainSuitePath = '~/BrainSuite17a'; 
 set(handles.BrainSuiteDir, 'string', BrainSuitePath);
 
 current = pwd;
@@ -330,7 +330,6 @@ loadData(handles)
 function loadData(handles) 
 % Choose directory for configuration file
 [config,configPath,~] = uigetfile('*.ini','Choose Configuration file');
-addpath(genpath(uigetdir('~','Choose BFP Root Directory')));
 % List all params and input them to the GUI
 params = ini2struct([configPath config]);
 
@@ -509,11 +508,12 @@ studyDir = sprintf('studydir=%s', studydir);
 keys = {'','','',char(bfpPath);'','','',char(afniPath);'','','',char(fslPath); ...
         '','','',char(brainSuitePath);'','','',char(studyDir);'','','',char(lib); ...
         '','','',char(fsloutput);'','','',char(fwhm);'','','',char(high);'','', '',char(low);...
-        '','','',char(proceed);'','','',char(t1);'','','',char(fmri);'','','',char(subid); ...
-        '','','',char(TR); '','','',char(sessionid);'','','',char(memory);'','','',char(fpr); ...
-        '','','',char(configname);'','','',char(scbPath)};
+        '','','',char(proceed); ...
+        '','','',char(memory);'','','',char(fpr); ...
+        '','','',char(scbPath)};
 PWD = pwd;
 cd(studydir);
+inifile(configName,'new');
 inifile(configName,'write',keys,'plain');
 configfile = fullfile(studydir,configName);
 cd(PWD);

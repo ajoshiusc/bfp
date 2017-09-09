@@ -13,6 +13,7 @@ tic
 toc
 g.vertices=bci.vertices(ind_right,:);
 g.faces=g_32k.faces;
+
 %% Resample to 32k Surfaces (Right)
 [bci_inner_fs.vertices, bci_inner_fs.faces] = freesurfer_read_surf('/big_disk/ajoshi/data/BCI_DNI_Atlas/surf/rh.orig');
 bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.right.inner.cortex.dfs');
@@ -27,6 +28,9 @@ bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_br
 
 bci32kright.faces=double(g.faces);
 bci32kright.vertices=bci_BST.vertices(ind_right,:);
+
+writedfs('../supp_data/bci32kright_orig.dfs',bci32kright);
+
 bci32kright=smooth_cortex_fast(bci32kright,.1,75);
 
 view_patch(bci32kright);
@@ -41,6 +45,7 @@ tic
 toc
 g.vertices=bci.vertices(ind_left,:);
 g.faces=g_32k.faces;
+
 %% Resample to 32k Surfaces (Left)
 [bci_inner_fs.vertices, bci_inner_fs.faces] = freesurfer_read_surf('/big_disk/ajoshi/data/BCI_DNI_Atlas/surf/lh.orig');
 bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.inner.cortex.dfs');
@@ -55,6 +60,8 @@ bci_BST=readdfs('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_br
 
 bci32kleft.faces=double(g.faces);
 bci32kleft.vertices=bci_BST.vertices(ind_left,:);
+
+writedfs('../supp_data/bci32kleft_orig.dfs',bci32kleft);
 
 bci32kleft=smooth_cortex_fast(bci32kleft,.1,75);
 view_patch(bci32kleft);

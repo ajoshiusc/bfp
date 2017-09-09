@@ -39,7 +39,7 @@ p=inputParser;
 
 addRequired(p,'configfile',@ischar);
 addRequired(p,'t1',@ischar);
-addRequired(p,'fmri',@iscellstr);
+addRequired(p,'fmri',@(x) ischar(x)||iscellstr(x));
 addRequired(p,'studydir',@ischar);
 addRequired(p,'subid',@ischar);
 addRequired(p,'sessionid',@(x) ischar(x)||iscellstr(x));
@@ -53,20 +53,21 @@ anatDir=fullfile(subdir,'anat');
 funcDir=fullfile(subdir,sprintf('func'));
 subbasename=fullfile(anatDir,sprintf('%s_T1w',subid));
 
-if ischar(class(fmri)) % This is for command line input when fmri data is cell string
+if ischar(fmri) % This is for command line input when fmri data is cell string
     if contains(fmri,'{')
         eval(['fmri = ' fmri]);
+    else
+        fmri{1}=fmri;
     end
-else
-    fmri{1}=fmri;
+    
 end
 
-if ischar(class(sessionid)) % This is for command line input when fmri data is cell string
+if ischar(sessionid) % This is for command line input when fmri data is cell string
     if contains(sessionid,'{')
-        eval(['sessionid = ' fmri]);
+        eval(['sessionid = ' sessionid]);
+    else
+        sessionid{1}=sessionid;
     end
-else
-    sessionid{1}=fmri;
 end
 
 for i = 1:size(fmri,2)
@@ -84,17 +85,17 @@ if ~strcmp(computer,'GLNXA64')
 end
 %% Read configuration file and set environment variables
 %%
-fprintf("# Starting BFP Run\n");
+fprintf('# Starting BFP Run\n');
 if ~exist(configfile,'file')
     error('Config file: %s \n: File does not exist\n',configfile);
 end
 
-fprintf("## Reading config file\n");
+fprintf('## Reading config file\n');
 config=ini2struct(configfile);
-fprintf(" done\n");
+fprintf(' done\n');
 %% Setting up the environment
 %%
-fprintf("## Setting up the environment\n");
+fprintf('## Setting up the environment\n');
 setenv('PATH', [getenv('PATH'),':',config.FSLPATH,':',config.FSLPATH,'/bin']);
 setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
@@ -114,7 +115,7 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
-fprintf(" done\n");
+fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
 %%
@@ -163,6 +164,22 @@ else
     fprintf('Already ');
 end
 fprintf('done\n');
+
+
+%% Generate 1mm BCI-DNI_brain brain as a standard template
+% This is used a template for anatomical T1 data
+%%
+ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
+cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
+fprintf('Creating 1mm isotropic standard brain\n');
+if ~exist(fullfile(anatDir,'standard1mm.nii.gz'),'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
+fprintf('done\n');
+
+
 %% Resample T1w image to 1mm cubic resolution
 % BrainSuite works best at this resolution
 %%
@@ -190,7 +207,7 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS,bseout,bsenew);
+cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
 if ~exist(bsenew,'file')
     unix(cmd);
 end
@@ -290,7 +307,7 @@ for ind = 1:length(fmri)
     GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
     fprintf('tNLMPdf filtering...\n');
     if ~exist(GOrdFiltFile,'file')
-        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile);
+        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
     else
         fprintf('Already ');
     end

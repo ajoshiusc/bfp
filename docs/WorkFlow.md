@@ -16,7 +16,7 @@ The functional data is processed using several tools from [AFNI](https://afni.ni
 * We generate 3mm isotropic representation of BCI-DNI atlas as a standard reference. fMRI data is coregistered to this template. This steps puts subjects T1 and fMRI data in a common space.
 * The fMRI data is deobliqued. This step changes some of the information inside a fmri dataset's header and is reoriented in FSL friendly space. 
 * The motion correction is performed to average of time series. This is followed by skull stripping.
-* Spatial smoothing is performed with Gaussian kernel and FWHM of 6mm.
+* Spatial smoothing is performed with Gaussian kernel and FWHM of 2mm.
 * This is followed by [grand mean scaling](http://dbic.dartmouth.edu/wiki/index.php/Global_Scaling) to account for signal differences across sessions.
 * A temporal band pass filtering is then applied with bandwidth of 0.009-0.1 Hz. This bandwidth is suitable for resting fMRI studies but may need adjustment for other studies.
 * Detrending is performed by removing linear and quadratic trends.

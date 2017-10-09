@@ -54,19 +54,21 @@ funcDir=fullfile(subdir,sprintf('func'));
 subbasename=fullfile(anatDir,sprintf('%s_T1w',subid));
 
 if ischar(fmri) % This is for command line input when fmri data is cell string
-    if contains(fmri,'{')
+    if strfind(fmri,'{')
         eval(['fmri = ' fmri]);
     else
-        fmri{1}=fmri;
+        tmp=fmri;clear fmri;
+        fmri{1}=tmp;
     end
     
 end
 
 if ischar(sessionid) % This is for command line input when fmri data is cell string
-    if contains(sessionid,'{')
+    if strfind(sessionid,'{')
         eval(['sessionid = ' sessionid]);
     else
-        sessionid{1}=sessionid;
+        tmp=sessionid;clear sessionid
+        sessionid{1}=tmp;
     end
 end
 

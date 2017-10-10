@@ -22,7 +22,7 @@ bfp(configfile,t1,fmri,studydir,subid,sessionid,TR)
 
  configfile: Configuration file that you edited during installation, (<bfpdir>/supp_data/config.ini) 
  
- t1: T1 image in NIFTI-1 format e.g. 'sub01-bold.nii.gz'
+ t1: T1 image in NIFTI-1 format e.g. 'sub01-bT1w.nii.gz'
 
  fmri: string or cell array of fMRI NIFTI-1 formatted files e.g. 'sub_01_rest_bold.nii.gz'
 

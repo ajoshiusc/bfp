@@ -9,7 +9,7 @@ function [normed_signal, mean_vector, norm_vector] = normalizeData(pre_signal)
     ones_vector = ones(size(pre_signal, 1), 1) ;
     
     if any(isnan(pre_signal(:))) 
-        warning('there are NaNs in the data matrix, synchronization may not work');
+        warning('there are NaNs in the data matrix, making them zero');
     end
     
     pre_signal(isnan(pre_signal)) = 0 ;

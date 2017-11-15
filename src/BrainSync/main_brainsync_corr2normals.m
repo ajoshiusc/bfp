@@ -7,10 +7,13 @@ addpath(genpath('../'));
 load LBO_right
 LBOr=LBO;
 load LBO_left
-ids={'sn8133','sn4055','tr4277','sn7915','sn5895','sn7602','sn6012','tr3170','sn6594','sn7256','sub05267','sub06880'};
+%ids={'sn8133','sn4055','tr4277','sn7915','sn5895','sn7602','sn6012','tr3170','sn6594','sn7256','sub05267','sub06880'};
+%ids={'sn8133','sn4055','tr4277','sn7915','sn5895','sn7602','sn6012','tr3170','sn6594','sn7256','sub05267','sub06880'};
+ids={'sub09607','sub14864','sub18604'}%,'sub05676','sub08224','sub08889'}
 for jj=1:length(ids)
     subid=ids{jj};
-    fname=['/deneb_disk/from_Todd_Constable_Epilepsy_Processed/',subid,'/func/',subid,'_rest_bold.32k.GOrd.mat'];
+%    fname=['/deneb_disk/from_Todd_Constable_Epilepsy_Processed/',subid,'/func/',subid,'_rest_bold.32k.GOrd.mat'];
+    fname=['/deneb_disk/NY_TRT_bfp/',subid,'/func/',subid,'_rest_bold.32k.GOrd.mat'];
     if ~exist(fname,'file')
         fname=['/deneb_disk/Beijing_Zhang_bfp/',subid,'_rest_bold.32k.GOrd.mat'];
         if ~exist(fname,'file')

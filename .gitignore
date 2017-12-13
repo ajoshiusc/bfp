@@ -1,4 +1,6 @@
+*.png
 *.m~
+*.mat
 *.gii
 data/*
 # Byte-compiled / optimized / DLL files

@@ -62,13 +62,38 @@ for ind1 in range(nSub):
 sp.savez('Haleh_pairwise_dist_all_sub_by_sub.npz', dist_all_rot=dist_all_rot,
          dist_all_orig=dist_all_orig, lst=lst)
 ######
+#%%
+a = sp.load('Haleh_pairwise_dist_all_sub_by_sub.npz')
+lst = a['lst']
+lst2 = [None]*nsub
+ctr = 0
+for sub in lst:
+    fname = os.path.join(p_dir, sub, 'rfMRI_1_LR.mat')
+    if not os.path.isfile(fname):
+        continue
+    lst2[ctr] = sub
+    ctr += 1
 
-a = sp.load('rot_pairwise_dist_all_sub_by_sub.npz')
+
 q = sp.argmin(a['dist_all_rot'].sum(1))
-m = MDS(n_components=3, dissimilarity='precomputed')
+m = MDS(n_components=2, dissimilarity='precomputed')
 e = m.fit_transform(a['dist_all_rot'])
 print(e)
 fig, ax = plt.subplots()
 ax.scatter(e[:, 0], e[:, 1])
 for i in range(e.shape[0]):
-    ax.annotate(lst[i], (e[i, 0], e[i, 1]))
+    ax.annotate(lst2[i], (e[i, 0], e[i, 1]))
+
+## Compute difference
+diff = 0
+for ind in range(nsub):
+    Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
+    diff += (Y2 - sub_data[:, :, q]) ** 2
+    
+sp.io.savemat('diff_individual_atlas.mat',{'diff':diff})
+#%% Compute difference for the virtual subject
+
+diff = 0
+for ind in range(nsub):
+    Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
+    diff += (Y2 - sub_data[:, :, q]) ** 2

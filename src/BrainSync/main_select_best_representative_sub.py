@@ -90,10 +90,12 @@ for ind in range(nsub):
     Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
     diff += (Y2 - sub_data[:, :, q]) ** 2
     
-sp.io.savemat('diff_individual_atlas.mat',{'diff':diff})
+sp.io.savemat('diff_individual_atlas.mat', {'diff': diff})
 #%% Compute difference for the virtual subject
-
 diff = 0
+r = h5py.File('/big_disk/ajoshi/fmri_Atlas_Result/result_raw.mat')
+atlas = sp.array(r['X2']).T
 for ind in range(nsub):
-    Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
-    diff += (Y2 - sub_data[:, :, q]) ** 2
+    Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
+    diff += (Y2 - atlas) ** 2
+sp.io.savemat('diff_avg_atlas.mat', {'diff': diff})

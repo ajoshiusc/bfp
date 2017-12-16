@@ -9,7 +9,7 @@ def normalizeData(pre_signal):
     """
      normed_signal, mean_vector, std_vector = normalizeData(pre_signal)
      This function normalizes the input signal to have 0 mean and unit
-     variance in time.
+     norm in time.
      pre_signal: Time x Original Vertices data
      normed_signal: Normalized (Time x Vertices) signal
      mean_vector: 1 x Vertices mean for each time series

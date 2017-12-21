@@ -80,7 +80,8 @@ for sub in lst:
     ctr += 1
 lst2[nsub] = 'JSGA atlas'
 
-q = sp.argmin(a['dist_all_rot'].sum(1))
+q = sp.argmin(a['dist_all_rot'][:-1, :-1].sum(1))
+print('The representative subject is: %s '%lst2[q])
 m = MDS(n_components=2, dissimilarity='precomputed')
 e = m.fit_transform(a['dist_all_rot'])
 print(e)
@@ -96,6 +97,23 @@ for ind in range(nsub):
     diff += (Y2 - sub_data[:, :, q]) ** 2
     
 sp.io.savemat('diff_individual_atlas.mat', {'diff': diff})
+
+#%% Create Average atlas by synchronizing everyones data to one subject
+atlas = 0
+for ind in range(nsub):
+    Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
+    atlas += Y2
+atlas /= nsub
+
+diff = 0
+for ind in range(nsub):
+    Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
+    diff += (Y2 - atlas) ** 2
+    print ind,
+
+sp.io.savemat('diff_average_atlas.mat', {'diff': diff})
+
+
 #%% Compute difference for the virtual subject
 diff = 0
 r = h5py.File('/big_disk/ajoshi/fmri_Atlas_Result/result_raw.mat')

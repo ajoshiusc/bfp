@@ -4,15 +4,14 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/MEX_Files'));
 MINV_IHF=100;%Min No of vertices in interhemispheric fissure
 
-load('/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3_bold.32k.GOrd.mat')
 load /home/ajoshi/coding_ground/bfp/supp_data/HCP_32k_Label.mat
+NPTS=256;
 
 sl=readdfs('/home/ajoshi/coding_ground/bfp/supp_data/bci32kleft.dfs');
 numVert=length(sl.vertices);
 
 
 labs=brainstructure(1:numVert);
-fmriL=dtseries(1:numVert,:);
 
 view_patch(sl);
 
@@ -21,66 +20,83 @@ numnan=sum(isnan(labs(sl.faces)),2);
 sl.faces(numnan==3,:)=[];
 [sl,ind]=myclean_patch_cc(sl);
 
-fmriL=fmriL(ind,:);
-% Falt mapping of hemisphere
+% Flat mapping of hemisphere
 [xmap,ymap]=map_hemi(sl);
 
 figure;
 patch('faces',sl.faces,'vertices',[xmap,ymap],'facevertexcdata',sl.vertices(:,1),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
-
 %%
-[surf1vertConn,C1]=vertices_connectivity_fast(sl);
-surf1facesVConn=faces_connectivity_fast(sl);
-surf1facesConn=faces2faces_connectivity(sl,surf1facesVConn);
-boundary1 = boundary_vertices(sl,surf1vertConn,surf1facesVConn,surf1facesConn);
-
-view_patch(sl);
-jj=1;
-bdr1=[];
-
-while(length(bdr1)<MINV_IHF) % There must be atleast MINV_IHF vertices in the interhemispherical fissure!!
-   apst=boundary1(jj);
-   bdr1=trace_boundary(apst,surf1vertConn,sl);
-   jj=jj+1;
+% Resample fmri data to square
+load('/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
+% fMRI data
+fmriL=dtseries(1:numVert,:);
+fmriL=fmriL(ind,:);
+ll=linspace(-1,1,NPTS);
+[X,Y]=meshgrid(ll,ll);
+fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));
+parfor jj=1:size(fmriL,2)
+    fmriLSq(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+    jj
 end
-dim=2;
-[~,p1]=max(sl.vertices(bdr1,dim));
-[~,p2]=min(sl.vertices(bdr1,dim));
-par=para_curve_circle_segmt(sl.vertices(bdr1,:),[p1;p2],[0;pi]);
-
-
-
-xbdr=cos(par);ybdr=sin(par);
-
-
-mysphere(sl.vertices(bdr1,:),1,'r',10);
-mysphere(sl.vertices(bdr1(p1),:),2,'g',10);
-mysphere(sl.vertices(bdr1(p2),:),2,'k',10);
-
-xbdr=sign(xbdr).*(xbdr.^2); ybdr=sign(ybdr).*(ybdr.^2);
-
-tmpxybdr=[xbdr,ybdr]*[1,-1;1,1];
-
-xbdr1=tmpxybdr(:,1);ybdr1=tmpxybdr(:,2);
-Verbose=1;
-if(Verbose)
-   figure; plot(xbdr1,ybdr1);title('This should be full circle!!');
-end
-
+I1=fmriLSq;
 %%
 
-dtseries(isnan(labs),:)=300;
-figure;
-patch('faces',sl.faces,'vertices',sl.vertices,'facevertexcdata',dtseries(1:length(sl.vertices),6),'edgecolor','none','facecolor','interp');
-axis equal;axis off;view(90,0),camlight;colormap hot;material dull;caxis([-300,300]);colormap;
+load('/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
+% fMRI data
+fmriL=dtseries(1:numVert,:);
+fmriL=fmriL(ind,:);
+ll=linspace(-1,1,NPTS);
+[X,Y]=meshgrid(ll,ll);
+fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));
+parfor jj=1:size(fmriL,2)
+    fmriLSq(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+    jj
+end
+I2=fmriLSq;
 
-sr=readdfs('/home/ajoshi/coding_ground/bfp/supp_data/bci32kright.dfs');
-funr=dtseries(1+length(sr.vertices):2*length(sr.vertices),6);
-funr(isnan(labs))=300;
-figure;
-patch('faces',sr.faces,'vertices',sr.vertices,'facevertexcdata',funr,'edgecolor','none','facecolor','interp');
-axis equal;axis off;view(90,0),camlight;colormap hot;material dull;caxis([-300,300]);colormap;
+%%
+% Set static and moving image
+S=I2; M=I1;
 
+% Alpha (noise) constant
+alpha=2.5;
 
+% Velocity field smoothing kernel
+Hsmooth=fspecial('gaussian',[60 60],10);
 
+% The transformation fields
+Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
+
+[Sy,Sx] = gradient(S);
+for itt=1:200
+	    % Difference image between moving and static image
+        Idiff=M-S;
+
+        % Default demon force, (Thirion 1998)
+        %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
+        %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
+
+        % Extended demon force. With forces from the gradients from both
+        % moving as static image. (Cachier 1999, He Wang 2005)
+        [My,Mx] = gradient(M);
+        Ux = -Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2)));
+        Uy = -Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2)));
+ 
+        % When divided by zero
+        Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
+
+        % Smooth the transformation field
+        Uxs=3*imfilter(Ux,Hsmooth);
+        Uys=3*imfilter(Uy,Hsmooth);
+
+        % Add the new transformation field to the total transformation field.
+        Tx=Tx+Uxs;
+        Ty=Ty+Uys;
+        M=movepixels(I1,Tx,Ty); 
+end
+
+subplot(1,3,1), imshow(I1,[]); title('image 1');
+subplot(1,3,2), imshow(I2,[]); title('image 2');
+subplot(1,3,3), imshow(M,[]); title('Registered image 1');
+	

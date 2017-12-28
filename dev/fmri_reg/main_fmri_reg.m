@@ -69,6 +69,8 @@ Hsmooth=fspecial('gaussian',[60 60],10);
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
+[X,Y]=meshgrid(NPTS);
+
 for itt=1:200
 	    % Difference image between moving and static image
         Idiff=M-S;
@@ -80,8 +82,8 @@ for itt=1:200
         % Extended demon force. With forces from the gradients from both
         % moving as static image. (Cachier 1999, He Wang 2005)
         [My,Mx] = gradient(M);
-        Ux = -Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2)));
-        Uy = -Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2)));
+        Ux = sum(-Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
+        Uy = sum(-Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
  
         % When divided by zero
         Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
@@ -93,7 +95,11 @@ for itt=1:200
         % Add the new transformation field to the total transformation field.
         Tx=Tx+Uxs;
         Ty=Ty+Uys;
-        M=movepixels(I1,Tx,Ty); 
+%        M=movepixels(I1,Tx,Ty); 
+        for kk=1:size(M,3)
+            M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
+        end
+        fprintf('iter = %d\n',itt);
 end
 
 subplot(1,3,1), imshow(I1,[]); title('image 1');

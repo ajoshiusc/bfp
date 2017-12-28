@@ -69,40 +69,56 @@ Hsmooth=fspecial('gaussian',[60 60],10);
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
-[X,Y]=meshgrid(NPTS);
+[X,Y]=meshgrid(1:NPTS);
 
 for itt=1:200
-	    % Difference image between moving and static image
-        Idiff=M-S;
-
-        % Default demon force, (Thirion 1998)
-        %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
-        %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
-
-        % Extended demon force. With forces from the gradients from both
-        % moving as static image. (Cachier 1999, He Wang 2005)
-        [My,Mx] = gradient(M);
-        Ux = sum(-Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
-        Uy = sum(-Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
- 
-        % When divided by zero
-        Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
-
-        % Smooth the transformation field
-        Uxs=3*imfilter(Ux,Hsmooth);
-        Uys=3*imfilter(Uy,Hsmooth);
-
-        % Add the new transformation field to the total transformation field.
-        Tx=Tx+Uxs;
-        Ty=Ty+Uys;
-%        M=movepixels(I1,Tx,Ty); 
-        for kk=1:size(M,3)
-            M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
-        end
-        fprintf('iter = %d\n',itt);
+    % Difference image between moving and static image
+    Idiff=M-S;
+    
+    % Default demon force, (Thirion 1998)
+    %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
+    %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
+    
+    % Extended demon force. With forces from the gradients from both
+    % moving as static image. (Cachier 1999, He Wang 2005)
+    [My,Mx] = gradient(M);
+    Ux = sum(-Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
+    Uy = sum(-Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
+    
+    % When divided by zero
+    Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
+    
+    % Smooth the transformation field
+    Uxs=3*imfilter(Ux,Hsmooth);
+    Uys=3*imfilter(Uy,Hsmooth);
+    
+    % Add the new transformation field to the total transformation field.
+    Tx=Tx+Uxs;
+    Ty=Ty+Uys;
+    %        M=movepixels(I1,Tx,Ty);
+    for kk=1:size(M,3)
+        M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
+    end
+    fprintf('iter = %d\n',itt);
 end
 
-subplot(1,3,1), imshow(I1,[]); title('image 1');
-subplot(1,3,2), imshow(I2,[]); title('image 2');
-subplot(1,3,3), imshow(M,[]); title('Registered image 1');
-	
+
+%  [X,Y]=meshgrid(1:NPTS);%
+YY1=min(max(1,Y+0*Tx),NPTS);XX1=min(max(1,X+0*Ty),NPTS);
+
+WX1=((NPTS-1)/2)*(xmap+1)+1;
+WY1=((NPTS-1)/2)*(ymap+1)+1;
+
+WX1=min(max(WX1,1),NPTS);WY1=min(max(WY1,1),NPTS);
+
+xmap2=interp2((XX1),WX1',WY1');
+ymap2=interp2((YY1),WX1',WY1');
+
+xmap2=(xmap2-1)*(2/(NPTS-1)) - 1;
+ymap2=(ymap2-1)*(2/(NPTS-1)) - 1;
+
+figure;
+patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sl.vertices(:,1),'edgecolor','k','facecolor','interp');
+axis equal;axis off;camlight;material dull;
+
+

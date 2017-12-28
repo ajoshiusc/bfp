@@ -60,7 +60,7 @@ I2=fmriLSq;
 S=I2; M=I1;
 
 % Alpha (noise) constant
-alpha=2.5;
+alpha=2.5*5;
 
 % Velocity field smoothing kernel
 Hsmooth=fspecial('gaussian',[60 60],10);
@@ -104,7 +104,7 @@ end
 
 
 %  [X,Y]=meshgrid(1:NPTS);%
-YY1=min(max(1,Y+0*Tx),NPTS);XX1=min(max(1,X+0*Ty),NPTS);
+YY1=min(max(1,Y+Tx),NPTS);XX1=min(max(1,X+Ty),NPTS);
 
 WX1=((NPTS-1)/2)*(xmap+1)+1;
 WY1=((NPTS-1)/2)*(ymap+1)+1;

@@ -3,7 +3,7 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/MEX_Files'));
 MINV_IHF=100;%Min No of vertices in interhemispheric fissure
-
+add weights based on surface area in the cost function
 load /home/ajoshi/coding_ground/bfp/supp_data/HCP_32k_Label.mat
 NPTS=256;
 
@@ -63,15 +63,16 @@ S=I2; M=I1;
 alpha=2.5*5;
 
 % Velocity field smoothing kernel
-Hsmooth=fspecial('gaussian',[60 60],10);
+Hsmooth=fspecial('gaussian',[120 120],20);
 
 % The transformation fields
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-
-for itt=1:200
+NIT=200;
+costiter=zeros(NIT,1);
+for itt=1:NIT
     % Difference image between moving and static image
     Idiff=M-S;
     
@@ -99,7 +100,8 @@ for itt=1:200
     for kk=1:size(M,3)
         M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
     end
-    fprintf('iter = %d\n',itt);
+    costiter(itt)=norm(Idiff(:));
+    fprintf('iter = %d, diff=%g\n',itt,costiter(itt));
 end
 
 
@@ -121,4 +123,5 @@ figure;
 patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sl.vertices(:,1),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
+figure;plot(costiter);
 

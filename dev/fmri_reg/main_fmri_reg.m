@@ -3,7 +3,7 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/MEX_Files'));
 MINV_IHF=100;%Min No of vertices in interhemispheric fissure
-add weights based on surface area in the cost function
+%add weights based on surface area in the cost function
 load /home/ajoshi/coding_ground/bfp/supp_data/HCP_32k_Label.mat
 NPTS=256;
 
@@ -55,6 +55,26 @@ parfor jj=1:size(fmriL,2)
 end
 I2=fmriLSq;
 
+xx=mygriddata(xmap,ymap,sl.vertices(:,1),X,Y);
+yy=mygriddata(xmap,ymap,sl.vertices(:,2),X,Y);
+zz=mygriddata(xmap,ymap,sl.vertices(:,3),X,Y);
+
+[xx_u,xx_v]=gradient(xx);
+[yy_u,yy_v]=gradient(yy);
+[zz_u,zz_v]=gradient(zz);
+
+g11=xx_u.^2+yy_u.^2+zz_u.^2;
+g22=xx_v.^2+yy_v.^2+zz_v.^2;
+g12=xx_u.*xx_v+yy_u.*yy_v+zz_u.*zz_v;
+
+g=g11.*g22-g12.^2;
+figure;
+imagesc(g);
+
+
+
+
+
 %%
 % Set static and moving image
 S=I2; M=I1;
@@ -64,6 +84,10 @@ alpha=2.5*5;
 
 % Velocity field smoothing kernel
 Hsmooth=fspecial('gaussian',[120 120],20);
+g=imfilter(g,Hsmooth);
+g(g<0)=0;g(isnan(g))=0;
+figure; imagesc(g);
+M=M*sqrt(g);S=S*sqrt(g);
 
 % The transformation fields
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));

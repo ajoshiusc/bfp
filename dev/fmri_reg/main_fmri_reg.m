@@ -5,7 +5,7 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/MEX_Files'));
 MINV_IHF=100;%Min No of vertices in interhemispheric fissure
 %add weights based on surface area in the cost function
 load /home/ajoshi/coding_ground/bfp/supp_data/HCP_32k_Label.mat
-NPTS=256;
+NPTS=512;
 
 sl=readdfs('/home/ajoshi/coding_ground/bfp/supp_data/bci32kleft.dfs');
 numVert=length(sl.vertices);

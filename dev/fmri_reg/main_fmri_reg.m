@@ -54,7 +54,7 @@ parfor jj=1:size(fmriL,2)
     jj
 end
 I2=fmriLSq;
-
+%% COmpute first fundamental form
 xx=mygriddata(xmap,ymap,sl.vertices(:,1),X,Y);
 yy=mygriddata(xmap,ymap,sl.vertices(:,2),X,Y);
 zz=mygriddata(xmap,ymap,sl.vertices(:,3),X,Y);
@@ -73,10 +73,7 @@ imagesc(g);
 
 
 
-
-
-%%
-% Set static and moving image
+%% Set static and moving image
 S=I2; M=I1;
 
 % Alpha (noise) constant
@@ -84,10 +81,10 @@ alpha=15*5;
 
 % Velocity field smoothing kernel
 Hsmooth=fspecial('gaussian',[120 120],20);
-g=imfilter(g,Hsmooth);
-g(g<0)=0;g(isnan(g))=0;
-figure; imagesc(g);
-M=M.*sqrt(g);S=S.*sqrt(g);
+%g=imfilter(g,Hsmooth);
+%g(g<0)=0;g(isnan(g))=0;
+%figure; imagesc(g);
+%M=M.*sqrt(g);S=S.*sqrt(g);
 
 % The transformation fields
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));

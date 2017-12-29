@@ -71,7 +71,7 @@ g=g11.*g22-g12.^2;
 figure;
 imagesc(g);
 
-
+clear fmriLSq I2 dtseries fmriL
 
 %% Set static and moving image
 S=I2; M=I1;

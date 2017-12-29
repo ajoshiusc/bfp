@@ -77,7 +77,7 @@ clear fmriLSq I2 dtseries fmriL
 S=I2; M=I1;
 
 % Alpha (noise) constant
-alpha=15*5;
+alpha=5;
 
 % Velocity field smoothing kernel
 Hsmooth=fspecial('gaussian',[120 120],20);
@@ -91,7 +91,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-NIT=200;
+NIT=2000;
 costiter=zeros(NIT,1);
 for itt=1:NIT
     % Difference image between moving and static image
@@ -122,7 +122,7 @@ for itt=1:NIT
         M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
     end
     costiter(itt)=norm(Idiff(:));
-    fprintf('iter = %d, diff=%g\n',itt,costiter(itt));
+    fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),(xmap2(:)-xmap(:)).^2+(ymap(:)-ymap2(:)).^2);
 end
 
 

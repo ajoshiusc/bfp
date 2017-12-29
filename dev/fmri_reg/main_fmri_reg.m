@@ -71,10 +71,10 @@ g=g11.*g22-g12.^2;
 figure;
 imagesc(g);
 
-clear fmriLSq I2 dtseries fmriL g g11 g12 g22
 
 %% Set static and moving image
 S=I2; M=I1;
+clear fmriLSq I2 dtseries fmriL g g11 g12 g22
 
 % Alpha (noise) constant
 alpha=5;

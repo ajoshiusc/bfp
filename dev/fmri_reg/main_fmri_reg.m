@@ -122,7 +122,7 @@ for itt=1:NIT
         M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
     end
     costiter(itt)=norm(Idiff(:));
-    fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),(xmap2(:)-xmap(:)).^2+(ymap(:)-ymap2(:)).^2);
+    fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt((Tx).^2+(Ty).^2));
 end
 
 

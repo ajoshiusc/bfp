@@ -80,7 +80,7 @@ imagesc(g);
 S=I2; M=I1;
 
 % Alpha (noise) constant
-alpha=2.5*5;
+alpha=15*5;
 
 % Velocity field smoothing kernel
 Hsmooth=fspecial('gaussian',[120 120],20);

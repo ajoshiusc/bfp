@@ -87,7 +87,7 @@ Hsmooth=fspecial('gaussian',[120 120],20);
 g=imfilter(g,Hsmooth);
 g(g<0)=0;g(isnan(g))=0;
 figure; imagesc(g);
-M=M*sqrt(g);S=S*sqrt(g);
+M=M.*sqrt(g);S=S.*sqrt(g);
 
 % The transformation fields
 Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));

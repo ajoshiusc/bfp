@@ -90,7 +90,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-NIT=200;
+NIT=2000;
 costiter=zeros(NIT,1);
 for itt=1:NIT
     % Difference image between moving and static image
@@ -144,4 +144,4 @@ patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sl.vertices(
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);
-
+save temp1

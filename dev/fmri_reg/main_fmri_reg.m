@@ -80,7 +80,7 @@ clear fmriLSq I2 dtseries fmriL g g11 g12 g22
 alpha=2.5;
 
 % Velocity field smoothing kernel
-Hsmooth=fspecial('gaussian',[60 60],10);
+Hsmooth=fspecial('gaussian',[30 30],5);
 %g=imfilter(g,Hsmooth);
 %g(g<0)=0;g(isnan(g))=0;
 %figure; imagesc(g);
@@ -90,7 +90,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-NIT=2000;
+NIT=200;
 costiter=zeros(NIT,1);
 for itt=1:NIT
     % Difference image between moving and static image
@@ -140,7 +140,7 @@ xmap2=(xmap2-1)*(2/(NPTS-1)) - 1;
 ymap2=(ymap2-1)*(2/(NPTS-1)) - 1;
 
 figure;
-patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sl.vertices(:,1),'edgecolor','k','facecolor','interp');
+patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);

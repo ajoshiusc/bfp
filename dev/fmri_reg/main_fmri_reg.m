@@ -90,7 +90,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-NIT=200;
+NIT=2000;
 costiter=zeros(NIT,1);
 for itt=1:NIT
     % Difference image between moving and static image
@@ -103,8 +103,8 @@ for itt=1:NIT
     % Extended demon force. With forces from the gradients from both
     % moving as static image. (Cachier 1999, He Wang 2005)
     [My,Mx] = gradient(M);
-    Ux = mean(-Idiff.*  ((Sx./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(Mx./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
-    Uy = mean(-Idiff.*  ((Sy./((Sx.^2+Sy.^2)+alpha^2*Idiff.^2))+(My./((Mx.^2+My.^2)+alpha^2*Idiff.^2))),3);
+    Ux = sum(-Idiff.*  ((Sx./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(Mx./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
+    Uy = sum(-Idiff.*  ((Sy./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(My./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
     
     % When divided by zero
     Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;

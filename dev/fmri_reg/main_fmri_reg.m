@@ -54,7 +54,7 @@ parfor jj=1:size(fmriL,2)
     jj
 end
 I2=fmriLSq;
-%% COmpute first fundamental form
+%% Compute first fundamental form
 xx=mygriddata(xmap,ymap,sl.vertices(:,1),X,Y);
 yy=mygriddata(xmap,ymap,sl.vertices(:,2),X,Y);
 zz=mygriddata(xmap,ymap,sl.vertices(:,3),X,Y);
@@ -110,8 +110,8 @@ for itt=1:NIT
     Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
     
     % Smooth the transformation field
-    Uxs=3*imfilter(Ux,Hsmooth);
-    Uys=3*imfilter(Uy,Hsmooth);
+    Uxs=imfilter(Ux,Hsmooth);
+    Uys=imfilter(Uy,Hsmooth);
     
     % Add the new transformation field to the total transformation field.
     Tx=Tx+Uxs;
@@ -138,6 +138,10 @@ ymap2=interp2((YY1),WX1',WY1');
 
 xmap2=(xmap2-1)*(2/(NPTS-1)) - 1;
 ymap2=(ymap2-1)*(2/(NPTS-1)) - 1;
+
+figure;
+patch('faces',sl.faces,'vertices',[xmap,ymap],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
+axis equal;axis off;camlight;material dull;
 
 figure;
 patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');

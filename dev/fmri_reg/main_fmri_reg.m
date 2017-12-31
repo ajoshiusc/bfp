@@ -92,6 +92,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 [X,Y]=meshgrid(1:NPTS);
 NIT=2000;
 costiter=zeros(NIT,1);
+hh=tic;
 for itt=1:NIT
     % Difference image between moving and static image
     Idiff=M-S;
@@ -123,7 +124,7 @@ for itt=1:NIT
     costiter(itt)=norm(Idiff(:));
     fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
 end
-
+t1=toc(hh)
 
 %  [X,Y]=meshgrid(1:NPTS);%
 YY1=min(max(1,Y+Tx),NPTS);XX1=min(max(1,X+Ty),NPTS);

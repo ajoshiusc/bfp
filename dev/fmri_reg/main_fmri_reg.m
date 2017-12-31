@@ -80,7 +80,7 @@ clear fmriLSq I2 dtseries fmriL g g11 g12 g22
 alpha=2.5;
 
 % Velocity field smoothing kernel
-Hsmooth=fspecial('gaussian',[30 30],5);
+Hsmooth=fspecial('gaussian',[60 60],10);
 %g=imfilter(g,Hsmooth);
 %g(g<0)=0;g(isnan(g))=0;
 %figure; imagesc(g);

@@ -91,7 +91,7 @@ Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
 [Sy,Sx] = gradient(S);
 [X,Y]=meshgrid(1:NPTS);
-NIT=2000;
+NIT=10000;
 costiter=zeros(NIT,1);
 hh=tic;
 for itt=1:NIT

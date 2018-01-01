@@ -20,6 +20,7 @@ numnan=sum(isnan(labs(sl.faces)),2);
 sl.faces(numnan==3,:)=[];
 [sl,ind]=myclean_patch_cc(sl);
 
+
 % Flat mapping of hemisphere
 [xmap,ymap]=map_hemi(sl);
 
@@ -150,3 +151,28 @@ axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);
 save temp1
+
+%%
+a=load('/home/ajoshi/coding_ground/bfp/supp_data/bci_grayordinates_surf_ind.mat');
+atl=readdfs('/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.mid.cortex.dfs');
+sl.labels=atl.labels(a.ind_left(ind));
+writedfs('out1.dfs',sl);
+recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+sl=readdfs('out1.dfs');
+
+slsm=smooth_cortex_fast(sl,.1,600);
+
+figure;
+patch('faces',sl.faces,'vertices',slsm.vertices,'facevertexcdata',sl.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;camlight;material dull;
+slw=sl;
+slw.labels=griddata(xmap,ymap,sl.labels,xmap2',ymap2','nearest');
+writedfs('out1.dfs',slw);
+recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+slw=readdfs('out1.dfs');
+
+figure;
+patch('faces',slw.faces,'vertices',slsm.vertices,'facevertexcdata',slw.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;camlight;material dull;
+
+

@@ -113,7 +113,7 @@ for r1=1:3
         I1(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X-1),256),1),max(min(1+(256/NPTS)*(Y-1),256),1));        
     end
     [Sy,Sx] = gradient(S);
-    ks=round(10*(NIT/256));
+    ks=round(10*(NPTS/256));
     Hsmooth=fspecial('gaussian',[6*ks 6*ks],ks);
 
     for itt=1:NIT
@@ -144,8 +144,8 @@ for r1=1:3
         parfor kk=1:size(M,3)
             M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
         end
-        costiter(itt)=norm(Idiff(:))/r1;
-        fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
+        costiter(itt+NIT*(res1-1))=norm(Idiff(:))/r1;
+        fprintf('res=%d iter = %d, diff=%g, def=%g\n',res1,itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
     end
 end
 

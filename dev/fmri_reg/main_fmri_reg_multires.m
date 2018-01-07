@@ -144,8 +144,8 @@ for r1=1:3
         parfor kk=1:size(M,3)
             M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
         end
-        costiter(itt+NIT*(res1-1))=norm(Idiff(:))/r1;
-        fprintf('res=%d iter = %d, diff=%g, def=%g\n',res1,itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
+        costiter(itt+NIT*(res1(r1)-1))=norm(Idiff(:))/r1;
+        fprintf('res=%d iter = %d, diff=%g, def=%g\n',res1(r1),itt,costiter(itt+NIT*(res1(r1)-1)),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
     end
 end
 

@@ -102,15 +102,15 @@ for r1=1:3
     if r1>1
         % upsample the grid and the deformation field
         Tx=2*Tx;Ty=2*Ty;
-        Tx=interp2(Tx,0.5*X+0.5,0.5*Y+0.5);
-        Ty=interp2(Ty,0.5*X+0.5,0.5*Y+0.5);
+        Tx=interp2(Tx,max(1,0.5*X),max(1,0.5*Y));
+        Ty=interp2(Ty,max(1,0.5*X),max(1,0.5*Y));
     end
     
     M=zeros(NPTS,NPTS,size(Mo,3));S=M;I1=M;
     parfor kk=1:size(M,3)
-        M(:,:,kk)=interp2(Mo(:,:,kk),max(min((256/NPTS)*(X+Ty),256),1),max(min((256/NPTS)*(Y+Tx),256),1));
-        S(:,:,kk)=interp2(So(:,:,kk),max(min((256/NPTS)*(X+Ty),256),1),max(min((256/NPTS)*(Y+Tx),256),1));
-        I1(:,:,kk)=interp2(Mo(:,:,kk),max(min((256/NPTS)*(X),256),1),max(min((256/NPTS)*(Y),256),1));        
+        M(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X+Ty-1),256),1),max(min(1+(256/NPTS)*(Y+Tx-1),256),1));
+        S(:,:,kk)=interp2(So(:,:,kk),max(min(1+(256/NPTS)*(X+Ty-1),256),1),max(min(1+(256/NPTS)*(Y+Tx-1),256),1));
+        I1(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X-1),256),1),max(min(1+(256/NPTS)*(Y-1),256),1));        
     end
     [Sy,Sx] = gradient(S);
     ks=round(10*(NIT/256));

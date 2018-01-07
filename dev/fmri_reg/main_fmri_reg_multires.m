@@ -102,8 +102,8 @@ for r1=1:3
     if r1>1
         % upsample the grid and the deformation field
         Tx=2*Tx;Ty=2*Ty;
-        Tx=interp2(Tx,0.5*X,0.5*Y);
-        Ty=interp2(Ty,0.5*X,0.5*Y);
+        Tx=interp2(Tx,0.5*X+0.5,0.5*Y+0.5);
+        Ty=interp2(Ty,0.5*X+0.5,0.5*Y+0.5);
     end
     
     M=zeros(NPTS,NPTS,size(Mo,3));S=M;I1=M;

@@ -174,7 +174,7 @@ patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);
-save temp1
+%save temp1
 
 %%
 a=load('/home/ajoshi/coding_ground/bfp/supp_data/bci_grayordinates_surf_ind.mat');

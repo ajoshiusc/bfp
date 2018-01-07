@@ -88,7 +88,7 @@ Hsmooth=fspecial('gaussian',[60 60],10);
 %M=M.*sqrt(g);S=S.*sqrt(g);
 % The transformation fields
 
-NIT=50;
+NIT=200;
 costiter=zeros(NIT,1);
 hh=tic;
 res1=[64,128,256];
@@ -144,7 +144,7 @@ for r1=1:3
         parfor kk=1:size(M,3)
             M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
         end
-        costiter(itt)=norm(Idiff(:));
+        costiter(itt)=norm(Idiff(:))/r1;
         fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
     end
 end

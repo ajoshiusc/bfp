@@ -87,53 +87,66 @@ Hsmooth=fspecial('gaussian',[60 60],10);
 %figure; imagesc(g);
 %M=M.*sqrt(g);S=S.*sqrt(g);
 % The transformation fields
-Tx=zeros(size(M,1),size(M,2)); Ty=zeros(size(M,1),size(M,2));
 
-[Sy,Sx] = gradient(S);
-[X,Y]=meshgrid(1:NPTS);
-NIT=5000;
+NIT=50;
 costiter=zeros(NIT,1);
 hh=tic;
-M
-res1=[64,128,256]
-
+res1=[64,128,256];
+Tx=0;Ty=0;
+Mo=M;So=S;
 for r1=1:3
-    res=res1(r1);
+    %X,Y
+    NPTS=res1(r1);
+    [X,Y]=meshgrid(1:NPTS);
     
-    M=Mms{r1}; S=Sms{r1};
-    
-for itt=1:NIT
-    % Difference image between moving and static image
-    Idiff=M-S;
-    
-    % Default demon force, (Thirion 1998)
-    %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
-    %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
-    
-    % Extended demon force. With forces from the gradients from both
-    % moving as static image. (Cachier 1999, He Wang 2005)
-    [My,Mx] = gradient(M);
-    Ux = sum(-Idiff.*  ((Sx./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(Mx./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
-    Uy = sum(-Idiff.*  ((Sy./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(My./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
-    
-    % When divided by zero
-    Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
-    
-    % Smooth the transformation field
-    Uxs=imfilter(Ux,Hsmooth);
-    Uys=imfilter(Uy,Hsmooth);
-    
-    % Add the new transformation field to the total transformation field.
-    Tx=Tx+Uxs;
-    Ty=Ty+Uys;
-    %        M=movepixels(I1,Tx,Ty);
-    for kk=1:size(M,3)
-        M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
+    if r1>1
+        % upsample the grid and the deformation field
+        Tx=2*Tx;Ty=2*Ty;
+        Tx=interp2(Tx,0.5*X,0.5*Y);
+        Ty=interp2(Ty,0.5*X,0.5*Y);
     end
-    costiter(itt)=norm(Idiff(:));
-    fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
-end
+    
+    M=zeros(NPTS,NPTS,size(Mo,3));S=M;I1=M;
+    parfor kk=1:size(M,3)
+        M(:,:,kk)=interp2(Mo(:,:,kk),max(min((256/NPTS)*(X+Ty),256),1),max(min((256/NPTS)*(Y+Tx),256),1));
+        S(:,:,kk)=interp2(So(:,:,kk),max(min((256/NPTS)*(X+Ty),256),1),max(min((256/NPTS)*(Y+Tx),256),1));
+        I1(:,:,kk)=interp2(Mo(:,:,kk),max(min((256/NPTS)*(X),256),1),max(min((256/NPTS)*(Y),256),1));        
+    end
+    [Sy,Sx] = gradient(S);
+    ks=round(10*(NIT/256));
+    Hsmooth=fspecial('gaussian',[6*ks 6*ks],ks);
 
+    for itt=1:NIT
+        % Difference image between moving and static image
+        Idiff=M-S;
+        
+        % Default demon force, (Thirion 1998)
+        %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
+        %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
+        
+        % Extended demon force. With forces from the gradients from both
+        % moving as static image. (Cachier 1999, He Wang 2005)
+        [My,Mx] = gradient(M);
+        Ux = sum(-Idiff.*  ((Sx./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(Mx./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
+        Uy = sum(-Idiff.*  ((Sy./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(My./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
+        
+        % When divided by zero
+        Ux(isnan(Ux))=0; Uy(isnan(Uy))=0;
+        
+        % Smooth the transformation field
+        Uxs=imfilter(Ux,Hsmooth);
+        Uys=imfilter(Uy,Hsmooth);
+        
+        % Add the new transformation field to the total transformation field.
+        Tx=Tx+Uxs;
+        Ty=Ty+Uys;
+        %        M=movepixels(I1,Tx,Ty);
+        parfor kk=1:size(M,3)
+            M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
+        end
+        costiter(itt)=norm(Idiff(:));
+        fprintf('iter = %d, diff=%g, def=%g\n',itt,costiter(itt),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
+    end
 end
 
 t1=toc(hh)

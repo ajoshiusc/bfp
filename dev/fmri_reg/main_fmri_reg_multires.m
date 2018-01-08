@@ -4,6 +4,7 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/MEX_Files'));
 MINV_IHF=100;%Min No of vertices in interhemispheric fissure
 %add weights based on surface area in the cost function
+addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 load /home/ajoshi/coding_ground/bfp/supp_data/HCP_32k_Label.mat
 NPTS=256;
 
@@ -31,8 +32,17 @@ axis equal;axis off;camlight;material dull;
 % Resample fmri data to square
 load('/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
 % fMRI data
-fmriL=dtseries(1:numVert,:);
-fmriL=fmriL(ind,:);
+fmriL1=dtseries(1:numVert,:);
+load('/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
+% fMRI data
+fmriL2=dtseries(1:numVert,:);
+
+
+fmriL1 = normalizeData(fmriL1(ind,:)')';
+fmriL2 = normalizeData(fmriL2(ind,:)')';
+fmriL2 = brainSync(fmriL1',fmriL2')';
+%fmriL=fmriL(ind,:);
+fmriL=fmriL1;
 ll=linspace(-1,1,NPTS);
 [X,Y]=meshgrid(ll,ll);
 fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));
@@ -43,10 +53,12 @@ end
 I1=fmriLSq;
 %%
 
-load('/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
-% fMRI data
-fmriL=dtseries(1:numVert,:);
-fmriL=fmriL(ind,:);
+% load('/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
+% % fMRI data
+% fmriL=dtseries(1:numVert,:);
+% fmriL=fmriL(ind,:);
+fmriL=fmriL2;
+
 ll=linspace(-1,1,NPTS);
 [X,Y]=meshgrid(ll,ll);
 fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));

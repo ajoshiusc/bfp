@@ -1,12 +1,35 @@
-function wsub2 = fmri_demons(sub1,sub2,hemi)
+function [wsub,origmap,newmap] = fmri_demons(sub1,sub2,BFPPATH,hemi)
 
-'load inf for hemi
+NPTS=256;
+
+sl=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
+numVert=length(sl.vertices);
+load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
+
+labs=brainstructure(1:numVert);
+
+%view_patch(sl);
+
+
+numnan=sum(isnan(labs(sl.faces)),2);
+sl.faces(numnan==3,:)=[];
+[sl,ind]=myclean_patch_cc(sl);
+
+
+% Flat mapping of hemisphere
+[xmap,ymap]=map_hemi(sl);
+
+
+a=load(sub1);
+fmriL1=a.dtseries(1:numVert,:);
+
+a=load(sub2);
+fmriL2=a.dtseries(1:numVert,:);
+
+%'load inf for hemi
 fmriL1 = normalizeData(fmriL1(ind,:)')';
 fmriL2 = normalizeData(fmriL2(ind,:)')';
 fmriL2 = brainSync(fmriL1',fmriL2')';
-
-
-load_flatmap32kmesh
 
 
 fmriL=fmriL1;
@@ -143,5 +166,14 @@ ymap2=interp2((YY1),WX1',WY1');
 
 xmap2=(xmap2-1)*(2/(NPTS-1)) - 1;
 ymap2=(ymap2-1)*(2/(NPTS-1)) - 1;
+origmap.u=xmap;
+origmap.v=ymap;
+newmap.u=xmap2;
+newmap.v=ymap2;
 
-
+% Warp fmri data
+wsub=zeros(size(X,1),size(X,2),size(fmriL,2));
+parfor jj=1:size(fmriL,2)
+    wsub(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+    jj
+end

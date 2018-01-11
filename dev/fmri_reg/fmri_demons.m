@@ -54,6 +54,7 @@ parfor jj=1:size(fMRIData,2)
     jj
 end
 I2=fMRIDataSq;
+
 %% Compute first fundamental form
 xx=mygriddata(xmap,ymap,surfObj.vertices(:,1),X,Y);
 yy=mygriddata(xmap,ymap,surfObj.vertices(:,2),X,Y);
@@ -70,7 +71,6 @@ g12=xx_u.*xx_v+yy_u.*yy_v+zz_u.*zz_v;
 g=g11.*g22-g12.^2;
 figure;
 imagesc(g);
-
 
 %% Set static and moving image
 S=I2; M=I1;
@@ -150,7 +150,7 @@ origmap.v=ymap;
 newmap.u=xmap2;
 newmap.v=ymap2;
 
-% Warp fmri data
+%% Warp fmri data
 wsub=zeros(size(fMRIData));
 parfor jj=1:size(fMRIData,2)
     wsub(:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),xmap2',ymap2');

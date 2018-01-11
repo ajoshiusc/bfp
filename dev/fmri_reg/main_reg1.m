@@ -2,9 +2,11 @@
 %||Shree Ganeshaya Namaha||
 
 clc;clear all;close all;
+addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
+addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
+
 addpath(genpath('/home/ajoshi/coding_ground/bfp/dev'));
 addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
-%addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
 
 BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
@@ -16,7 +18,7 @@ h=tic;
 [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)
 
-save('aaj.mat','wsub','origmap','newmap','s','costiter','ind');
+save('aaj1000.mat','wsub','origmap','newmap','s','costiter','ind');
 
 [~,C1]=vertices_connectivity_fast(s);
 [s,A1]=smooth_cortex_fast(s,.8,50);

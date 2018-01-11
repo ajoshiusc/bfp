@@ -37,25 +37,50 @@ figure;plot(costiter);
 
 %%
 a=load('/home/ajoshi/coding_ground/bfp/supp_data/bci_grayordinates_surf_ind.mat');
-atl=readdfs('/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.mid.cortex.dfs');
+atl=readdfs('/home/ajoshi/coding_ground/svreg/USCBrain/BCI-DNI_brain.left.mid.cortex.dfs');
 s.labels=atl.labels(a.ind_left(ind));
 writedfs('out1.dfs',s);
-recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/USCBrain/BCI-DNI_brain');
 s=readdfs('out1.dfs');
 
 sm=smooth_cortex_fast(s,.1,600);
+sm.faces=sm.faces(:,[2,1,3]);
+sf=figure;
+patch('faces',sm.faces,'vertices',sm.vertices,'facevertexcdata',s.vcolor,'edgecolor','none','facecolor','interp','backfacelighting','unlit');
+axis equal;axis off;view(-90,0);camlight;material dull;axis tight;
+saveas(sf,'sub_left1.png');
+view(90,0);camlight;
+saveas(sf,'sub_left2.png');
 
-figure;
-patch('faces',s.faces,'vertices',sm.vertices,'facevertexcdata',s.vcolor,'edgecolor','none','facecolor','interp');
-axis equal;axis off;view(-90,0);camlight;material dull;
 sw=s;
 sw.labels=griddata(origmap(:,1),origmap(:,2),s.labels,newmap(:,1),newmap(:,2),'nearest');
 writedfs('out1.dfs',sw);
-recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
+recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/USCBrain/BCI-DNI_brain');
 sw=readdfs('out1.dfs');
 
-figure;
-patch('faces',sw.faces,'vertices',sm.vertices,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp');
-axis equal;axis off;view(-90,0);camlight;material dull;
+w=figure;
+patch('faces',sm.faces,'vertices',sm.vertices,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp','backfacelighting','unlit');
+axis equal;axis off;view(-90,0);camlight;material dull;axis tight;
+saveas(w,'warped_left1.png');
+view(90,0);camlight;
+saveas(w,'warped_left2.png');
 
+%% 
+% This is not meaningful since the deformation is on the square
+w=figure;
+patch('faces',sm.faces,'vertices',sm.vertices,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','none','facecolor','interp','backfacelighting','unlit');
+axis equal;axis off;view(-90,0);camlight;material dull;axis tight;
+saveas(w,'def_left1.png');
+view(90,0);camlight;
+saveas(w,'def_left2.png');
+
+
+sq=figure;
+patch('faces',s.faces,'vertices',origmap,'facevertexcdata',s.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;camlight;material dull;axis tight;
+saveas(sq,'flat.png');
+sq=figure;
+patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;camlight;material dull;
+saveas(sq,'warped_flat.png');
 

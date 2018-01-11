@@ -7,9 +7,9 @@ alpha=2.5;
 %% Number of iterations
 NIT=20;
 
-surfObj=readdfs(fulLfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
+surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
-a=load(fulLfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
+a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
 
 labs=a.brainstructure(1:numVert);
 
@@ -145,10 +145,8 @@ ymap2=interp2((YY1),WX1',WY1');
 
 xmap2=(xmap2-1)*(2/(NPTS-1)) - 1;
 ymap2=(ymap2-1)*(2/(NPTS-1)) - 1;
-origmap.u=xmap;
-origmap.v=ymap;
-newmap.u=xmap2;
-newmap.v=ymap2;
+origmap=[xmap,ymap];
+newmap=[xmap2',ymap2'];
 
 %% Warp fmri data
 wsub=zeros(size(fMRIData));

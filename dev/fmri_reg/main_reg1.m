@@ -6,22 +6,22 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/dev'));
 addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 %addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
 
-BFP_PATH='/home/ajoshi/coding_ground/bfp';
+BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
 
 sub1='/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 
 h=tic;
-[wsub,origmap,newmap,s,costiter]=fmri_demons(sub1,sub2,BFP_PATH,'left');
+[wsub,origmap,newmap,s,costiter]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)
 
 figure;
-patch('faces',s.faces,'vertices',[xmap,ymap],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
+patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','none','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;
-patch('faces',s.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
+patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sqrt((origmap-newmap).^2),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);

@@ -1,66 +1,63 @@
-function [wsub,origmap,newmap] = fmri_demons(sub1,sub2,BFPPATH,hemi)
+function [wsub,origmap,newmap,surfObj,costiter] = fmri_demons(sub1,sub2,BFPPATH,hemi)
 
 NPTS=256;
+%% Alpha (noise) constant
+alpha=2.5;
 
-sl=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
-numVert=length(sl.vertices);
-load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
+%% Number of iterations
+NIT=20;
 
-labs=brainstructure(1:numVert);
+surfObj=readdfs(fulLfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
+numVert=length(surfObj.vertices);
+a=load(fulLfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
 
-%view_patch(sl);
+labs=a.brainstructure(1:numVert);
+
+numnan=sum(isnan(labs(surfObj.faces)),2);
+surfObj.faces(numnan==3,:)=[];
+[surfObj,ind]=myclean_patch_cc(surfObj);
 
 
-numnan=sum(isnan(labs(sl.faces)),2);
-sl.faces(numnan==3,:)=[];
-[sl,ind]=myclean_patch_cc(sl);
-
-
-% Flat mapping of hemisphere
-[xmap,ymap]=map_hemi(sl);
+%% Flat mapping of hemisphere
+[xmap,ymap]=map_hemi(surfObj);
 
 
 a=load(sub1);
-fmriL1=a.dtseries(1:numVert,:);
+fMRI1=a.dtseries(1:numVert,:);
 
 a=load(sub2);
-fmriL2=a.dtseries(1:numVert,:);
+fMRI2=a.dtseries(1:numVert,:);
 
-%'load inf for hemi
-fmriL1 = normalizeData(fmriL1(ind,:)')';
-fmriL2 = normalizeData(fmriL2(ind,:)')';
-fmriL2 = brainSync(fmriL1',fmriL2')';
+%% load inf for hemi
+fMRI1 = normalizeData(fMRI1(ind,:)')';
+fMRI2 = normalizeData(fMRI2(ind,:)')';
+fMRI2 = brainSync(fMRI1',fMRI2')';
 
-
-fmriL=fmriL1;
-ll=linspace(-1,1,NPTS);
-[X,Y]=meshgrid(ll,ll);
-fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));
-parfor jj=1:size(fmriL,2)
-    fmriLSq(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+%% data 1
+fMRIData=fMRI1;
+lL=linspace(-1,1,NPTS);
+[X,Y]=meshgrid(lL,lL);
+fMRIDataSq=zeros(size(X,1),size(X,2),size(fMRIData,2));
+parfor jj=1:size(fMRIData,2)
+    fMRIDataSq(:,:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),X,Y);
     jj
 end
-I1=fmriLSq;
-%%
+I1=fMRIDataSq;
 
-% load('/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat');
-% % fMRI data
-% fmriL=dtseries(1:numVert,:);
-% fmriL=fmriL(ind,:);
-fmriL=fmriL2;
-
-ll=linspace(-1,1,NPTS);
-[X,Y]=meshgrid(ll,ll);
-fmriLSq=zeros(size(X,1),size(X,2),size(fmriL,2));
-parfor jj=1:size(fmriL,2)
-    fmriLSq(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+%% data 2
+fMRIData=fMRI2;
+lL=linspace(-1,1,NPTS);
+[X,Y]=meshgrid(lL,lL);
+fMRIDataSq=zeros(size(X,1),size(X,2),size(fMRIData,2));
+parfor jj=1:size(fMRIData,2)
+    fMRIDataSq(:,:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),X,Y);
     jj
 end
-I2=fmriLSq;
+I2=fMRIDataSq;
 %% Compute first fundamental form
-xx=mygriddata(xmap,ymap,sl.vertices(:,1),X,Y);
-yy=mygriddata(xmap,ymap,sl.vertices(:,2),X,Y);
-zz=mygriddata(xmap,ymap,sl.vertices(:,3),X,Y);
+xx=mygriddata(xmap,ymap,surfObj.vertices(:,1),X,Y);
+yy=mygriddata(xmap,ymap,surfObj.vertices(:,2),X,Y);
+zz=mygriddata(xmap,ymap,surfObj.vertices(:,3),X,Y);
 
 [xx_u,xx_v]=gradient(xx);
 [yy_u,yy_v]=gradient(yy);
@@ -77,27 +74,14 @@ imagesc(g);
 
 %% Set static and moving image
 S=I2; M=I1;
-clear fmriLSq I2 dtseries fmriL g g11 g12 g22
+clear fMRIDataSq I2 dtseries g g11 g12 g22
 
-% Alpha (noise) constant
-alpha=2.5;
-
-% Velocity field smoothing kernel
-Hsmooth=fspecial('gaussian',[60 60],10);
-%g=imfilter(g,Hsmooth);
-%g(g<0)=0;g(isnan(g))=0;
-%figure; imagesc(g);
-%M=M.*sqrt(g);S=S.*sqrt(g);
-% The transformation fields
-
-NIT=200;
 costiter=zeros(NIT,1);
-hh=tic;
 res1=[64,128,256];
 Tx=0;Ty=0;
 Mo=M;So=S;
 for r1=1:3
-    %X,Y
+
     NPTS=res1(r1);
     [X,Y]=meshgrid(1:NPTS);
     
@@ -121,11 +105,7 @@ for r1=1:3
     for itt=1:NIT
         % Difference image between moving and static image
         Idiff=M-S;
-        
-        % Default demon force, (Thirion 1998)
-        %Ux = -(Idiff.*Sx)./((Sx.^2+Sy.^2)+Idiff.^2);
-        %Uy = -(Idiff.*Sy)./((Sx.^2+Sy.^2)+Idiff.^2);
-        
+            
         % Extended demon force. With forces from the gradients from both
         % moving as static image. (Cachier 1999, He Wang 2005)
         [My,Mx] = gradient(M);
@@ -142,7 +122,8 @@ for r1=1:3
         % Add the new transformation field to the total transformation field.
         Tx=Tx+Uxs;
         Ty=Ty+Uys;
-        %        M=movepixels(I1,Tx,Ty);
+        
+        %  Warp the fmri data
         parfor kk=1:size(M,3)
             M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
         end
@@ -151,9 +132,7 @@ for r1=1:3
     end
 end
 
-t1=toc(hh)
-
-%  [X,Y]=meshgrid(1:NPTS);%
+%% Warp the flat map
 YY1=min(max(1,Y+Tx),NPTS);XX1=min(max(1,X+Ty),NPTS);
 
 WX1=((NPTS-1)/2)*(xmap+1)+1;
@@ -172,8 +151,8 @@ newmap.u=xmap2;
 newmap.v=ymap2;
 
 % Warp fmri data
-wsub=zeros(size(X,1),size(X,2),size(fmriL,2));
-parfor jj=1:size(fmriL,2)
-    wsub(:,:,jj)=mygriddata(xmap,ymap,fmriL(:,jj),X,Y);
+wsub=zeros(size(fMRIData));
+parfor jj=1:size(fMRIData,2)
+    wsub(:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),xmap2',ymap2');
     jj
 end

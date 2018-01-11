@@ -13,15 +13,15 @@ sub1='/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3
 sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 
 h=tic;
-[wsub,origmap,newmap]=fmri_demons(sub1,sub2,BFP_PATH,'left');
+[wsub,origmap,newmap,s,costiter]=fmri_demons(sub1,sub2,BFP_PATH,'left');
 toc(h)
 
 figure;
-patch('faces',sl.faces,'vertices',[xmap,ymap],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
+patch('faces',s.faces,'vertices',[xmap,ymap],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;
-patch('faces',sl.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
+patch('faces',s.faces,'vertices',[xmap2',ymap2'],'facevertexcdata',sqrt((xmap2'-xmap).^2+(ymap2'-ymap).^2),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);

@@ -13,15 +13,21 @@ sub1='/deneb_disk/studyforrest_bfp/sub-03/func/sub-03_ses-movie_task-movie_run-3
 sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 
 h=tic;
-[wsub,origmap,newmap,s,costiter]=fmri_demons(sub1,sub2,BFPPATH,'left');
+[wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)
+
+save('aaj.mat','wsub','origmap','newmap','s','costiter','ind');
+
+[~,C1]=vertices_connectivity_fast(s);
+[s,A1]=smooth_cortex_fast(s,.8,50);
+s.attributes=curvature_cortex_fast(s,50,0,C1);
 
 figure;
 patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','none','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;
-patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sqrt((origmap-newmap).^2),'edgecolor','k','facecolor','interp');
+patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','k','facecolor','interp');
 axis equal;axis off;camlight;material dull;
 
 figure;plot(costiter);
@@ -30,24 +36,24 @@ figure;plot(costiter);
 %%
 a=load('/home/ajoshi/coding_ground/bfp/supp_data/bci_grayordinates_surf_ind.mat');
 atl=readdfs('/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.left.mid.cortex.dfs');
-sl.labels=atl.labels(a.ind_left(ind));
-writedfs('out1.dfs',sl);
+s.labels=atl.labels(a.ind_left(ind));
+writedfs('out1.dfs',s);
 recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
-sl=readdfs('out1.dfs');
+s=readdfs('out1.dfs');
 
-slsm=smooth_cortex_fast(sl,.1,600);
+sm=smooth_cortex_fast(s,.1,600);
 
 figure;
-patch('faces',sl.faces,'vertices',slsm.vertices,'facevertexcdata',sl.vcolor,'edgecolor','none','facecolor','interp');
-axis equal;axis off;camlight;material dull;
-slw=sl;
-slw.labels=griddata(xmap,ymap,sl.labels,xmap2',ymap2','nearest');
-writedfs('out1.dfs',slw);
+patch('faces',s.faces,'vertices',sm.vertices,'facevertexcdata',s.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;view(-90,0);camlight;material dull;
+sw=s;
+sw.labels=griddata(origmap(:,1),origmap(:,2),s.labels,newmap(:,1),newmap(:,2),'nearest');
+writedfs('out1.dfs',sw);
 recolor_by_label('out1.dfs','/home/ajoshi/coding_ground/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain');
-slw=readdfs('out1.dfs');
+sw=readdfs('out1.dfs');
 
 figure;
-patch('faces',slw.faces,'vertices',slsm.vertices,'facevertexcdata',slw.vcolor,'edgecolor','none','facecolor','interp');
-axis equal;axis off;camlight;material dull;
+patch('faces',sw.faces,'vertices',sm.vertices,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp');
+axis equal;axis off;view(-90,0);camlight;material dull;
 
 

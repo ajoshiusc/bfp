@@ -1,11 +1,11 @@
-function [wsub,origmap,newmap,surfObj,costiter] = fmri_demons(sub1,sub2,BFPPATH,hemi)
+function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPPATH,hemi)
 
 NPTS=256;
 %% Alpha (noise) constant
 alpha=2.5;
 
 %% Number of iterations
-NIT=20;
+NIT=200;
 
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);

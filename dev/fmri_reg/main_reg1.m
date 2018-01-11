@@ -24,13 +24,14 @@ save('aaj1000.mat','wsub','origmap','newmap','s','costiter','ind');
 [s,A1]=smooth_cortex_fast(s,.8,50);
 s.attributes=curvature_cortex_fast(s,50,0,C1);
 
-figure;
-patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','none','facecolor','interp');
-axis equal;axis off;camlight;material dull;
-
-figure;
-patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','k','facecolor','interp');
-axis equal;axis off;camlight;material dull;
+h=figure;
+patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','y','facecolor','interp');
+axis equal;axis off;material dull;axis tight;
+saveas(h,'sub_sqr_mesh.png');
+h=figure;
+patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','y','facecolor','interp');
+axis equal;axis off;material dull;axis tight;
+saveas(h,'warped_sqr_mesh.png');
 
 figure;plot(costiter);
 %save temp1

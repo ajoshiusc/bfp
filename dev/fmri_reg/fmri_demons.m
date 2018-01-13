@@ -5,7 +5,7 @@ NPTS=256;
 alpha=2.5;
 
 %% Number of iterations
-NIT=1000;
+NIT=200;
 
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
@@ -22,11 +22,11 @@ surfObj.faces(numnan==3,:)=[];
 [xmap,ymap]=map_hemi(surfObj);
 
 
-a=load(sub1);
-fMRI1=a.dtseries(1:numVert,:);
+%a=load(sub1);
+fMRI1=sub1.dtseries(1:numVert,:);
 
-a=load(sub2);
-fMRI2=a.dtseries(1:numVert,:);
+%a=load(sub2);
+fMRI2=sub2.dtseries(1:numVert,:);
 
 %% load inf for hemi
 fMRI1 = normalizeData(fMRI1(ind,:)')';

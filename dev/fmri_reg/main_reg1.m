@@ -16,8 +16,8 @@ sub2='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_RES
 %sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 sub1=ft_read_cifti(sub1);
 sub2=ft_read_cifti(sub2);
-sub1.dtseries=sub1.dtseries(:,[1:100]);
-sub2.dtseries=sub2.dtseries(:,[1:100]);
+%sub1.dtseries=sub1.dtseries(:,[1:100]);
+%sub2.dtseries=sub2.dtseries(:,[1:100]);
 h=tic;
 [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)

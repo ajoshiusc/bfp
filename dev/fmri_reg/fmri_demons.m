@@ -6,7 +6,7 @@ alpha=2.5;
 SMPARA=3;
 %% Number of iterations
 NIT=1000;
-
+RDIM=5;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -34,6 +34,12 @@ fMRI2=sub2.dtseries(1:numVert,:);
 fMRI1 = normalizeData(fMRI1(ind,:)')';
 fMRI2 = normalizeData(fMRI2(ind,:)')';
 fMRI2 = brainSync(fMRI1',fMRI2')';
+[W,Y]=pca([fMRI1;fMRI2]);
+
+fMRI1=fMRI1/W';
+fMRI2=fMRI2/W';
+fMRI1=fMRI1(:,[1:RDIM]);
+fMRI2=fMRI2(:,[1:RDIM]);
 
 %% data 1
 fMRIData=fMRI1;

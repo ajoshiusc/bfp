@@ -11,12 +11,13 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
 
-sub1='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
-sub2='/big_disk/ajoshi/HCP5/105115/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
+sub1='/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
+sub2='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
 %sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 sub1=ft_read_cifti(sub1);
 sub2=ft_read_cifti(sub2);
-
+sub1.dtseries=sub1.dtseries(:,[1:100]);
+sub2.dtseries=sub2.dtseries(:,[1:100]);
 h=tic;
 [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)

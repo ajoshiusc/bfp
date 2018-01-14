@@ -3,9 +3,9 @@ function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPP
 NPTS=256;
 %% Alpha (noise) constant
 alpha=2.5;
-SMPARA=2;
+SMPARA=3;
 %% Number of iterations
-NIT=200;
+NIT=1000;
 
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
@@ -29,6 +29,8 @@ fMRI1=sub1.dtseries(1:numVert,:);
 fMRI2=sub2.dtseries(1:numVert,:);
 
 %% load inf for hemi
+%fMRI1=fMRI1(ind,:);fMRI1(isnan(fMRI1))=0;
+%fMRI2=fMRI2(ind,:);fMRI2(isnan(fMRI2))=0;
 fMRI1 = normalizeData(fMRI1(ind,:)')';
 fMRI2 = normalizeData(fMRI2(ind,:)')';
 fMRI2 = brainSync(fMRI1',fMRI2')';
@@ -46,11 +48,22 @@ I1=fMRIDataSq;
 
 %% data 2
 fMRIData=fMRI2;
+%% Sim
+if (1)
+    Z=zeros(256,256);
+    Z(128,128)=5000;
+    H=fspecial('gaussian',round([6*10 6*10]),10);
+    Zs=imfilter(Z,H)*2/256;
+else
+    Zs=0;
+end
+
+%%
 lL=linspace(-1,1,NPTS);
 [X,Y]=meshgrid(lL,lL);
 fMRIDataSq=zeros(size(X,1),size(X,2),size(fMRIData,2));
 parfor jj=1:size(fMRIData,2)
-    fMRIDataSq(:,:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),X,Y);
+    fMRIDataSq(:,:,jj)=mygriddata(xmap,ymap,fMRIData(:,jj),X+Zs,Y);
     jj
 end
 I2=fMRIDataSq;
@@ -77,10 +90,10 @@ S=I2; M=I1;
 clear fMRIDataSq I2 dtseries g g11 g12 g22
 
 costiter=zeros(NIT,1);
-res1=[64,128,256];
+res1=256;%[64,128,256];
 Tx=0;Ty=0;
 Mo=M;So=S;
-for r1=1:3
+for r1=1:length(res1)
 
     NPTS=res1(r1);
     [X,Y]=meshgrid(1:NPTS);
@@ -94,11 +107,11 @@ for r1=1:3
     
     M=zeros(NPTS,NPTS,size(Mo,3));S=M;I1=M;
     parfor kk=1:size(M,3)
-        M(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X+Ty-1),256),1),max(min(1+(256/NPTS)*(Y+Tx-1),256),1));
-        S(:,:,kk)=interp2(So(:,:,kk),max(min(1+(256/NPTS)*(X+Ty-1),256),1),max(min(1+(256/NPTS)*(Y+Tx-1),256),1));
+        M(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X+Tx-1),256),1),max(min(1+(256/NPTS)*(Y+Ty-1),256),1));
+        S(:,:,kk)=interp2(So(:,:,kk),max(min(1+(256/NPTS)*(X+Tx-1),256),1),max(min(1+(256/NPTS)*(Y+Ty-1),256),1));
         I1(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X-1),256),1),max(min(1+(256/NPTS)*(Y-1),256),1));        
     end
-    [Sy,Sx] = gradient(S);
+    [Sx,Sy] = gradient(S);
     ks=SMPARA*(NPTS/256);
     Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
 
@@ -108,7 +121,7 @@ for r1=1:3
             
         % Extended demon force. With forces from the gradients from both
         % moving as static image. (Cachier 1999, He Wang 2005)
-        [My,Mx] = gradient(M);
+        [Mx,My] = gradient(M);
         Ux = sum(-Idiff.*  ((Sx./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(Mx./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
         Uy = sum(-Idiff.*  ((Sy./(sum(Sx.^2+Sy.^2,3)+alpha^2*sum(Idiff.^2,3)))+(My./(sum(Mx.^2+My.^2,3)+alpha^2*sum(Idiff.^2,3)))),3);
         
@@ -125,7 +138,7 @@ for r1=1:3
         
         %  Warp the fmri data
         parfor kk=1:size(M,3)
-            M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Ty,size(X,1)),1),max(min(Y+Tx,size(Y,1)),1));
+            M(:,:,kk)=interp2(I1(:,:,kk),max(min(X+Tx,size(X,1)),1),max(min(Y+Ty,size(Y,1)),1));
         end
         costiter(itt+NIT*(r1-1))=norm(Idiff(:))/NPTS;
         fprintf('res=%d iter = %d, diff=%g, def=%g\n',res1(r1),itt,costiter(itt+NIT*(r1-1)),sqrt(mean((Tx(:)).^2+(Ty(:)).^2)));
@@ -133,7 +146,7 @@ for r1=1:3
 end
 
 %% Warp the flat map
-YY1=min(max(1,Y+Tx),NPTS);XX1=min(max(1,X+Ty),NPTS);
+YY1=min(max(1,Y+Ty),NPTS);XX1=min(max(1,X+Tx),NPTS);
 
 WX1=((NPTS-1)/2)*(xmap+1)+1;
 WY1=((NPTS-1)/2)*(ymap+1)+1;

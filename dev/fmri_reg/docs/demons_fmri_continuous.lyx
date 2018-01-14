@@ -81,7 +81,7 @@ Demons registration based on fMRI
 \end_layout
 
 \begin_layout Standard
-In demons model, template and subject images are modelled by optical flow
+In demons model, template and subject images are modeled by optical flow
  of one object, observed at two time points.
 \end_layout
 
@@ -169,25 +169,19 @@ C(v)=\int\left\Vert \nabla F(p(t),s)\cdot v+\frac{dF(p(t),s)}{dt}\right\Vert ^{2
 
 \end_inset
 
- Taking derivative of both sides wrt 
+We want to find 
 \begin_inset Formula $v$
 \end_inset
 
-, and equate to zero, we get
-\begin_inset Formula 
-\[
-2\int\nabla F(p(t),s)\cdot(\nabla F(p(t),s)\cdot v+\frac{dF(p(t),s)}{dt})ds=0
-\]
-
-\end_inset
-
- Therefore,
+ with minimal norm (minimum norm solution).
+ So the solution to this overdetermined problem therefore can be computed
+ using Moore Penrose right pseudoinverse,
 \end_layout
 
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align*}
-v\cdot\int\left\Vert \nabla F(p(t),s)\right\Vert ^{2}ds & =-\int\frac{dF(p(t),s)}{dt}\cdot\nabla F(p(t),s)ds
+v\int\left\Vert \nabla F(p(t),s)\right\Vert ^{2}ds & =-\int\frac{dF(p(t),s)}{dt}\nabla F(p(t),s)ds
 \end{align*}
 
 \end_inset
@@ -202,7 +196,7 @@ we get,
 \begin_layout Standard
 \begin_inset Formula 
 \begin{align*}
-v= & -\frac{\int\frac{dF(p(t),s)}{dt}\cdot\nabla F(p(t),s)ds}{\int\left\Vert \nabla F(p(t),s)\right\Vert ^{2}ds},
+v= & -\frac{\int\frac{dF(p(t),s)}{dt}\nabla F(p(t),s)ds}{\int\left\Vert \nabla F(p(t),s)\right\Vert ^{2}ds},
 \end{align*}
 
 \end_inset
@@ -271,7 +265,7 @@ where
 \begin_layout Standard
 \begin_inset Formula 
 \[
-u(p)=\frac{\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))\cdot\nabla F_{T}^{n}(p)}{\sum_{n=1}^{N}||\nabla F_{T}^{n}(p)||^{2}+\alpha^{2}\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))^{2}}
+v(p)=\frac{\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))\cdot\nabla F_{T}^{n}(p)}{\sum_{n=1}^{N}||\nabla F_{T}^{n}(p)||^{2}+\alpha^{2}\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))^{2}}
 \]
 
 \end_inset
@@ -307,6 +301,28 @@ So the displacement given by the above equation is bounded by
 \end_inset
 
 .
+\end_layout
+
+\begin_layout Standard
+We will consider symmetric version as proposed in 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "wang2005validation"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{align*}
+v(p) & =\frac{\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))\cdot\nabla F_{T}^{n}(p)}{\sum_{n=1}^{N}||\nabla F_{T}^{n}(p)||^{2}+\alpha^{2}\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))^{2}}+\frac{\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))\cdot\nabla F_{M}^{n}(p)}{\sum_{n=1}^{N}||\nabla F_{M}^{n}(p)||^{2}+\alpha^{2}\sum_{n=1}^{N}(F_{T}^{n}(p)-F_{M}^{n}\circ T(p))^{2}}\\
+\end{align*}
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -408,7 +424,7 @@ If we want to incorporate surface metric
 \begin_layout Remark
 \begin_inset CommandInset bibtex
 LatexCommand bibtex
-bibfiles "aaj_bib"
+bibfiles "../../../../../Dropbox/fmriReg/aaj_bib"
 options "elsarticle-harv"
 
 \end_inset

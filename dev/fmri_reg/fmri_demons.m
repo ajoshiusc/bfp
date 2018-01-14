@@ -2,8 +2,8 @@ function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPP
 
 NPTS=256;
 %% Alpha (noise) constant
-alpha=1;
-SMPARA=1;
+alpha=2.5;
+SMPARA=2;
 %% Number of iterations
 NIT=200;
 

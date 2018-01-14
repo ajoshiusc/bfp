@@ -20,16 +20,16 @@ sub2=ft_read_cifti(sub2);
 %sub2.dtseries=sub2.dtseries(:,[1:100]);
 h=tic;
 [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
-toc(h)
+t1=toc(h)
 
-save('aaj200_1.mat','wsub','origmap','newmap','s','costiter','ind');
+save('aaj600_1.mat','wsub','origmap','newmap','s','costiter','ind');
 
 [~,C1]=vertices_connectivity_fast(s);
 [s,A1]=smooth_cortex_fast(s,.8,50);
 s.attributes=curvature_cortex_fast(s,50,0,C1);
 
 h=figure;
-patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','y','facecolor','interp');
+patch('faces',s.faces,'vertices',origmap,'facevertexcdata',sqrt(sum((origmap-newmap).^2,2)),'edgecolor','none','facecolor','interp');
 axis equal;axis off;material dull;axis tight;
 saveas(h,'sub_sqr_mesh.png');
 h=figure;
@@ -53,9 +53,9 @@ sm.faces=sm.faces(:,[2,1,3]);
 sf=figure;
 patch('faces',sm.faces,'vertices',sm.vertices,'facevertexcdata',s.vcolor,'edgecolor','none','facecolor','interp','backfacelighting','unlit');
 axis equal;axis off;view(-90,0);camlight;material dull;axis tight;
-saveas(sf,'sub_left1.png');
+saveas(sf,'sub_left1_1.png');
 view(90,0);camlight;
-saveas(sf,'sub_left2.png');
+saveas(sf,'sub_left2_1.png');
 
 sw=s;
 sw.labels=griddata(origmap(:,1),origmap(:,2),s.labels,newmap(:,1),newmap(:,2),'nearest');
@@ -66,9 +66,9 @@ sw=readdfs('out1.dfs');
 w=figure;
 patch('faces',sm.faces,'vertices',sm.vertices,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp','backfacelighting','unlit');
 axis equal;axis off;view(-90,0);camlight;material dull;axis tight;
-saveas(w,'warped_left1.png');
+saveas(w,'warped_left1_1.png');
 view(90,0);camlight;
-saveas(w,'warped_left2.png');
+saveas(w,'warped_left2_1.png');
 
 %% 
 % This is not meaningful since the deformation is on the square

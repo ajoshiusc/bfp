@@ -2,11 +2,11 @@ function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPP
 
 NPTS=256;
 %% Alpha (noise) constant
-alpha=2.5;
-SMPARA=3;
+alpha=2.5;%2.5
+SMPARA=3; %3 works well
 %% Number of iterations
-NIT=1000;
-RDIM=5;
+NIT=600;%600
+RDIM=0;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -34,13 +34,15 @@ fMRI2=sub2.dtseries(1:numVert,:);
 fMRI1 = normalizeData(fMRI1(ind,:)')';
 fMRI2 = normalizeData(fMRI2(ind,:)')';
 fMRI2 = brainSync(fMRI1',fMRI2')';
-[W,Y]=pca([fMRI1;fMRI2]);
 
+if RDIM ~=0
+    %Reduce dimensionality
+[W,Y]=pca([fMRI1;fMRI2]);
 fMRI1=fMRI1/W';
 fMRI2=fMRI2/W';
 fMRI1=fMRI1(:,[1:RDIM]);
 fMRI2=fMRI2(:,[1:RDIM]);
-
+end
 %% data 1
 fMRIData=fMRI1;
 lL=linspace(-1,1,NPTS);
@@ -57,7 +59,7 @@ fMRIData=fMRI2;
 %% Sim
 if (1)
     Z=zeros(256,256);
-    Z(128,128)=5000;
+    Z(128,128)=10000;
     H=fspecial('gaussian',round([6*10 6*10]),10);
     Zs=imfilter(Z,H)*2/256;
 else

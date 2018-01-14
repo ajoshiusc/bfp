@@ -2,8 +2,8 @@ function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPP
 
 NPTS=256;
 %% Alpha (noise) constant
-alpha=2.5;
-
+alpha=1;
+SMPARA=1;
 %% Number of iterations
 NIT=200;
 
@@ -99,8 +99,8 @@ for r1=1:3
         I1(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X-1),256),1),max(min(1+(256/NPTS)*(Y-1),256),1));        
     end
     [Sy,Sx] = gradient(S);
-    ks=round(10*(NPTS/256));
-    Hsmooth=fspecial('gaussian',[6*ks 6*ks],ks);
+    ks=SMPARA*(NPTS/256);
+    Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
 
     for itt=1:NIT
         % Difference image between moving and static image

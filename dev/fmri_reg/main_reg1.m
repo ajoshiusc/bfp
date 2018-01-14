@@ -11,8 +11,8 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
 
-sub1='/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
-sub2='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
+sub1='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
+sub2='/big_disk/ajoshi/HCP5/105115/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
 %sub2='/deneb_disk/studyforrest_bfp/sub-02/func/sub-02_ses-movie_task-movie_run-3_bold.32k.GOrd.mat';
 sub1=ft_read_cifti(sub1);
 sub2=ft_read_cifti(sub2);
@@ -21,7 +21,7 @@ h=tic;
 [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
 toc(h)
 
-save('aaj1000.mat','wsub','origmap','newmap','s','costiter','ind');
+save('aaj200_1.mat','wsub','origmap','newmap','s','costiter','ind');
 
 [~,C1]=vertices_connectivity_fast(s);
 [s,A1]=smooth_cortex_fast(s,.8,50);

@@ -125,7 +125,7 @@ for r1=1:length(res1)
 
     for itt=1:NIT
         SMPARA=round(((NIT-itt)/(NIT-1))*7+3);
-        ks=SMPARA*(NPTS/256);
+        ks=SMPARA;%*(NPTS/256);
         Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
         
         % Difference image between moving and static image

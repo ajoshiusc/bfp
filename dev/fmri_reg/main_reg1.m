@@ -11,8 +11,8 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
 
-sub1='/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
-sub2='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii';
+sub1='/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST2_LR/rfMRI_REST2_LR_Atlas_hp2000_clean.dtseries.nii';
+sub2='/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST2_LR/rfMRI_REST2_LR_Atlas_hp2000_clean.dtseries.nii';
 sub1=ft_read_cifti(sub1);
 sub2=ft_read_cifti(sub2);
 

@@ -3,10 +3,10 @@ function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPP
 NPTS=256;
 %% Alpha (noise) constant
 alpha=2.5;%2.5
-SMPARA=3; %3 works well
+SMPARA=10; %3 works well
 %% Number of iterations
-NIT=600;%600
-RDIM=0;
+NIT=200;%600
+RDIM=20;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -98,7 +98,7 @@ S=I2; M=I1;
 clear fMRIDataSq I2 dtseries g g11 g12 g22
 
 costiter=zeros(NIT,1);
-res1=256;%[64,128,256];
+res1=[64,128,256];
 Tx=0;Ty=0;
 Mo=M;So=S;
 for r1=1:length(res1)
@@ -120,10 +120,14 @@ for r1=1:length(res1)
         I1(:,:,kk)=interp2(Mo(:,:,kk),max(min(1+(256/NPTS)*(X-1),256),1),max(min(1+(256/NPTS)*(Y-1),256),1));        
     end
     [Sx,Sy] = gradient(S);
-    ks=SMPARA*(NPTS/256);
-    Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
+%    ks=SMPARA*(NPTS/256);
+%    Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
 
     for itt=1:NIT
+        SMPARA=round(((NIT-itt)/(NIT-1))*7+3);
+        ks=SMPARA*(NPTS/256);
+        Hsmooth=fspecial('gaussian',round([6*ks 6*ks]),ks);
+        
         % Difference image between moving and static image
         Idiff=M-S;
             

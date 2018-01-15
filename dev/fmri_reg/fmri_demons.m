@@ -5,8 +5,8 @@ NPTS=256;
 alpha=2.5;%2.5
 SMPARA=10; %3 works well
 %% Number of iterations
-NIT=1200;%600
-RDIM=20;
+NIT=1000;%600
+RDIM=100;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -57,7 +57,7 @@ I1=fMRIDataSq;
 %% data 2
 fMRIData=fMRI2;
 %% Sim
-if (1)
+if (0)
     Z=zeros(256,256);
     Z(128,128)=10000;
     H=fspecial('gaussian',round([6*10 6*10]),10);

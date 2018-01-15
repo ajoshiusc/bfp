@@ -28,7 +28,7 @@ for sc=1:2
     [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
     t1=toc(h)
     
-    save(sprintf('aaj1200_%d.mat',sc),'wsub','origmap','newmap','s','costiter','ind');
+    save(sprintf('aaj1000_%d.mat',sc),'wsub','origmap','newmap','s','costiter','ind');
     
     [~,C1]=vertices_connectivity_fast(s);
     [s,A1]=smooth_cortex_fast(s,.8,50);

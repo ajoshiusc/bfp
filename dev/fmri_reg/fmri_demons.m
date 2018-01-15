@@ -5,7 +5,7 @@ NPTS=256;
 alpha=2.5;%2.5
 SMPARA=10; %3 works well
 %% Number of iterations
-NIT=1000;%600
+NIT=500;%600
 RDIM=100;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);

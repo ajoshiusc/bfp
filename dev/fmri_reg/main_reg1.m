@@ -15,7 +15,7 @@ param.NPTS=256;
 param.alpha=2.5;%2.5
 param.NIT=1000;%600
 param.RDIM=20;
-param.Simulation=1;
+param.Simulation=0;
 
 
 for sc=1:2

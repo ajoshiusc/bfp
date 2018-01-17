@@ -25,7 +25,7 @@ for sc=1:2
     sub2=ft_read_cifti(sub2);
     
     h=tic;
-    [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
+    [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left',param);
     t1=toc(h)
     
     save(sprintf('aaj_%d.mat',sc),'param','wsub','origmap','newmap','s','costiter','ind');

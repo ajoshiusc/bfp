@@ -5,8 +5,8 @@ NPTS=256;
 alpha=2.5;%2.5
 SMPARA=10; %3 works well
 %% Number of iterations
-NIT=500;%600
-RDIM=100;
+NIT=2000;%600
+RDIM=200;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -37,11 +37,11 @@ fMRI2 = brainSync(fMRI1',fMRI2')';
 
 if RDIM ~=0
     %Reduce dimensionality
-[W,Y]=pca([fMRI1;fMRI2]);
-fMRI1=fMRI1/W';
-fMRI2=fMRI2/W';
-fMRI1=fMRI1(:,[1:RDIM]);
-fMRI2=fMRI2(:,[1:RDIM]);
+    [W,Y]=pca([fMRI1;fMRI2]);
+    fMRI1=fMRI1/W';
+    fMRI2=fMRI2/W';
+    fMRI1=fMRI1(:,[1:RDIM]);
+    fMRI2=fMRI2(:,[1:RDIM]);
 end
 %% data 1
 fMRIData=fMRI1;

@@ -11,24 +11,24 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 BFPPATH='/home/ajoshi/coding_ground/bfp';
 BrainSuitePath='/home/ajoshi/BrainSuite17a/svreg';
 
+param.NPTS=256;
+param.alpha=2.5;%2.5
+param.NIT=1000;%600
+param.RDIM=20;
+param.Simulation=1;
+
+
 for sc=1:2
     sub1=sprintf('/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST%d_LR/rfMRI_REST%d_LR_Atlas_hp2000_clean.dtseries.nii',sc,sc);
     sub2=sprintf('/big_disk/ajoshi/HCP5/103414/MNINonLinear/Results/rfMRI_REST%d_LR/rfMRI_REST%d_LR_Atlas_hp2000_clean.dtseries.nii',sc,sc);
     sub1=ft_read_cifti(sub1);
     sub2=ft_read_cifti(sub2);
     
-    % a=load('/big_disk/ajoshi/HCP5-fMRI-NLM/100307/100307.rfMRI_REST1_LR.reduce3.ftdata.NLM_11N_hvar_25.mat');
-    % sub1.dtseries=a.ftdata_NLM;
-    % a=load('/big_disk/ajoshi/HCP5-fMRI-NLM/110411/110411.rfMRI_REST1_LR.reduce3.ftdata.NLM_11N_hvar_25.mat');
-    % sub2.dtseries=a.ftdata_NLM;
-    
-    %sub1.dtseries=sub1.dtseries(:,[1:100]);
-    %sub2.dtseries=sub2.dtseries(:,[1:100]);
     h=tic;
     [wsub,origmap,newmap,s,costiter,ind]=fmri_demons(sub1,sub2,BFPPATH,'left');
     t1=toc(h)
     
-    save(sprintf('aaj2000_%d_200dim.mat',sc),'wsub','origmap','newmap','s','costiter','ind');
+    save(sprintf('aaj_%d.mat',sc),'param','wsub','origmap','newmap','s','costiter','ind');
     
     [~,C1]=vertices_connectivity_fast(s);
     [s,A1]=smooth_cortex_fast(s,.8,50);
@@ -43,9 +43,7 @@ for sc=1:2
     axis equal;axis off;material dull;axis tight;
     saveas(h,'warped_sqr_mesh.png');
     
-    figure;plot(costiter);
-    %save temp1
-    
+    figure;plot(costiter);    
     %%
     a=load('/home/ajoshi/coding_ground/bfp/supp_data/bci_grayordinates_surf_ind.mat');
     atl=readdfs('/home/ajoshi/coding_ground/svreg/USCBrain/BCI-DNI_brain.left.mid.cortex.dfs');
@@ -94,5 +92,4 @@ for sc=1:2
     patch('faces',s.faces,'vertices',newmap,'facevertexcdata',sw.vcolor,'edgecolor','none','facecolor','interp');
     axis equal;axis off;camlight;material dull;
     saveas(sq,'warped_flat.png');
-    
 end

@@ -1,12 +1,12 @@
-function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPPATH,hemi)
+function [wsub,origmap,newmap,surfObj,costiter,ind] = fmri_demons(sub1,sub2,BFPPATH,hemi,param)
 
-NPTS=256;
+NPTS=param.NPTS;%256;
 %% Alpha (noise) constant
-alpha=2.5;%2.5
-SMPARA=10; %3 works well
+alpha=param.alpha;%2.5;%2.5
 %% Number of iterations
-NIT=2000;%600
-RDIM=200;
+NIT=param.NIT;%2000;%600
+RDIM=param.RDIM;%200;
+Simulation=param.Simulation;
 surfObj=readdfs(fullfile(BFPPATH,'supp_data',['bci32k',hemi,'.dfs']));
 numVert=length(surfObj.vertices);
 a=load(fullfile(BFPPATH,'supp_data',['HCP_32k_Label','.mat']));
@@ -57,7 +57,7 @@ I1=fMRIDataSq;
 %% data 2
 fMRIData=fMRI2;
 %% Sim
-if (0)
+if (Simulation)
     Z=zeros(256,256);
     Z(128,128)=10000;
     H=fspecial('gaussian',round([6*10 6*10]),10);

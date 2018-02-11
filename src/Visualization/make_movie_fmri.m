@@ -7,6 +7,8 @@ sc = 3;
 
 cmap=bipolarcmapW(100,[-sc,sc],'linear','br');
 dfs_refL = readdfs(fullfile(bfpdir,'supp_data/bci32kleft.dfs'));
+dfs_refL=smooth_cortex_fast(dfs_refL,0.1,300);
+
 nV=length(dfs_refL.vertices);
 
 dfs_refR = readdfs(fullfile(bfpdir,'supp_data/bci32kright.dfs'));

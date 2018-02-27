@@ -1,5 +1,5 @@
 # ||AUM||
-import scipy.io
+import scipy.io as spio
 import scipy as sp
 import numpy as np
 from fmri_methods_sipi import rot_sub_data
@@ -14,6 +14,8 @@ import h5py
 p_dir = '/big_disk/ajoshi/HCP_Data_For_Haleh'
 lst = os.listdir(p_dir)
 count1 = 0
+spio.savemat('test1.mat', {'count1': count1})
+
 fn1 = 'rfMRI_1_LR.mat'
 fname1 = os.path.join(p_dir, fn1)
 mskf = h5py.File(fname1, 'r')
@@ -40,7 +42,7 @@ for sub in lst:
 
     sub_data[:, :, count1] = d
     count1 += 1
-    print count1,
+    print(count1,)
 
 #%%
 r = h5py.File('/big_disk/ajoshi/fmri_Atlas_Result/result_raw.mat')
@@ -48,7 +50,7 @@ atlas = sp.array(r['X2']).T
 sub_data = sp.concatenate((sub_data, atlas[:, :, None]), axis=2)
 
 nSub = sub_data.shape[2]
-print nSub
+print(nSub)
 dist_all_orig = sp.zeros([nSub, nSub])
 dist_all_rot = dist_all_orig.copy()
 #sub_data_orig = sub_data.copy()
@@ -61,7 +63,7 @@ for ind1 in range(nSub):
                                     Y=sub_data[:, :, ind2])
         dist_all_rot[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] -
                                                   sub_data_rot)
-        print ind1, ind2
+        print(ind1, ind2)
 
 
 sp.savez('Haleh_pairwise_dist_all_sub_by_sub2.npz', dist_all_rot=dist_all_rot,
@@ -81,7 +83,7 @@ for sub in lst:
 lst2[nsub] = 'JSGA atlas'
 
 q = sp.argmin(a['dist_all_rot'][:-1, :-1].sum(1))
-print('The representative subject is: %s '%lst2[q])
+print('The representative subject is: %s ' % lst2[q])
 m = MDS(n_components=2, dissimilarity='precomputed')
 e = m.fit_transform(a['dist_all_rot'])
 print(e)
@@ -95,8 +97,8 @@ diff = 0
 for ind in range(nsub):
     Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
     diff += (Y2 - sub_data[:, :, q]) ** 2
-    
-sp.io.savemat('diff_individual_atlas.mat', {'diff': diff})
+
+spio.savemat('diff_individual_atlas.mat', {'diff': diff})
 
 #%% Create Average atlas by synchronizing everyones data to one subject
 atlas = 0
@@ -109,9 +111,9 @@ diff = 0
 for ind in range(nsub):
     Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
     diff += (Y2 - atlas) ** 2
-    print ind,
+    print(ind,)
 
-sp.io.savemat('diff_average_atlas.mat', {'diff': diff})
+spio.savemat('diff_average_atlas.mat', {'diff': diff})
 
 
 #%% Compute difference for the virtual subject
@@ -121,4 +123,4 @@ atlas = sp.array(r['X2']).T
 for ind in range(nsub):
     Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
     diff += (Y2 - atlas) ** 2
-sp.io.savemat('diff_avg_atlas.mat', {'diff': diff})
+spio.savemat('diff_avg_atlas.mat', {'diff': diff})

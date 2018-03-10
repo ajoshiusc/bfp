@@ -15,7 +15,7 @@ The analtomical processing pipeline in BFP is based on [BrainSuite](http://brain
 ## Functional Processing
 The functional data is processed using several tools from [AFNI](https://afni.nimh.nih.gov/) and [FSL](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki) as detailed below. A good reference for fMRI processing is this [wikibook](https://en.wikibooks.org/wiki/Neuroimaging_Data_Processing#Functional_MRI).
 
- * We generate 3mm isotropic representation of BCI-DNI atlas as a standard reference. fMRI data is coregistered to this template. This steps puts subjects T1 and fMRI data in a common space.
+ * We generate 3mm isotropic representation of BCI-DNI atlas as a standard reference. fMRI data is coregistered to this template later in the sequence to put subjects T1 and fMRI data in a common space.
  * The fMRI data is deobliqued. This step changes some of the information inside a fmri dataset's header and is reoriented in FSL friendly space. 
  * The motion correction is performed to average of time series. This is followed by skull stripping.
  * Spatial smoothing is performed with Gaussian kernel and FWHM of 2mm.

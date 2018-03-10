@@ -19,14 +19,14 @@ llab=lab.brainstructure(1:nV);
 rlab=lab.brainstructure((1+nV):2*nV);
 
 %load('/deneb_disk/studyforrest/sub-01-run2/fmrit_reduce3_v2.mat');
-load(fmridatfile)
+load(fmridatfile);%dtseries=dtseries';
 % dataL and dataR are fMRI data on two hemispheres, N x T
 dataL=dtseries(1:nV,:);dataR=dtseries((1+nV):(2*nV),:);
 dataL(isnan(llab),:)=0;dataR(isnan(rlab),:)=0;
 dataL=normalizeData(dataL')';dataL=dataL*sqrt(size(dataL,2));
 dataR=normalizeData(dataR')';dataR=dataR*sqrt(size(dataR,2));
 % interpolate data to 10 fps 
-tMax = 30; % desired length of the video in seconds, here 30sec
+tMax = 198; % desired length of the video in seconds, here 30sec
 tItvOrg = TR; % TR, here for HCP 0.72
 tAxisOrg = 0:tItvOrg:tMax;
 fsItp = 5; % video fps

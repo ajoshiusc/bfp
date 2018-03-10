@@ -21,33 +21,19 @@ fmri=$2
 func_dir=$3
 #/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
 ## first timepoint (remember timepoint numbering starts from 0)
-#TRstart=$4
-#0
-## last timepoint
-#TRend=$5
-#450
-## TR
 TR=$4
-#2
 nuisance_template=$5
-#/home/ajoshi/coding_ground/bfp/src/nuisance.fsf
-## number of time points
-#n_vols=$8
-#451
 n_vols=$(3dinfo -nv ${fmri}.nii.gz)
 TRstart=0
 TRend=$((n_vols-1))
 echo $TR 
-## set your desired spatial smoothing FWHM - we use 6 (acquisition voxel size is 3x3x4mm)
+## set your desired spatial smoothing FWHM 
 FWHM=$9
-#6
 sigma=`echo "scale=10 ; ${FWHM}/2.3548" | bc`
 
 ## Set high pass and low pass cutoffs for temporal filtering
 hp=$10
-#0.005
 lp=$11
-#0.1
 
 ## Example func image
 
@@ -60,7 +46,7 @@ example=$(basename "$fmri")_example
 ##########################################################################################################################
 
 echo ---------------------------------------
-echo !!!! PREPROCESSING FUNCTIONAL SCAN !!!!
+echo BFP fMRI PREPROCESSING !
 echo ---------------------------------------
 
 cwd=$( pwd )
@@ -122,7 +108,6 @@ flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.n
 convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
 echo t12${example}_func.mat 
 
-## TBD
 
 ## 12.FUNC->standard (3mm)
 ## You may want to change some of the options

@@ -1,30 +1,34 @@
-function make_movie_fmri(bfpdir,fmridatfile,outgiffile,TR)
+function make_movie_fmri(bfpdir,fmridatfile,outgiffile,TR, sc)
 
 if ischar(TR)
     TR=str2double(TR);
 end
-sc = 3;
-
+%sc is upper and lower limit on the colorscale
 cmap=bipolarcmapW(100,[-sc,sc],'linear','br');
 dfs_refL = readdfs(fullfile(bfpdir,'supp_data/bci32kleft.dfs'));
-dfs_refL=smooth_cortex_fast(dfs_refL,0.1,300);
+dfs_refL=smooth_cortex_fast(dfs_refL,0.1,1000);
 
 nV=length(dfs_refL.vertices);
 
 dfs_refR = readdfs(fullfile(bfpdir,'supp_data/bci32kright.dfs'));
-dfs_refR=smooth_cortex_fast(dfs_refR,0.1,300);
+dfs_refR=smooth_cortex_fast(dfs_refR,0.1,1000);
 
 lab=load(fullfile(bfpdir,'supp_data','HCP_32k_Label.mat'));
 llab=lab.brainstructure(1:nV);
 rlab=lab.brainstructure((1+nV):2*nV);
 
 %load('/deneb_disk/studyforrest/sub-01-run2/fmrit_reduce3_v2.mat');
-load(fmridatfile);%dtseries=dtseries';
+load(fmridatfile);dtseries=dtseries';
 % dataL and dataR are fMRI data on two hemispheres, N x T
 dataL=dtseries(1:nV,:);dataR=dtseries((1+nV):(2*nV),:);
 dataL(isnan(llab),:)=0;dataR(isnan(rlab),:)=0;
-dataL=normalizeData(dataL')';dataL=dataL*sqrt(size(dataL,2));
-dataR=normalizeData(dataR')';dataR=dataR*sqrt(size(dataR,2));
+if ~exist('sc','var')
+    sc=prctile(abs(dtseries(:)),99);
+end
+%dataL=normalizeData(dataL')';
+%dataL=dataL*sqrt(size(dataL,2));
+%dataR=normalizeData(dataR')';
+%dataR=dataR*sqrt(size(dataR,2));
 % interpolate data to 10 fps 
 tMax = 198; % desired length of the video in seconds, here 30sec
 tItvOrg = TR; % TR, here for HCP 0.72

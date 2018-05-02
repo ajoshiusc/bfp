@@ -13,13 +13,13 @@
 %     varargout - print to screen if no output, otherwise output the estimated size and unit
 % 
 % Copyright:
-%     2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2017-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.0.3
+%     1.0.4
 % Date:
-%     2017/08/16
+%     2017/05/02
 %
 
 function varargout = estimateVarSize(varType, numE, unit)
@@ -53,4 +53,5 @@ function varargout = estimateVarSize(varType, numE, unit)
         varargout{1} = estSize;
         varargout{2} = unitOut;
     end
+    
 end

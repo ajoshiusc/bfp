@@ -11,7 +11,7 @@
 %     map - the map
 % 
 % Copyright:
-%     2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2017-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:

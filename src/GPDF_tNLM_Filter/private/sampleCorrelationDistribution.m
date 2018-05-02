@@ -14,18 +14,18 @@
 %     P - the distribution evaluted at r
 % 
 % Copyright:
-%     2016-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2016-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.0.2
+%     1.0.3
 % Date:
-%     2017/06/01
+%     2018/05/02
 %
 
 function P = sampleCorrelationDistribution(r, rho, N, isPlot)
 
-    if ~exist('isPlot', 'var')
+    if ~exist('isPlot', 'var') || isempty(isPlot)
         isPlot = false;
     end
     

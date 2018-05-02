@@ -14,13 +14,13 @@
 %     stdVal - standard deviation that divided by
 % 
 % Copyright:
-%     2013-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2013-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.0.2
+%     1.0.3
 % Date:
-%     2017/08/04
+%     2018/05/02
 %
 
 function [dataOut, meanVal, stdVal] = zeroMeanUnitVariance(dataIn, dim)

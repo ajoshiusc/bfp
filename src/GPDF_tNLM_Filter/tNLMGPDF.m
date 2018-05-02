@@ -1,8 +1,8 @@
 %
-% [dataSm, output] = tNLMPdf(data, option)
+% [dataSm, output] = tNLMGPDF(data, option)
 % 
 % Description:
-%     PDF-based temporal non-local means filtering
+%     Global PDF-based temporal non-local means filtering
 % 
 % Input:
 %     data - time series N x T
@@ -13,16 +13,16 @@
 %     output - output structure containing intermediate results
 % 
 % Copyright:
-%     2016-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2016-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.4.5
+%     9.4.6
 % Date:
-%     2017/09/08
+%     2018/05/02
 %
 
-function [dataSm, output] = tNLMPdf(data, option)
+function [dataSm, output] = tNLMGPDF(data, option)
     
     if nargin == 0 % return default option
         option = struct;
@@ -38,7 +38,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     end
 
     if ~exist('option', 'var') || isempty(option)
-        option = tNLMPdf();
+        option = tNLMGPDF();
     end
     
     if option.isVerbose
@@ -69,7 +69,6 @@ function [dataSm, output] = tNLMPdf(data, option)
     memRec = estimateVarSize('double', recomNumSpKE^2 * 2, 'GB');
     memFullCorrMat = estimateVarSize('double', numV2*numV2, 'GB');
     
-    % only work for linux now
     memInfo = getMemoryInfo();
     if ~isempty(memInfo.available)
         isDetected = true;
@@ -284,7 +283,7 @@ function [dataSm, output] = tNLMPdf(data, option)
         d = sum(B, 2);
         B = spdiags(1./d, 0, size(B, 1), size(B, 1)) * B;
         data3(idxS:idxE, :) = B * data2;
-        clear B d;
+        clear d;
         
         if option.isVerbose
             strLen = progressTracker(m, numBlk, strLen, 50);
@@ -317,6 +316,7 @@ function [dataSm, output] = tNLMPdf(data, option)
     output.r = r;
     output.h = h;
     output.w = w;
+    output.B = B;
     
     if option.isVerbose
         disp('done');

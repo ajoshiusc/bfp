@@ -2,7 +2,7 @@
 % strLen = progressTracker(counter, totalNum, prevStrLen, barLen)
 % 
 % Description:
-%     tracking a progress of a for loop by printing a progress bar and the percentage
+%     tracking a progress of a for loop
 % 
 % Input:
 %     counter - current iteration counter
@@ -14,13 +14,13 @@
 %     strLen - the current length of string shown on screen used for the next input
 % 
 % Copyright:
-%     2013-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2013-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.1.2
+%     1.1.3
 % Date:
-%     2017/08/16
+%     2018/01/22
 %
 
 function strLen = progressTracker(counter, totalNum, prevStrLen, barLen)

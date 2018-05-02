@@ -2,7 +2,9 @@
 % [x, output] = fastNNLS(AtA, Atb, optNNLS)
 % 
 % Description:
-%     fast non-negative least square implementation of Bro's paper
+%     fast non-negative least square implementation of Bro's paper.
+%     Bro et al. A fast non-negativity-constrained least squares algorithm.
+%     Journal of chemometrics, 11(5), pp.393-403, 1997.
 % 
 % Input:
 %     AtA - A' * A
@@ -14,13 +16,13 @@
 %     output - tol and actual number of iterations
 % 
 % Copyright:
-%     2016-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2016-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     2.3.2
+%     2.3.3
 % Date:
-%     2017/06/01
+%     2017/05/02
 %
 
 function [x, output] = fastNNLS(AtA, Atb, optNNLS)

@@ -11,13 +11,13 @@
 % Output:
 % 
 % Copyright:
-%     2016-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2016-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     2.1.7
+%     2.1.8
 % Date:
-%     2017/08/16
+%     2018/05/02
 %
 
 function parProgressTracker(mode, num)

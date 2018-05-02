@@ -10,13 +10,13 @@
 %     units - the cell array of units
 % 
 % Copyright:
-%     2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2017-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.0.2
+%     1.0.3
 % Date:
-%     2017/08/16
+%     2017/05/02
 %
 
 function units = getByteUnits()

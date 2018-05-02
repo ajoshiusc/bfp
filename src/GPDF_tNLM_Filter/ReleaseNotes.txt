@@ -1,0 +1,9 @@
+Release Notes
+
+2017/09/08
+    * First release of the GPDF filter
+
+2018/05/02
+    * Fixed a bug in openning parallel pool for Matlab version older than 2016a
+    * Auto detect pct toolbox, if not installed run single thread.
+    * Memory detection return nothing if not unix

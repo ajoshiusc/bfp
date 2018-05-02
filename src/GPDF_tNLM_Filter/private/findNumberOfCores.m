@@ -10,13 +10,13 @@
 %     numCores - number of cpu cores
 % 
 % Copyright:
-%     2014-2017 (c) USC Biomedical Imaging Group (BigLab)
+%     2014-2018 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     1.0.2
+%     1.0.3
 % Date:
-%     2017/08/16
+%     2018/01/22
 %
 
 function numCores = findNumberOfCores()

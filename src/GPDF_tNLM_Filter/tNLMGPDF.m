@@ -17,7 +17,7 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.4.6
+%     9.4.7
 % Date:
 %     2018/05/02
 %
@@ -65,8 +65,8 @@ function [dataSm, output] = tNLMGPDF(data, option)
     
     numSpKE = recomNumSpKE;
     
-    memReq = estimateVarSize('double', minNumSpKE^2 * 2, 'GB');
-    memRec = estimateVarSize('double', recomNumSpKE^2 * 2, 'GB');
+    memReq = estimateVarSize('double', minNumSpKE^2 * 3, 'GB');
+    memRec = estimateVarSize('double', recomNumSpKE^2 * 3, 'GB');
     memFullCorrMat = estimateVarSize('double', numV2*numV2, 'GB');
     
     memInfo = getMemoryInfo();
@@ -224,15 +224,15 @@ function [dataSm, output] = tNLMGPDF(data, option)
     clear PJoint PPost basis AtA;
     
     if option.isVerbose
-        disp('tNLM-pdf filtering');
+        disp('GPDF filtering');
     end
     
-    % use 95% avaiable memory to avoid freezing
-    memLim = memLim * 0.9;
+    % use 80% avaiable memory to avoid freezing
+    memLim = memLim * 0.8;
     
-    % multiply by 2 because A and B simutaneously exist below for a short
-    % time
-    numBlk = ceil(memFullCorrMat / memLim * 2);
+    % multiply by 2.1 because A, B and other data simutaneously exist below 
+    % for a short time
+    numBlk = ceil(memFullCorrMat / memLim * 2.1);
     if option.isVerbose
         str = ['based on the memory limitation, we will have ' num2str(numBlk)];
         if numBlk == 1

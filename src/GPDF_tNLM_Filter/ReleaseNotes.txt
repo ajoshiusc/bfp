@@ -7,3 +7,4 @@ Release Notes
     * Fixed a bug in openning parallel pool for Matlab version older than 2016a
     * Auto detect pct toolbox, if not installed run single thread.
     * Memory detection return nothing if not unix
+    * Reserved more memory for OS to prevent freezing further

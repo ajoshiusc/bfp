@@ -1,5 +1,3 @@
-Release Notes
-
 2017/09/08
     * First release of the GPDF filter
 
@@ -8,3 +6,6 @@ Release Notes
     * Auto detect pct toolbox, if not installed run single thread.
     * Memory detection return nothing if not unix
     * Reserved more memory for OS to prevent freezing further
+
+2018/05/29
+    * Added an option for single thread processing

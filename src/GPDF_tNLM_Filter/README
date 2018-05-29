@@ -1,0 +1,63 @@
+========================================
+License
+========================================
+
+Without otherwise noticed, the tNLMGPDF code and all of its dependencies ("CODE"), including, but not limited to, the dependent functions, files, documentations, either distributed in source code or a compiled version, are licensed under the CC Attribution-ShareAlike 4.0 International License. Further details can be found at http://creativecommons.org/licenses/by-sa/4.0/.
+
+You are required to cite at least the original GPDF paper if you use this CODE and/or its derivatives, including, but not limited to, the GPDF filtering step in the BrainSuite fMRI processing pipeline, in your own work.
+
+J. Li, S. Y. Choi, A. A. Joshi, J. L. Wisnowski, R. M. Leahy, "Global PDF-based temporal non-local means filtering reveals individual differences of brain connectivity", 2018 IEEE 15th International Symposium on Biomedical Imaging (ISBI), Washington D.C., 2018.
+
+========================================
+Disclaimer
+========================================
+
+IN NO EVENT SHALL THE AUTHORS, THE CONTRIBUTORS, THE DISTRIBUTORS AND THE UNIVERSITY OF SOUTHERN CALIFORNIA ("AUTHORS") BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF THIS CODE, EVEN IF THE AUTHORS HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. THE AUTHORS SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. FOR RESEARCH PURPOSE ONLY. THIS CODE IS PROVIDED ON A "AS IS" BASIS AND THE AUTHORS HAVE NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+
+========================================
+Usage
+========================================
+
+Function call:
+[dataSm, output] = tNLMGPDF(data, option);
+
+data - a V x T matrix where V is the number of vertices and T is the number of time samples
+
+option - optional parameters, call function without input parameter to obtain the default options, i.e. option = tNLMGPDF();
+	option.normalization - how to normalize the data after filtering
+		0 - no normalization
+		1 - zero mean (default)
+		2 - zero mean and unit variance
+	option.selfWeightMode - what weight is assigned to the data point that is being filtered
+		0 - one
+		1 - same as the second largest weight (default)
+		2 - zero
+	option.FPR - false positive rate regariding the noise distribution (default = 0.001)
+	option.memoryLimit - specifiy the memory limit
+		a positive number - memory limit in GB
+		'auto' - try to detect available memory automatically (only works for Linux now)
+    option.numCPU - specify the number of cpu cores used for parallel processing
+        a positive integer - number of cpu cores
+        'auto' - try to detect the max number of cpu cores automatically and use the max number - 1 for parallel processing
+	option.isPlot - binary flag indicating whether the weighting function and the distributions will be shown (default = false)
+	option.isVerbose - binary flag indicating the verboseness of information printing (default = true)
+	option.SCBFile - a file that stores the sample correlation basis (default = SCB.mat in the current directory)
+
+dataSm - filtered data
+
+output - other intermediate result
+	output.r - sample correlation axis
+	output.h - optimized parameter h
+	output.w - kernel weight as a function of r
+    output.B - actual filtering weights for all vertices
+
+also see demo.m for example
+
+========================================
+Notes
+========================================
+
+* The input data for fMRI study should be concatenated data from both hemispheres.
+* For each different length of fMRI recordings (T), the sample correlation basis needs to be re-pre-calculated once. This will take a while to finish. It will take even longer if you don't have a multi-core CPU. Hence, it is strongly recommended to pre-compute the basis before filtering the fMRI data, especially if you want to process a group of subject in batch.
+
+

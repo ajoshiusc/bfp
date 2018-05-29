@@ -17,9 +17,9 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     9.4.7
+%     9.5.0
 % Date:
-%     2018/05/02
+%     2018/05/29
 %
 
 function [dataSm, output] = tNLMGPDF(data, option)
@@ -30,6 +30,7 @@ function [dataSm, output] = tNLMGPDF(data, option)
         option.normalization = 1;
         option.FPR = 1e-3;
         option.memoryLimit = 'auto';
+        option.numCPU = 'auto';
         option.isPlot = false;
         option.isVerbose = true;
         option.SCBFile = fullfile(pwd, 'SCB.mat');
@@ -43,6 +44,10 @@ function [dataSm, output] = tNLMGPDF(data, option)
     
     if option.isVerbose
         disp('pre-processing data');
+    end
+    
+    if ~(strcmp(option.numCPU, 'auto') || (option.numCPU >= 1))
+        error('option numCPU needs to be either auto or a postive integer');
     end
     
     [numV, numT] = size(data);
@@ -137,7 +142,8 @@ function [dataSm, output] = tNLMGPDF(data, option)
     end
     
     % get basis <=> conditional distribution P(r|rho)
-    [basis, r, rhos] = getSampleCorrelationBasis(numT, option.SCBFile);
+    [basis, r, rhos] = getSampleCorrelationBasis(numT, option.SCBFile, ...
+                                        option.numCPU, option.isVerbose);
     
     % get boundary of H0 based on theoretical h0 distribution 50% prob
     p00 = basis(:, 101);

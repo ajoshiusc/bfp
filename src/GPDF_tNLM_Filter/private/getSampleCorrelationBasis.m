@@ -7,6 +7,8 @@
 % Input:
 %     T - number of time samples
 %     fileName - file name for caching
+%     numCPU - number of cpu used for parallel processing
+%     isVerbose - verbosity
 % 
 % Output:
 %     basis - sample correlation basis
@@ -18,15 +20,19 @@
 % Author:
 %     Jian (Andrew) Li
 % Revision:
-%     2.3.0
+%     2.4.0
 % Date:
-%     2018/05/02
+%     2018/05/29
 %
 
-function [basis, r, rho] = getSampleCorrelationBasis(T, fileName, isVerbose)
+function [basis, r, rho] = getSampleCorrelationBasis(T, fileName, numCPU, isVerbose)
 
     if ~exist('fileName', 'var') || isempty(fileName)
         fileName = fullfile(pwd, 'SCB.mat');
+    end
+    
+    if ~exist('numCPU', 'var') || isempty(numCPU)
+        numCPU = 'auto';
     end
     
     if ~exist('isVerbose', 'var') || isempty(isVerbose)
@@ -44,7 +50,7 @@ function [basis, r, rho] = getSampleCorrelationBasis(T, fileName, isVerbose)
         idx = find(Ts == T);
         
         if isempty(idx)
-            [basis, r, rho] = calculateBasis(T, isVerbose);
+            [basis, r, rho] = calculateBasis(T, numCPU, isVerbose);
             num = length(Ts);
             Ts = [Ts, T];
             Bs{num+1} = basis;
@@ -59,7 +65,7 @@ function [basis, r, rho] = getSampleCorrelationBasis(T, fileName, isVerbose)
             basis = Bs{idx};
         end
     else
-        [basis, r, rho] = calculateBasis(T, isVerbose);
+        [basis, r, rho] = calculateBasis(T, numCPU, isVerbose);
         SCB = struct();
         SCB.R = r;
         SCB.Rho = rho;
@@ -69,7 +75,7 @@ function [basis, r, rho] = getSampleCorrelationBasis(T, fileName, isVerbose)
     end
 end
 
-function [basis, r, rhos] = calculateBasis(T, isVerbose)
+function [basis, r, rhos] = calculateBasis(T, numCPU, isVerbose)
     
     if isVerbose
         disp(['you do not have sample correlation basis for length ' num2str(T)]);
@@ -84,11 +90,17 @@ function [basis, r, rhos] = calculateBasis(T, isVerbose)
     
     isParTB = checkMatlabToolbox('pct'); % if parallel processing toolbox installed
     
+    if strcmp(numCPU, 'auto')
+        numCPU = 8; % do not open more than 8 if user did not specify the number
+    elseif numCPU == 1
+        isParTB = false;
+    end
+    
     if isParTB
         openHere = false;
         if ~parpoolOperator('isopen')
             openHere = true;
-            parpoolOperator('open', 8);
+            parpoolOperator('open', numCPU, isVerbose);
         end
         
         if isVerbose, parProgressTracker('s', numRhos-2); end

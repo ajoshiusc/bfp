@@ -103,6 +103,9 @@ setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
 setenv('BrainSuiteDir',config.BrainSuitePath);
 setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
+
+
+
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
@@ -117,6 +120,16 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
+
+if isfield(config, 'MultiThreading')
+    config.MultiThreading=str2double(config.MultiThreading);
+    if isnan(config.MultiThreading)
+        config.MultiThreading = 0;
+    end
+else
+    config.MultiThreading=1;
+end
+
 fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
@@ -233,7 +246,12 @@ if ~exist([subbasename,'.right.pial.cortex.dfs'],'file')
     unix(cmd);
 end
 fprintf('Running SVReg');
-cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
+if (config.MultiThreading == 1)
+    cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
+else
+    cmd=sprintf('%s %s %s -U',svreg_exe,subbasename,BCIbasename);
+end
+
 if ~exist([subbasename,'.svreg.label.nii.gz'],'file')
     unix(cmd);
 else

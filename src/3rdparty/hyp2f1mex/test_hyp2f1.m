@@ -7,7 +7,7 @@ if exist('hypergeom','file') ~= 2
 end
 
 
-numTest = 100;
+numTest = 1000;
 a = randn(numTest,1);
 b = randn(numTest,1);
 c = randn(numTest,1);

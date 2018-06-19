@@ -9,12 +9,12 @@ Current version of BFP is Linux only. A Debian based linux distribution (ubuntu/
 ## Installation and Setup
  * Install AFNI (Ver. Jun 12 2017 or newer) and FSL 5.0. We recommend using [NeuroDebian](http://neuro.debian.net) as it makes the installation process easier. BFP has been tested with this configuration, but it should work for other versions of Linux and other softwares. However we recommend and support the above mentioned versions.
  
- * Install [BrainSuite 17a](http://brainsuite.org).
- * Install Matlab 2017a if you want to run it from Matlab
+ * Install [BrainSuite 17a] or later version (http://brainsuite.org).
+ * Install Matlab 2017a or later if you want to run it from Matlab
  * Download bfp, unzip
- * Open bfp.mtx in Matlab Live Notebook and edit *User Inputs* section.
+ * Open <bfpdir>/src/preproc/sample_main.m in Matlab.
  * open <bfpdir>/supp_data/config.ini and set paths for FSL, AFNI and BrainSuite.
- * For preprocessing fMRI, run src/preproc/bfp.mtx
+ * For preprocessing fMRI, run src/preproc/sample_main.m from matlab. For binary, please follow instructions below.
 
 ## Usage
 ### Matlab

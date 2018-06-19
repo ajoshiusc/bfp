@@ -35,8 +35,10 @@ function P = sampleCorrelationDistribution(r, rho, N, isPlot)
     a4 = (N-4)/2 * log(1-r.^2);
     a5 = gammaln(N-0.5);
     a6 = (N-3/2) * log(1-rho.*r);
+
     
-    a7 = hypergeom([0.5 0.5], (2*N-1)/2, (rho.*r+1)/2);
+%   a7 = hypergeom([0.5 0.5], (2*N-1)/2, (rho.*r+1)/2);
+    a7 = hyp2f1(0.5, 0.5, (2*N-1)/2, (rho.*r+1)/2);
 
     P = a1 .* exp(a2 + a3 + a4 - a5 - a6) .* a7;
     P = P ./ sum(P);

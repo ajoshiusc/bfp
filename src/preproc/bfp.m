@@ -130,6 +130,14 @@ else
     config.MultiThreading=1;
 end
 
+if isfield(config, 'EnabletNLMPdfFiltering')
+    config.EnabletNLMPdfFiltering=str2double(config.EnabletNLMPdfFiltering);
+    if isnan(config.EnabletNLMPdfFiltering)
+        config.EnabletNLMPdfFiltering = 0;
+    end
+else
+    config.EnabletNLMPdfFiltering=1;
+end
 fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
@@ -286,7 +294,7 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file')
-        resample2surf(subbasename,fmri2standard,fmri2surfFile);
+        resample2surf(subbasename,fmri2standard,fmri2surfFile,config);
     else
         fprintf('Already ');
     end
@@ -321,16 +329,20 @@ fprintf('The grayordinates file is: %s\n',GOrdFile);
 %
 % The output is stored in <fmri fmri>.32k.GOrd.filt.nii.gz
 %%
-fprintf('## tNLMPDF Filtering...\n');
-for ind = 1:length(fmri)
-    GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
-    GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
-    fprintf('tNLMPdf filtering...\n');
-    if ~exist(GOrdFiltFile,'file')
-        tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
-    else
-        fprintf('Already ');
+if config.EnabletNLMPdfFiltering>0
+    
+    fprintf('## tNLMPDF Filtering...\n');
+    for ind = 1:length(fmri)
+        GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
+        GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
+        fprintf('tNLMPdf filtering...\n');
+        if ~exist(GOrdFiltFile,'file')
+            tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
+        else
+            fprintf('Already ');
+        end
+        fprintf('done\n');
     end
-    fprintf('done\n');
+    fprintf('The output filtered grayordinates file is: %s\n All done\n!! Good Night!\n',GOrdFiltFile);
 end
-fprintf('The output filtered grayordinates file is: %s\n All done\n!! Good Night!\n',GOrdFiltFile);
+fprintf('All done!\n');

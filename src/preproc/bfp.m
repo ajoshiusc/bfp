@@ -293,7 +293,7 @@ for ind = 1:length(fmri)
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol_GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
-    if ~exist(fmri2surfFile,'file')
+    if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file')
         resample2surf(subbasename,fmri2standard,fmri2surfFile,config);
     else
         fprintf('Already ');
@@ -303,6 +303,8 @@ for ind = 1:length(fmri)
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file')
         generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+        % The surf file is very large, deleting to save space
+        delete(fmri2surfFile); 
     else
         fprintf('Already ');
     end

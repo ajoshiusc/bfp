@@ -28,12 +28,14 @@ TRstart=0
 TRend=$((n_vols-1))
 echo $TR 
 ## set your desired spatial smoothing FWHM 
-FWHM=$9
+FWHM=$6
 sigma=`echo "scale=10 ; ${FWHM}/2.3548" | bc`
 
 ## Set high pass and low pass cutoffs for temporal filtering
-hp=$10
-lp=$11
+hp=$7
+lp=$8
+
+echo "FWHM=${FWHM}, lp=$lp, hp=$hp"
 
 ## Example func image
 

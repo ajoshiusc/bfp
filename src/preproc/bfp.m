@@ -305,7 +305,7 @@ for ind = 1:length(fmri)
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
         % The surf file is very large, deleting to save space
-        delete(fmri2surfFile); 
+        delete(fmri2surfFile);
     else
         fprintf('Already ');
     end
@@ -321,7 +321,7 @@ for ind = 1:length(fmri)
     if ~exist(GOrdFile,'file')
         combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
         delete(GOrdSurfFile);
-        delete(GOrdVolFile);        
+        delete(GOrdVolFile);
     else
         fprintf('Already ');
     end
@@ -340,7 +340,7 @@ if config.EnabletNLMPdfFiltering>0
     for ind = 1:length(fmri)
         GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
-        fprintf('tNLMPdf filtering for subject =%s session=%s\n',subid,sessionid{ind});
+        fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
             tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
         else

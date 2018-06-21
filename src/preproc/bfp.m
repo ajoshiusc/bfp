@@ -294,7 +294,7 @@ for ind = 1:length(fmri)
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol_GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
-    if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file')
+    if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         resample2surf(subbasename,fmri2standard,fmri2surfFile,config);
     else
         fprintf('Already ');
@@ -340,7 +340,7 @@ if config.EnabletNLMPdfFiltering>0
     for ind = 1:length(fmri)
         GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
-        fprintf('tNLMPdf filtering...\n');
+        fprintf('tNLMPdf filtering for subject =%s session=%s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
             tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
         else

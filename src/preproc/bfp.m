@@ -34,7 +34,7 @@ if nargin ~=7
     
     error('exiting');
 end
-disp('hi');
+disp('Starting BFP Processing');
 p=inputParser;
 
 addRequired(p,'configfile',@ischar);
@@ -168,11 +168,12 @@ if ~exist(funcDir,'dir')
     mkdir(funcDir);
 end
 
+fprintf('Copying fMRI files\n');
 for ind = 1:length(fmri)
     if ~exist(fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
         copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
     else
-        fprintf('Already done\n');
+        fprintf('subject=%s session=%s : Already done\n',subid,sessionid{ind});
     end
 end
 fprintf('done\n');
@@ -274,7 +275,7 @@ for ind=1:length(fmri)
     if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
         unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
     else
-        fprintf('Already done\n');
+        fprintf('fMRI %s : Already done\n',fmribasename);
     end
 end
 fprintf('done\n');
@@ -301,7 +302,7 @@ for ind = 1:length(fmri)
     
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
-    if ~exist(GOrdSurfFile,'file')
+    if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
         % The surf file is very large, deleting to save space
         delete(fmri2surfFile); 
@@ -310,7 +311,7 @@ for ind = 1:length(fmri)
     end
     fprintf('done\n');
     fprintf('Generating Volume Grayordinates\n');
-    if ~exist(GOrdVolFile,'file')
+    if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
         generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
     else
         fprintf('Already ');
@@ -319,6 +320,8 @@ for ind = 1:length(fmri)
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
         combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+        delete(GOrdSurfFile);
+        delete(GOrdVolFile);        
     else
         fprintf('Already ');
     end

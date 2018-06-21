@@ -348,6 +348,6 @@ if config.EnabletNLMPdfFiltering>0
         end
         fprintf('done\n');
     end
-    fprintf('The output filtered grayordinates file is: %s\n All done\n!! Good Night!\n',GOrdFiltFile);
+    fprintf('The output filtered grayordinates files are ready !! \n Good Night!\n');
 end
 fprintf('All done!\n');

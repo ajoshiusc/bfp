@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --mem=8000
+#SBATCH --mem=16000
 #SBATCH --time=1:00:00
 #SBATCH --ntasks=4
 echo ${subid}

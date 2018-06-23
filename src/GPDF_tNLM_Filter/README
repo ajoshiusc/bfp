@@ -2,7 +2,7 @@
 License
 ========================================
 
-Without otherwise noticed, the tNLMGPDF code and all of its dependencies ("CODE"), including, but not limited to, the dependent functions, files, documentations, either distributed in source code or a compiled version, are licensed under the CC Attribution-ShareAlike 4.0 International License. Further details can be found at http://creativecommons.org/licenses/by-sa/4.0/.
+Without otherwise noticed, the tNLMGPDF code and all of its dependencies ("CODE"), including, but not limited to, the dependent functions, files, documentations, either distributed in source code or a compiled version, are licensed under the GNU General Public License, version 2 (GPLv2). Further details can be found at https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html.
 
 You are required to cite at least the original GPDF paper if you use this CODE and/or its derivatives, including, but not limited to, the GPDF filtering step in the BrainSuite fMRI processing pipeline, in your own work.
 

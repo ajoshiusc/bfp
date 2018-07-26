@@ -110,6 +110,8 @@ BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
+thicknessPVC_exe=fullfile(BrainSuitePath,'svreg','bin','thicknessPVC.sh');
+
 BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain');
 ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.nii.gz');
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
@@ -138,6 +140,17 @@ if isfield(config, 'EnabletNLMPdfFiltering')
 else
     config.EnabletNLMPdfFiltering=1;
 end
+
+if isfield(config, 'EnableShapeMeasures')
+    config.EnableShapeMeasures=str2double(config.EnableShapeMeasures);
+    if isnan(config.EnableShapeMeasures)
+        config.EnableShapeMeasures = 0;
+    end
+else
+    config.EnableShapeMeasures = 1;
+end
+
+
 fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
@@ -350,4 +363,26 @@ if config.EnabletNLMPdfFiltering>0
     end
     fprintf('The output filtered grayordinates files are ready !! \n Good Night!\n');
 end
+
+if config.EnableShapeMeasures>0
+    
+    fprintf('Running thicknessPVC');
+    cmd=sprintf('%s %s %s',thicknessPVC_exe,subbasename);
+    subdir = fileparts(subbasename);
+    if ~exist(fullfile(subdir, 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'),'file')
+        unix(cmd);
+    else
+        fprintf('Already computed thicknessPVC');
+    end
+
+    if ~exist([subbasename,'.SCT.GOrd.mat'],'file')    
+        generateGOrdSCT(subbasename, GOrdSurfIndFile);
+    else
+        fprintf('Already done SCT');
+    end
+    
+    fprintf('done\n');
+end
+
+
 fprintf('All done!\n');

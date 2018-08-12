@@ -221,7 +221,7 @@ fprintf('done\n');
 % BrainSuite works best at this resolution
 %%
 fprintf('## Resample T1w image to 1mm cubic resolution \n')
-cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+cmd=sprintf('flirt -datatype short -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
 if ~exist(t1ds,'file')
     unix(cmd);
 else
@@ -244,7 +244,7 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+cmd=sprintf('flirt -datatype short -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
 if ~exist(bsenew,'file')
     unix(cmd);
 end

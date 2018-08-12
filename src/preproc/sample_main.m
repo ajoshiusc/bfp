@@ -3,10 +3,10 @@ addpath(genpath('/home/ajoshi/coding_ground/bfp/src'));
 
 % Set the input arguments
 configfile='/home/ajoshi/coding_ground/bfp/supp_data/config.ini';
-t1='/home/ajoshi/Desktop/for_SY/SCD062.nii.gz';
-fmri='/home/ajoshi/Desktop/for_SY/SCD062.BOLD.resting.nii.gz';
+t1='/home/ajoshi/BFP_issues/ACTL029/ACTL029.nii.gz';
+fmri='/home/ajoshi/BFP_issues/ACTL029/ACTL029.BOLD.resting.correct.nii.gz';
 studydir='/home/ajoshi/Desktop/for_SY/bfpout';
-subid='SCD062';
+subid='ACTL029';
 sessionid='rest';
 TR='2';
  

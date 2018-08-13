@@ -223,11 +223,9 @@ fprintf('done\n');
 fprintf('## Resample T1w image to 1mm cubic resolution \n')
 cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
 
-nii2int16(t1ds,t1ds);
-
-
 if ~exist(t1ds,'file')
     unix(cmd);
+    nii2int16(t1ds,t1ds);    
 else
     fprintf('Already ');
 end
@@ -249,11 +247,12 @@ fprintf('done\n');
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
 cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
-nii2int16(bsenew, bsenew);
 
 if ~exist(bsenew,'file')
     unix(cmd);
+    nii2int16(bsenew, bsenew);    
 end
+
 bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
 cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
 if ~exist(bsemask,'file')

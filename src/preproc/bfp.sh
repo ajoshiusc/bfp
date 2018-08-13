@@ -5,7 +5,7 @@ exe_dir=`dirname "$0"`
 
 # If MCR R2015b is installed in a non-default location, define correct path 
 # on next line and uncomment it (remove the leading "#")
-#BrainSuiteMCR="/path/to/your/MCR";
+# BrainSuiteMCR="/path/to/your/MCR";
 
 if [ -z "$BrainSuiteMCR" ]; then
   if [ -e /usr/local/MATLAB/MATLAB_Runtime/v90 ]; then

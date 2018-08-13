@@ -235,7 +235,7 @@ fprintf('done\n');
 fprintf('## Performing Skull Extraction\n');
 bse=fullfile(BrainSuitePath,'bin','bse');
 bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
-cmd=sprintf('%s --auto -i %s -o %s',bse,t1ds,bseout);
+cmd=sprintf('%s --auto --trim -i %s -o %s',bse,t1ds,bseout);
 if ~exist(bseout,'file')
     unix(cmd);
 else

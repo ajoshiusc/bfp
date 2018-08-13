@@ -16,7 +16,7 @@ if negzero
     v.img(v.img<0)=0;
 end
 
-save_untouch_nii(v, out_nii);
+save_untouch_nii_gz(v, out_nii);
 
 
 

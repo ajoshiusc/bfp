@@ -248,7 +248,9 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -datatype short -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+nii2int16(bsenew, bsenew);
+
 if ~exist(bsenew,'file')
     unix(cmd);
 end

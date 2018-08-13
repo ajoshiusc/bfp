@@ -221,7 +221,11 @@ fprintf('done\n');
 % BrainSuite works best at this resolution
 %%
 fprintf('## Resample T1w image to 1mm cubic resolution \n')
-cmd=sprintf('flirt -datatype short -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+
+nii2int16(t1ds,t1ds);
+
+
 if ~exist(t1ds,'file')
     unix(cmd);
 else

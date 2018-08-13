@@ -1,5 +1,5 @@
 
-function conv2int16(in_nii, out_nii, negzero)
+function nii2int16(in_nii, out_nii, negzero)
 
 if ~exist('negzero','var')
     negzero = 0;

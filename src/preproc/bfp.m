@@ -132,6 +132,15 @@ else
     config.MultiThreading=1;
 end
 
+if isfield(config, 'T1SpaceProcessing')
+    config.T1SpaceProcessing=str2double(config.T1SpaceProcessing);
+    if isnan(config.T1SpaceProcessing)
+        config.T1SpaceProcessing = 1;
+    end
+else
+    config.T1SpaceProcessing = 1;
+end
+
 if isfield(config, 'EnabletNLMPdfFiltering')
     config.EnabletNLMPdfFiltering=str2double(config.EnabletNLMPdfFiltering);
     if isnan(config.EnabletNLMPdfFiltering)
@@ -172,6 +181,11 @@ end
 t1hires=fullfile(anatDir,sprintf('%s.orig.hires.nii.gz',subid));
 t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid));
 
+if config.T1SpaceProcessing
+    ATLAS=t1hires;
+end
+
+
 if ~exist(t1hires,'file')
     copyfile(t1,t1hires);
 end
@@ -190,26 +204,23 @@ for ind = 1:length(fmri)
     end
 end
 fprintf('done\n');
-%% Generate 3mm BCI-DNI_brain brain as a standard template
-% This is used a template for fMRI data
-%%
-cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(funcDir,'standard.nii.gz'));
-fprintf('Creating 3mm isotropic standard brain\n');
-if ~exist(fullfile(funcDir,'standard.nii.gz'),'file')
-    unix(cmd);
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
 
 
 %% Generate 1mm BCI-DNI_brain brain as a standard template
 % This is used a template for anatomical T1 data
 %%
-ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
-cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
-fprintf('Creating 1mm isotropic standard brain\n');
-if ~exist(fullfile(anatDir,'standard1mm.nii.gz'),'file')
+if ~config.T1SpaceProcessing
+    ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
+    cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
+    fprintf('Creating 1mm isotropic standard brain\n');
+else
+    ATLAS_DS=fullfile(anatDir,'standard.nii.gz');
+    cmd=sprintf('cp %s %s', ATLAS, ATLAS_DS);
+    fprintf('Creating a copy of the t1 image to be used as the standard brain\n');
+end
+
+%why is this created?
+if ~exist(ATLAS_DS,'file')
     unix(cmd);
 else
     fprintf('Already ');
@@ -220,21 +231,32 @@ fprintf('done\n');
 %% Resample T1w image to 1mm cubic resolution
 % BrainSuite works best at this resolution
 %%
-fprintf('## Resample T1w image to 1mm cubic resolution \n')
-cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+if ~(config.T1SpaceProcessing)
+    fprintf('## Resample T1w image to 1mm cubic resolution \n')
+    cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+else
+    t1ds = t1hires;
+end
 
 if ~exist(t1ds,'file')
     unix(cmd);
-    nii2int16(t1ds,t1ds);    
+    nii2int16(t1ds,t1ds);
 else
     fprintf('Already ');
 end
 fprintf('done\n');
+
 %% Skull Strip MRI
 %%
 fprintf('## Performing Skull Extraction\n');
 bse=fullfile(BrainSuitePath,'bin','bse');
-bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
+
+if config.T1SpaceProcessing
+    bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));    
+else
+    bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
+end
+
 cmd=sprintf('%s --auto --trim -i %s -o %s',bse,t1ds,bseout);
 if ~exist(bseout,'file')
     unix(cmd);
@@ -246,25 +268,38 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+
+if config.T1SpaceProcessing
+    cmd = sprintf('cp %s %s', t1, bsenew);
+else
+    cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+end
 
 if ~exist(bsenew,'file')
     unix(cmd);
-    nii2int16(bsenew, bsenew);    
+    nii2int16(bsenew, bsenew, 0);
 end
 
-bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
-cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew,bsemask);
-if ~exist(bsemask,'file')
-    unix(cmd);
-end
 bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
+
 if ~exist(bsenew2,'file')
-    copyfile(bsenew,bsenew2);
+    if config.T1SpaceProcessing
+        copyfile(bseout,bsenew2);
+        nii2int16(bsenew2, bsenew2,0);
+    else
+        copyfile(bsenew,bsenew2);
+    end
 else
     fprintf('Already ');
 end
 fprintf('done\n');
+
+bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
+cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
+if ~exist(bsemask,'file')
+    unix(cmd);
+end
+
 %% Run BrainSuite and SVReg
 %%
 fprintf('## Running BrainSuite CSE\n');
@@ -285,6 +320,23 @@ else
     fprintf('Already ');
 end
 fprintf('done\n');
+
+%% Generate 3mm BCI-DNI_brain brain as a standard template
+% This is used a template for fMRI data
+%%
+if config.T1SpaceProcessing
+    ATLAS=fullfile(anatDir,sprintf('%s_T1w.bfc.nii.gz',subid));
+end
+
+cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(funcDir,'standard.nii.gz'));
+fprintf('Creating 3mm isotropic standard brain\n');
+if ~exist(fullfile(funcDir,'standard.nii.gz'),'file')
+    unix(cmd);
+else
+    fprintf('Already ');
+end
+fprintf('done\n');
+
 %% Run Batch_Process Pipeline for fMRI
 %%
 fprintf('## Run fmri preprocessing script\n');
@@ -379,8 +431,8 @@ if config.EnableShapeMeasures>0
     else
         fprintf('Already computed thicknessPVC');
     end
-
-    if ~exist([subbasename,'.SCT.GOrd.mat'],'file')    
+    
+    if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
         generateGOrdSCT(subbasename, GOrdSurfIndFile);
     else
         fprintf('Already done SCT');

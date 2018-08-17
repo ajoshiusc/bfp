@@ -42,3 +42,6 @@ bfp.sh /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /hom
 ## Statistical analysis pipelines
 The statistical analysis pipelines are available in src/stats directory as [Jupyter](https://jupyter-notebook-beginner-guide.readthedocs.io) notebooks. The usage and documentations for them is embedded in the jupyter notebooks. 
 These pipelines are written in python. 
+
+group_diff_pipeline.ipynb is the group difference pipeline.
+regression_pipeline.ipynb is the regression pipeline.

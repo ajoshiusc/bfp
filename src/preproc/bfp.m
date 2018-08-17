@@ -82,7 +82,7 @@ end
 %% Check if OS is supported
 %%
 fprintf('OS:%s\n',computer);
-if ~strcmp(computer,'GLNXA64')
+if ~strcmp(computer,'GLNXA64') && ~strcmp(computer,'MACI64')
     error('OS %s is not supported, please use Linux 64 bit computer to run BFP!',computer)
 end
 %% Read configuration file and set environment variables

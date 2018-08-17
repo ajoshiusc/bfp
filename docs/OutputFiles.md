@@ -9,6 +9,7 @@ Output directory structure is as follows:
 * The fMRI data is processed and outputs are stored in `func` directory.
 * <sub>_<sess>_32k.GOrd.mat is the fMRI data in the grayordinate format, as a nodex x time matrix.
 * <sub>_<sess>_32k.GOrd.filt.mat is the GPDF filtered output stored in the grayordinate format, as a nodex x time matrix.
-
+* <sub>.<hemi>.SCT.mat is the shape descriptor in grayordinate space. This is not generated in the default setup, but its computation can be enabled in config.ini file.
 Rest of the files are intermediate outputs as defined by the fMRi processing script.
+
 

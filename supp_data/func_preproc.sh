@@ -11,15 +11,11 @@ echo $@
 ##########################################################################################################################
 
 ## anatomical image
-#t1=$1
 t1=$1
-#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/anat/t1
 ## name of the fMRI scan
 fmri=$2
-#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1/fmri
 ## fmri scan directory
 func_dir=$3
-#/home/ajoshi/coding_ground/bfp/data/sub-01-run1/func-1
 ## first timepoint (remember timepoint numbering starts from 0)
 TR=$4
 nuisance_template=$5
@@ -34,6 +30,8 @@ sigma=`echo "scale=10 ; ${FWHM}/2.3548" | bc`
 ## Set high pass and low pass cutoffs for temporal filtering
 hp=$7
 lp=$8
+
+FSLRigidReg=$9
 
 echo "FWHM=${FWHM}, lp=$lp Hz, hp=$hp Hz, sigma=$sigma mm"
 
@@ -105,10 +103,17 @@ fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
 
 ## 12.FUNC->T1
 ## You may want to change some of the options
-flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
-# Create mat file for conversion from subject's anatomical to functional
-convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
-echo t12${example}_func.mat 
+if [FSLRigidReg -gt 0]
+
+then
+
+    flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
+    # Create mat file for conversion from subject's anatomical to functional
+    convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
+    echo t12${example}_func.mat 
+else
+    # Use our own registration
+    rigid_reg
 
 
 ## 12.FUNC->standard (3mm)

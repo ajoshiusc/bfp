@@ -94,114 +94,113 @@ disp("Spatial Smoothing");
 unix(['fslmaths ',fmri,'_ss.nii.gz -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'_mask.nii.gz ',fmri,'_sm.nii.gz']);
 % 
 % ##8. Grandmean scaling
-% echo "Grand-mean scaling"
-% fslmaths ${fmri}_sm.nii.gz -ing 10000 ${fmri}_gms.nii.gz -odt float
+disp("Grand-mean scaling");
+unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
 % 
 % ##9. Temporal filtering
-% echo "Band-pass filtering"
-% 3dFourier -lowpass ${lp} -highpass ${hp} -retrend -prefix ${fmri}_filt.nii.gz ${fmri}_gms.nii.gz
+disp("Band-pass filtering");
+unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',num2str(fmri),'_filt.nii.gz ',fmri,'_gms.nii.gz']);
 % 
 % ##10.Detrending
-% echo "Removing linear and quadratic trends"
-% 3dTstat -mean -prefix ${fmri}_filt_mean.nii.gz ${fmri}_filt.nii.gz
-% 3dDetrend -polort 2 -prefix ${fmri}_dt.nii.gz ${fmri}_filt.nii.gz
-% 3dcalc -a ${fmri}_filt_mean.nii.gz -b ${fmri}_dt.nii.gz -expr 'a+b' -prefix ${fmri}_pp.nii.gz
+disp("Removing linear and quadratic trends");
+unix(['3dTstat -mean -prefix ',fmri,'_filt_mean.nii.gz ',fmri,'_filt.nii.gz']);
+unix(['3dDetrend -polort 2 -prefix ',fmri,'_dt.nii.gz ',fmri,'_filt.nii.gz']);
+unix(['3dcalc -a ',fmri,'_filt_mean.nii.gz -b ',fmri,'_dt.nii.gz -expr ''a+b'' -prefix ',fmri,'_pp.nii.gz']);
 % 
 % ##11.Create Mask
-% echo "Generating mask of preprocessed data"
-% fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
+disp('Generating mask of preprocessed data');
+unix(['fslmaths ',fmri,'_pp.nii.gz -Tmin -bin ',fmri,'_pp_mask.nii.gz -odt char']);
 % 
 % 
 % ## 12.FUNC->T1
 % ## You may want to change some of the options
-% if [FSLRigidReg -gt 0]
-% 
-% then
-% 
-%     flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
+if FSLRigidReg > 0
+    disp('Using FSL rigid registration');
+    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 6 -interp trilinear']);
 %     # Create mat file for conversion from subject's anatomical to functional
-%     convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
-%     echo t12${example}_func.mat 
-% else
-%     # Use our own registration
-%     rigid_reg
+    unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
+else
+    disp('Using USC rigid registration');
+end
 % 
 % 
 % ## 12.FUNC->standard (3mm)
 % ## You may want to change some of the options
-% flirt -ref standard.nii.gz -in ${example}_func.nii.gz -out ${example}_func2standard.nii.gz -omat ${example}_func2standard.mat -cost corratio -dof 12 -interp trilinear
-% # Create mat file for conversion from subject's anatomical to functional
-% convert_xfm -inverse -omat standard2${example}_func.mat ${example}_func2standard.mat
-% ## TBD
-% 
-% ## apply registration
-% #flirt -ref standard -in ${example}_func -out ${example}_func2standard -applyxfm -init ${example}_func2standard.mat -interp trilinear
+if FSLRigidReg > 0
+    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 6 -interp trilinear']);
+    % # Create mat file for conversion from subject's anatomical to functional
+    unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
+else
+    disp('Using USC rigid registration');
+end
+    % ## TBD
 % 
 % 
 % 
 % ## 13. 
-% nuisance_dir=${func_dir}/nuisance_$(basename "$fmri")
+[~,fmribase,~] = fileparts(fmri);
+nuisance_dir=[func_dir,'/nuisance_',fmribase];
 % 
-% echo --------------------------------------------
-% echo !!!! RUNNING NUISANCE SIGNAL REGRESSION !!!!
-% echo --------------------------------------------
+disp(' --------------------------------------------');
+disp(' !!!! RUNNING NUISANCE SIGNAL REGRESSION !!!!');
+disp(' --------------------------------------------');
 % 
 % 
 % ## 14. make nuisance directory
-% mkdir -p ${nuisance_dir}
+unix(['mkdir -p ',nuisance_dir]);
 % 
 % # 15. Seperate motion parameters into seperate files
-% echo "Splitting up ${subject} motion parameters"
-% awk '{print $1}' ${fmri}_mc.1D > ${nuisance_dir}/mc1.1D
-% awk '{print $2}' ${fmri}_mc.1D > ${nuisance_dir}/mc2.1D
-% awk '{print $3}' ${fmri}_mc.1D > ${nuisance_dir}/mc3.1D
-% awk '{print $4}' ${fmri}_mc.1D > ${nuisance_dir}/mc4.1D
-% awk '{print $5}' ${fmri}_mc.1D > ${nuisance_dir}/mc5.1D
-% awk '{print $6}' ${fmri}_mc.1D > ${nuisance_dir}/mc6.1D
+disp("Splitting up subject motion parameters");
+unix(['awk ''{print $1}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc1.1D']);
+unix(['awk ''{print $2}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc2.1D']);
+unix(['awk ''{print $3}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc3.1D']);
+unix(['awk ''{print $4}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc4.1D']);
+unix(['awk ''{print $5}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc5.1D']);
+unix(['awk ''{print $6}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc6.1D']);
 % 
 % # Extract signal for global, csf, and wm
 % ## 16. Global
-% echo "Extracting global signal for ${subject}"
-% 3dmaskave -mask ${fmri}_pp_mask.nii.gz -quiet ${fmri}_pp.nii.gz > ${nuisance_dir}/global.1D
+disp(['Extracting global signal for subject']);
+unix(['3dmaskave -mask ',fmri,'_pp_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
 % 
 % ## 17. csf
-% flirt -ref ${example}_func.nii.gz -in ${t1}.pvc.label.nii.gz -out ${t1}.func.pvc.label.nii.gz -applyxfm -init t12${example}_func.mat -interp nearestneighbour
+unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',t1,'.func.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
 % 
-% fslmaths ${t1}.func.pvc.label.nii.gz -thr 5.5 -bin ${t1}.func.csf.mask.nii.gz
-% fslmaths ${t1}.func.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ${t1}.func.wm.mask.nii.gz
+unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 5.5 -bin ',t1,'.func.csf.mask.nii.gz']);
+unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',t1,'.func.wm.mask.nii.gz']);
 % 
 % echo "Extracting signal from csf"
-% 3dmaskave -mask ${t1}.func.csf.mask.nii.gz -quiet ${fmri}_pp.nii.gz > ${nuisance_dir}/csf.1D
+unix(['3dmaskave -mask ',t1,'.func.csf.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/csf.1D'])
 % 
 % ## 18. wm
-% echo "Extracting signal from white matter for ${subject}"
-% 3dmaskave -mask ${t1}.func.wm.mask.nii.gz -quiet ${fmri}_pp.nii.gz > ${nuisance_dir}/wm.1D
+disp('Extracting signal from white matter for subject');
+unix(['3dmaskave -mask ',t1,'.func.wm.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/wm.1D'])
 % 
 % ## 6. Generate mat file (for use later)
 % ## create fsf file
 % 
-% echo "Modifying model file"
-% sed -e s:nuisance_dir:"${nuisance_dir}":g <${nuisance_template} >${nuisance_dir}/temp1
-% sed -e s:nuisance_model_outputdir:"${nuisance_dir}/residuals.feat":g <${nuisance_dir}/temp1 >${nuisance_dir}/temp2
-% sed -e s:nuisance_model_TR:"${TR}":g <${nuisance_dir}/temp2 >${nuisance_dir}/temp3
-% sed -e s:nuisance_model_numTRs:"${n_vols}":g <${nuisance_dir}/temp3 >${nuisance_dir}/temp4
-% sed -e s:nuisance_model_input_data:"${func_dir}/${fmri}_pp.nii.gz":g <${nuisance_dir}/temp4 >${nuisance_dir}/nuisance.fsf 
+disp("Modifying model file");
+unix(['sed -e s:nuisance_dir:"',nuisance_dir,'":g <',nuisance_template,' >',nuisance_dir,'/temp1']);
+unix(['sed -e s:nuisance_model_outputdir:"',nuisance_dir,'/residuals.feat":g <',nuisance_dir,'/temp1 >',nuisance_dir,'/temp2']);
+unix(['sed -e s:nuisance_model_TR:"',TR,'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3'])
+unix(['sed -e s:nuisance_model_numTRs:"',n_vols,'":g <',nuisance_dir,'/temp3 >',nuisance_dir,'/temp4'])
+unix(['sed -e s:nuisance_model_input_data:"',func_dir,'/',fmri,'_pp.nii.gz":g <',nuisance_dir,'/temp4 >',nuisance_dir,'/nuisance.fsf']) 
 % 
 % #rm ${nuisance_dir}/temp*
 % 
-% echo "Running feat model"
-% feat_model ${nuisance_dir}/nuisance
+disp("Running feat model");
+unix(['feat_model ',nuisance_dir,'/nuisance'])
 % 
-% minVal=`3dBrickStat -min -mask ${fmri}_pp_mask.nii.gz ${fmri}_pp.nii.gz`
+[~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_pp_mask.nii.gz ',fmri,'_pp.nii.gz`']);
 % 
 % ## 7. Get residuals
-% echo "Running film to get residuals"
-% film_gls --rn=${nuisance_dir}/stats --noest --sa --ms=5 --in=${fmri}_pp.nii.gz --pd=${nuisance_dir}/nuisance.mat --thr=${minVal}
+disp('Running film to get residuals');
+unix(['film_gls --rn=',nuisance_dir,'/stats --noest --sa --ms=5 --in=',fmri,'_pp.nii.gz --pd=',nuisance_dir,'/nuisance.mat --thr=',minVal])
 % 
 % ## 8. Demeaning residuals and ADDING 100
-% 3dTstat -mean -prefix ${nuisance_dir}/stats/res4d_mean.nii.gz ${nuisance_dir}/stats/res4d.nii.gz
-% 3dcalc -a ${nuisance_dir}/stats/res4d.nii.gz -b ${nuisance_dir}/stats/res4d_mean.nii.gz -expr '(a-b)+100' -prefix ${fmri}_res.nii.gz
+unix(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d_mean.nii.gz ',nuisance_dir,'/stats/res4d.nii.gz']);
+unix(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/res4d_mean.nii.gz -expr ''(a-b)+100'' -prefix ',fmri,'_res.nii.gz']);
 % 
 % ## 9. Resampling residuals to MNI space
-% flirt -ref ${func_dir}/standard -in ${fmri}_res -out ${fmri}_res2standard -applyxfm -init ${func_dir}/${example}_func2standard.mat -interp trilinear
+unix(['flirt -ref ',func_dir,'/standard -in ',fmri,'_res -out ',fmri,'_res2standard -applyxfm -init ',func_dir,'/',example,'_func2standard.mat -interp trilinear']);
 % 

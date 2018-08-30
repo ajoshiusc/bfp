@@ -99,7 +99,7 @@ unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
 % 
 % ##9. Temporal filtering
 disp("Band-pass filtering");
-unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',num2str(fmri),'_filt.nii.gz ',fmri,'_gms.nii.gz']);
+unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',fmri,'_filt.nii.gz ',fmri,'_gms.nii.gz']);
 % 
 % ##10.Detrending
 disp("Removing linear and quadratic trends");
@@ -116,7 +116,7 @@ unix(['fslmaths ',fmri,'_pp.nii.gz -Tmin -bin ',fmri,'_pp_mask.nii.gz -odt char'
 % ## You may want to change some of the options
 if FSLRigidReg > 0
     disp('Using FSL rigid registration');
-    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 6 -interp trilinear']);
+    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 12 -interp trilinear']);
 %     # Create mat file for conversion from subject's anatomical to functional
     unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
 else
@@ -127,7 +127,7 @@ end
 % ## 12.FUNC->standard (3mm)
 % ## You may want to change some of the options
 if FSLRigidReg > 0
-    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 6 -interp trilinear']);
+    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 12 -interp trilinear']);
     % # Create mat file for conversion from subject's anatomical to functional
     unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
 else
@@ -182,20 +182,21 @@ unix(['3dmaskave -mask ',t1,'.func.wm.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',
 disp("Modifying model file");
 unix(['sed -e s:nuisance_dir:"',nuisance_dir,'":g <',nuisance_template,' >',nuisance_dir,'/temp1']);
 unix(['sed -e s:nuisance_model_outputdir:"',nuisance_dir,'/residuals.feat":g <',nuisance_dir,'/temp1 >',nuisance_dir,'/temp2']);
-unix(['sed -e s:nuisance_model_TR:"',TR,'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3'])
-unix(['sed -e s:nuisance_model_numTRs:"',n_vols,'":g <',nuisance_dir,'/temp3 >',nuisance_dir,'/temp4'])
-unix(['sed -e s:nuisance_model_input_data:"',func_dir,'/',fmri,'_pp.nii.gz":g <',nuisance_dir,'/temp4 >',nuisance_dir,'/nuisance.fsf']) 
+unix(['sed -e s:nuisance_model_TR:"',num2str(TR),'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3']);
+unix(['sed -e s:nuisance_model_numTRs:"',num2str(n_vols),'":g <',nuisance_dir,'/temp3 >',nuisance_dir,'/temp4']);
+unix(['sed -e s:nuisance_model_input_data:"',func_dir,'/',fmri,'_pp.nii.gz":g <',nuisance_dir,'/temp4 >',nuisance_dir,'/nuisance.fsf']); 
 % 
 % #rm ${nuisance_dir}/temp*
 % 
 disp("Running feat model");
-unix(['feat_model ',nuisance_dir,'/nuisance'])
+unix(['feat_model ',nuisance_dir,'/nuisance']);
 % 
-[~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_pp_mask.nii.gz ',fmri,'_pp.nii.gz`']);
+[~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_pp_mask.nii.gz ',fmri,'_pp.nii.gz']);
+%minVal=str2double(minVal);
 % 
 % ## 7. Get residuals
 disp('Running film to get residuals');
-unix(['film_gls --rn=',nuisance_dir,'/stats --noest --sa --ms=5 --in=',fmri,'_pp.nii.gz --pd=',nuisance_dir,'/nuisance.mat --thr=',minVal])
+unix(['film_gls --rn=',nuisance_dir,'/stats --noest --sa --ms=5 --in=',fmri,'_pp.nii.gz --pd=',nuisance_dir,'/nuisance.mat --thr=',minVal]);
 % 
 % ## 8. Demeaning residuals and ADDING 100
 unix(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d_mean.nii.gz ',nuisance_dir,'/stats/res4d.nii.gz']);

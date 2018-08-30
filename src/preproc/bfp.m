@@ -96,6 +96,7 @@ fprintf('## Setting up the environment\n');
 setenv('PATH', [getenv('PATH'),':',config.FSLPATH,':',config.FSLPATH,'/bin']);
 setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
+setenv('FSLDIR', config.FSLPATH);
 setenv('BrainSuiteDir',config.BrainSuitePath);
 setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
 
@@ -117,6 +118,7 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
+FSLRigid=1; %PUT THIS IN CONFIG FILE
 
 if isfield(config, 'MultiThreading')
     config.MultiThreading=str2double(config.MultiThreading);
@@ -337,8 +339,8 @@ fprintf('done\n');
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
-    if 1 %~exist([fmribasename,'_res2standard.nii.gz'],'file')
-        func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,0);
+    if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
+        func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,FSLRigid);
 
 %        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
     else

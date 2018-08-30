@@ -103,17 +103,11 @@ fslmaths ${fmri}_pp.nii.gz -Tmin -bin ${fmri}_pp_mask.nii.gz -odt char
 
 ## 12.FUNC->T1
 ## You may want to change some of the options
-if [FSLRigidReg -gt 0]
-
-then
 
     flirt -ref ${t1}.bfc.nii.gz -in ${example}_func.nii.gz -out ${example}_func2t1.nii.gz -omat ${example}_func2t1.mat -cost corratio -dof 12 -interp trilinear
     # Create mat file for conversion from subject's anatomical to functional
     convert_xfm -inverse -omat t12${example}_func.mat ${example}_func2t1.mat
     echo t12${example}_func.mat 
-else
-    # Use our own registration
-    rigid_reg
 
 
 ## 12.FUNC->standard (3mm)

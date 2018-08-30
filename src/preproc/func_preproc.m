@@ -52,9 +52,9 @@ sigma=str2double(FWHM)/2.3548;
 % ##---START OF SCRIPT----------------------------------------------------------------------------------------------------##
 % ##########################################################################################################################
 % 
-fprintf(' ---------------------------------------');
-fprintf(' BFP fMRI PREPROCESSING !');
-fprintf(' echo ---------------------------------------');
+disp('---------------------------------------');
+disp('BFP fMRI PREPROCESSING !');
+disp('---------------------------------------');
 % 
 % cwd=$( pwd )
 % cd ${func_dir}
@@ -116,7 +116,7 @@ unix(['fslmaths ',fmri,'_pp.nii.gz -Tmin -bin ',fmri,'_pp_mask.nii.gz -odt char'
 % ## You may want to change some of the options
 if FSLRigidReg > 0
     disp('Using FSL rigid registration');
-    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 12 -interp trilinear']);
+    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 6 -interp trilinear']);
 %     # Create mat file for conversion from subject's anatomical to functional
     unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
 else
@@ -127,7 +127,7 @@ end
 % ## 12.FUNC->standard (3mm)
 % ## You may want to change some of the options
 if FSLRigidReg > 0
-    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 12 -interp trilinear']);
+    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 6 -interp trilinear']);
     % # Create mat file for conversion from subject's anatomical to functional
     unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
 else
@@ -205,3 +205,5 @@ unix(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/r
 % ## 9. Resampling residuals to MNI space
 unix(['flirt -ref ',func_dir,'/standard -in ',fmri,'_res -out ',fmri,'_res2standard -applyxfm -init ',func_dir,'/',example,'_func2standard.mat -interp trilinear']);
 % 
+cd(cwd);
+

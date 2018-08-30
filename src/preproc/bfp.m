@@ -156,6 +156,15 @@ else
     config.EnableShapeMeasures = 1;
 end
 
+if isfield(config, 'FSLRigid')
+    config.FSLRigid=str2double(config.FSLRigid);
+    if isnan(config.FSLRigid)
+        config.FSLRigid = 0;
+    end
+else
+    config.FSLRigid = 1;
+end
+
 
 fprintf(' done\n');
 %% Create Directory Structure

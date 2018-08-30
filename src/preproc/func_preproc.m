@@ -120,7 +120,13 @@ if FSLRigidReg > 0
 %     # Create mat file for conversion from subject's anatomical to functional
     unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
 else
-    disp('Using USC rigid registration');
+    disp('Using USC rigid registration');    
+    opts.similarity = 'inversion';
+%      opts.init_method = 'none';
+        moving_filename = [example,'_func.nii.gz'];
+        static_filename = [t1,'.bfc.nii.gz'];
+        output_filename = [example,'_func2t1_my.nii.gz'];
+        register_files_affine(moving_filename, static_filename, output_filename, opts)    
 end
 % 
 % 
@@ -132,6 +138,11 @@ if FSLRigidReg > 0
     unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
 else
     disp('Using USC rigid registration');
+    opts.similarity = 'inversion';
+    moving_filename = [example,'_func.nii.gz'];%fullfile(funcDir,sprintf('%s_%s_bold_example_func.nii.gz',subid,sessionid{ind}));
+    static_filename = 'standard.nii.gz';
+    output_filename = [example,'_func2standard.nii.gz'];
+    register_files_affine(moving_filename, static_filename, output_filename, opts)    
 end
     % ## TBD
 % 

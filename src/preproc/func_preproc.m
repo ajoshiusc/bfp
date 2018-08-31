@@ -62,47 +62,47 @@ disp('---------------------------------------');
 cwd = pwd;
 cd(func_dir);
 % ## 1. Dropping first # TRS
-disp("Dropping first TRs");
+disp('Dropping first TRs');
 unix(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'_dr.nii.gz']);
 % 
 % ##2. Deoblique
-disp("Deobliquing");
+disp('Deobliquing');
 unix(['3drefit -deoblique ',fmri,'_dr.nii.gz']);
 % 
 % ##3. Reorient into fsl friendly space (what AFNI calls RPI)
-disp("Reorienting");
+disp('Reorienting');
 unix(['3dresample -orient RPI -inset ',fmri,'_dr.nii.gz -prefix ',fmri,'_ro.nii.gz']);
 % 
 % ##4. Motion correct to average of timeseries
-disp("Motion correcting");
+disp('Motion correcting');
 unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
 unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
 % 
 % ##5. Remove skull/edge detect
-disp("Skull stripping");
+disp('Skull stripping');
 unix(['3dAutomask -prefix ',fmri,'_mask.nii.gz -dilate 1 ',fmri,'_mc.nii.gz']);
 unix(['3dcalc -a ',fmri,'_mc.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',fmri,'_ss.nii.gz']);
 % 
 % ##6. Get eighth image for use in registration
-disp( "Getting example_func for registration")
+disp( 'Getting example_func for registration')
 unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
 
 
 % 
 % ##7. Spatial smoothing
-disp("Spatial Smoothing");
+disp('Spatial Smoothing');
 unix(['fslmaths ',fmri,'_ss.nii.gz -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'_mask.nii.gz ',fmri,'_sm.nii.gz']);
 % 
 % ##8. Grandmean scaling
-disp("Grand-mean scaling");
+disp('Grand-mean scaling');
 unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
 % 
 % ##9. Temporal filtering
-disp("Band-pass filtering");
+disp('Band-pass filtering');
 unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',fmri,'_filt.nii.gz ',fmri,'_gms.nii.gz']);
 % 
 % ##10.Detrending
-disp("Removing linear and quadratic trends");
+disp('Removing linear and quadratic trends');
 unix(['3dTstat -mean -prefix ',fmri,'_filt_mean.nii.gz ',fmri,'_filt.nii.gz']);
 unix(['3dDetrend -polort 2 -prefix ',fmri,'_dt.nii.gz ',fmri,'_filt.nii.gz']);
 unix(['3dcalc -a ',fmri,'_filt_mean.nii.gz -b ',fmri,'_dt.nii.gz -expr ''a+b'' -prefix ',fmri,'_pp.nii.gz']);
@@ -161,7 +161,7 @@ disp(' --------------------------------------------');
 unix(['mkdir -p ',nuisance_dir]);
 % 
 % # 15. Seperate motion parameters into seperate files
-disp("Splitting up subject motion parameters");
+disp('Splitting up subject motion parameters');
 unix(['awk ''{print $1}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc1.1D']);
 unix(['awk ''{print $2}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc2.1D']);
 unix(['awk ''{print $3}'' ',fmri,'_mc.1D > ',nuisance_dir,'/mc3.1D']);
@@ -190,7 +190,7 @@ unix(['3dmaskave -mask ',t1,'.func.wm.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',
 % ## 6. Generate mat file (for use later)
 % ## create fsf file
 % 
-disp("Modifying model file");
+disp('Modifying model file');
 unix(['sed -e s:nuisance_dir:"',nuisance_dir,'":g <',nuisance_template,' >',nuisance_dir,'/temp1']);
 unix(['sed -e s:nuisance_model_outputdir:"',nuisance_dir,'/residuals.feat":g <',nuisance_dir,'/temp1 >',nuisance_dir,'/temp2']);
 unix(['sed -e s:nuisance_model_TR:"',num2str(TR),'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3']);
@@ -199,7 +199,7 @@ unix(['sed -e s:nuisance_model_input_data:"',func_dir,'/',fmri,'_pp.nii.gz":g <'
 % 
 % #rm ${nuisance_dir}/temp*
 % 
-disp("Running feat model");
+disp('Running feat model');
 unix(['feat_model ',nuisance_dir,'/nuisance']);
 % 
 [~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_pp_mask.nii.gz ',fmri,'_pp.nii.gz']);

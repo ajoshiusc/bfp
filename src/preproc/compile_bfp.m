@@ -13,8 +13,15 @@ end
 
 mkdir(bfp_bin_dir);
 mcc -m -v bfp.m
+mcc -m -v nii2int16.m
+mcc -m -v resample2surf.m
+mcc -m -v generateGOrdSurfFile.m
+
 copyfile('../scripts/bfp_linux.sh', [bfp_bin_dir,'/bfp.sh']);
 movefile('bfp', bfp_bin_dir);
+copyfile('../scripts/nii2int16_linux.sh', [bfp_bin_dir,'/nii2int16.sh']);
+movefile('nii2int16', bfp_bin_dir);
+
 copyfile('../../supp_data', [bfp_bin_dir,'/supp_data']);
 copyfile('bfp_version.txt',bfp_bin_dir);
 

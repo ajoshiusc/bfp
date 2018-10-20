@@ -3,6 +3,8 @@ function nii2int16(in_nii, out_nii, normz)
 
 if ~exist('normz','var')
     normz = 1;
+elseif ischar(normz)
+    normz = str2double(normz);
 end
 
 v=load_nii_BIG_Lab(in_nii);

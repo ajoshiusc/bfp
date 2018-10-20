@@ -165,6 +165,11 @@ else
     config.FSLRigid = 1;
 end
 
+nii2int16_bin = fullfile(BFPPATH, 'nii2int16.sh');
+resample2surf_bin = fullfile(BFPPATH, 'resample2surf.sh');
+generateGOrdSCT_bin = fullfile(BFPPATH, 'generateGOrdSCT.sh');
+generateSurfGOrdfMRI_bin = fullfile(BFPPATH, 'generateSurfGOrdfMRI.sh');
+generateVolGOrdfMRI_bin = fullfile(BFPPATH, 'generateVolGOrdfMRI.sh');
 
 fprintf(' done\n');
 %% Create Directory Structure
@@ -246,7 +251,9 @@ end
 
 if ~exist(t1ds,'file')
     unix(cmd);
-    nii2int16(t1ds,t1ds);
+    cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
+    unix(cmd);
+%    nii2int16(t1ds,t1ds);
 else
     fprintf('Already ');
 end
@@ -283,7 +290,11 @@ end
 
 if ~exist(bsenew,'file')
     unix(cmd);
-    nii2int16(bsenew, bsenew, 0);
+    
+%    nii2int16(bsenew, bsenew, 0);
+    cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
+    unix(cmd);
+%    
 end
 
 bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
@@ -291,7 +302,11 @@ bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
 if ~exist(bsenew2,'file')
     if config.T1SpaceProcessing
         copyfile(bseout,bsenew2);
-        nii2int16(bsenew2, bsenew2,0);
+
+        %nii2int16(bsenew2, bsenew2,0);
+        cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
+        unix(cmd);
+
     else
         copyfile(bsenew,bsenew2);
     end
@@ -373,7 +388,9 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        resample2surf(subbasename,fmri2standard,fmri2surfFile,config);
+%       resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
+        cmd = sprintf('%s %s %s %d', resample2surf_bin, fmri2standard, fmri2surfFile, config.MultiThreading);
+        unix(cmd);
     else
         fprintf('Already ');
     end
@@ -381,7 +398,11 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+%       generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+
+        cmd = sprintf('%s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
+        unix(cmd);
+        
         % The surf file is very large, deleting to save space
         delete(fmri2surfFile);
     else
@@ -389,8 +410,12 @@ for ind = 1:length(fmri)
     end
     fprintf('done\n');
     fprintf('Generating Volume Grayordinates\n');
-    if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
-        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+    if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')       
+%        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+
+        cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
+        unix(cmd);
+
     else
         fprintf('Already ');
     end
@@ -442,6 +467,7 @@ if config.EnableShapeMeasures>0
     
     if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
         generateGOrdSCT(subbasename, GOrdSurfIndFile);
+        generateGOrdSCT_bin
     else
         fprintf('Already done SCT');
     end

@@ -403,7 +403,7 @@ for ind = 1:length(fmri)
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         %       generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
         
-        cmd = sprintf('%s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
+        cmd = sprintf('%s %s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
         unix(cmd);
         
         % The surf file is very large, deleting to save space

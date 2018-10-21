@@ -54,7 +54,7 @@ fi
 GOrdVolIndFile=$1
 subbasename=$2 
 fmri2standard=$3
-GOrdVolFile = $4
+GOrdVolFile=$4
 
 
 
@@ -75,6 +75,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/generateVolGOrdfMRI.sh "${GOrdVolIndFile}" "${subbasename}" "${fmri2standard}" "${GOrdVolFile}" 
+${exe_dir}/generateVolGOrdfMRI "${GOrdVolIndFile}" "${subbasename}" "${fmri2standard}" "${GOrdVolFile}" 
 
 exit

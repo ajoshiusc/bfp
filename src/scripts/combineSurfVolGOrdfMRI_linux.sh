@@ -72,6 +72,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/combineSurfVolGOrdfMRI.sh "${GOrdSurfFile}" "${GOrdVolFile}" "${GOrdFile}" 
+${exe_dir}/combineSurfVolGOrdfMRI "${GOrdSurfFile}" "${GOrdVolFile}" "${GOrdFile}" 
 
 exit

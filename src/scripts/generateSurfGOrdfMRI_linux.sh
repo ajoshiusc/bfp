@@ -51,7 +51,7 @@ if [ $# -lt 3 ]; then
   exit;
 fi
 
-GOrdSurfIndFile = $1
+GOrdSurfIndFile=$1
 fmri2surfFile=$2
 GOrdSurfFile=$3
 
@@ -75,6 +75,6 @@ export XAPPLRESDIR;
 
 # Run the executable
 
-${exe_dir}/generateGOrdSurfFile "${GOrdSurfIndFile}" "${fmri2surfFile}" "${GOrdSurfFile}"  
+${exe_dir}/generateSurfGOrdfMRI "${GOrdSurfIndFile}" "${fmri2surfFile}" "${GOrdSurfFile}"  
 
 exit

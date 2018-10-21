@@ -75,6 +75,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/tNLMPDFGOrdfMRI.sh "${GOrdInFile} "${GOrdOutFile}" "${fpr}" "${memory}" "${MultiThreading}" 
+${exe_dir}/tNLMPDFGOrdfMRI "${GOrdInFile}" "${GOrdOutFile}" "${fpr}" "${memory}" "${MultiThreading}" 
 
 exit

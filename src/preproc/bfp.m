@@ -451,7 +451,7 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-            tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config);
+%            tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
         else
             fprintf('Already ');
         end

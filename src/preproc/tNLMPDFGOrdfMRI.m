@@ -1,13 +1,13 @@
-function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config)
+function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,fpr,memory,MultiThreading)
 
 load(GOrdInFile);
 option = tNLMGPDF();
-option.FPR = str2double(config.fpr);
-if ~strcmpi(config.memory,'auto')
-    config.memory=str2double(config.memory);
+option.FPR = str2double(fpr);
+if ~strcmpi(memory,'auto')
+    memory=str2double(memory);
 end
 
-if config.MultiThreading == 0
+if MultiThreading == 0
     option.numCPU=1;
 else
     option.numCPU='auto';

@@ -1,3 +1,5 @@
+ %#function gcp
+
 function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,fpr,memory,MultiThreading)
 
 load(GOrdInFile);

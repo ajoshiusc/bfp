@@ -23,6 +23,8 @@
 %
 
 function [dataSm, output] = tNLMGPDF(data, option)
+% Tells the compiler that parallel processing is required
+%#function gcp
     
     if nargin == 0 % return default option
         option = struct;

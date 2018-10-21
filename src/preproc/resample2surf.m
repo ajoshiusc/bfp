@@ -2,9 +2,15 @@
 % subbasename is for the structural T1 image
 %fmri is the file name of the fmri
 %
+
+
+
 function resample2surf(subbasename,fmri,fmri2surfFile, MultiThreading)
+% Tells the compiler that parallel processing is required
+%#function gcp
 
 subpath=fileparts(subbasename);
+
 
 v=load_nii_BIG_Lab(fmri);
 sl=readdfs([subbasename,'.left.mid.cortex.svreg.dfs']);

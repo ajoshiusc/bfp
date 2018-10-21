@@ -392,7 +392,7 @@ for ind = 1:length(fmri)
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         %       resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
-        cmd = sprintf('%s %s %s %d', resample2surf_bin, fmri2standard, fmri2surfFile, config.MultiThreading);
+        cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);
         unix(cmd);
     else
         fprintf('Already ');

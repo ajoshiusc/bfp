@@ -1,4 +1,7 @@
+
 function generateSurfGOrdfMRI(GOrdIndFile,fmri2surfFile,GOrdsurfFile)
+% Tells the compiler that parallel processing is required
+%#function gcp
 
 load(GOrdIndFile);
 load(fmri2surfFile);

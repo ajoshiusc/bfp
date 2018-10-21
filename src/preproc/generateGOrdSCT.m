@@ -1,4 +1,7 @@
+
 function generateGOrdSCT(subbasename, GOrdSurfIndFile)
+% Tells the compiler that parallel processing is required
+%#function gcp
 
 NLevels=5;
 GordSize=96854;

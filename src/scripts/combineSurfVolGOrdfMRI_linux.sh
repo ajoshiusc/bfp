@@ -31,34 +31,28 @@ fi
 
 read -d '' usage <<EOF
 
-  nii2int16 : convert nifti to int16 (nii2int16)
+  combineSurfVolGOrdfMRI.sh : Combines surface and voume grayordinate files to create one grayordinate file.
   Authored by Anand A. Joshi, Signal and Image Processing Institute
   Department of Electrical Engineering, Viterbi School of Engineering, USC
-  website: https://bitbucket.org/brainsuite/bfp/src/a851ada6d9006ca2b01fca38447e31caebbc1a7b/docs/?at=master
   
-  Usage: nii2int16 in_nii out_nii normz 
+  Usage: combineSurfVolGOrdfMRI.sh GOrdSurfFile GOrdVolFile GOrdFile
 
-
-  e.g. nii2int16 in.nii.gz out.nii.gz 1
-
+    GOrdSurfFile: surface grayordinate file. It is a .mat file.
+    GOrdVolFile: Grayordinate volume file (.mat)
+    GOrdFile: Combined grayordinate file (.mat)
 EOF
 
 # Parse inputs
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   echo
   echo "$usage";
   echo
   exit;
 fi
 
-in_nii=$1
-out_nii=$2
-
-normz=1
-
-if [ $# -gt 2 ]; then
-    normz=$3
-fi
+GOrdSurfFile=$1
+GOrdVolFile=$2 
+GOrdFile=$3
 
 
 # Set up path for MCR applications.
@@ -78,6 +72,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/nii2int16 "${in_nii}" "${out_nii}" "${normz}" 
+${exe_dir}/combineSurfVolGOrdfMRI.sh "${GOrdSurfFile}" "${GOrdVolFile}" "${GOrdFile}" 
 
 exit

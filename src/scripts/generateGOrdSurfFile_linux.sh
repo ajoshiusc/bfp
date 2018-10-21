@@ -73,7 +73,8 @@ export LD_LIBRARY_PATH;
 export XAPPLRESDIR;
 
 
-# Run the BFP Sequence
+# Run the executable
+
 ${exe_dir}/generateGOrdSurfFile "${GOrdSurfIndFile}" "${fmri2surfFile}" "${GOrdSurfFile}"  
 
 exit

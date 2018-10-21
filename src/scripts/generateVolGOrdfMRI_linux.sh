@@ -74,7 +74,7 @@ export LD_LIBRARY_PATH;
 export XAPPLRESDIR;
 
 
-# Run the BFP Sequence
+# Run the executable
 ${exe_dir}/generateVolGOrdfMRI.sh "${GOrdVolIndFile}" "${subbasename}" "${fmri2standard}" "${GOrdVolFile}" 
 
 exit

@@ -80,7 +80,7 @@ export LD_LIBRARY_PATH;
 export XAPPLRESDIR;
 
 
-# Run the BFP Sequence
+# Run the executable
 ${exe_dir}/resample2surf "${subbasename}" "${fmri}" "${fmri2surfFile}" "${MultiThreading}" 
 
 exit

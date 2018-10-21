@@ -164,14 +164,16 @@ if isfield(config, 'FSLRigid')
 else
     config.FSLRigid = 1;
 end
+fprintf(' done\n');
 
+%% Binaries that are compiled in MATLAB
 nii2int16_bin = fullfile(BFPPATH, 'nii2int16.sh');
 resample2surf_bin = fullfile(BFPPATH, 'resample2surf.sh');
 generateGOrdSCT_bin = fullfile(BFPPATH, 'generateGOrdSCT.sh');
 generateSurfGOrdfMRI_bin = fullfile(BFPPATH, 'generateSurfGOrdfMRI.sh');
 generateVolGOrdfMRI_bin = fullfile(BFPPATH, 'generateVolGOrdfMRI.sh');
+combineSurfVolGOrdfMRI_bin = fullfile(BFPPATH, 'combineSurfVolGOrdfMRI.sh');
 
-fprintf(' done\n');
 %% Create Directory Structure
 % This directory structure is in BIDS format
 %%
@@ -422,7 +424,11 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
-        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+%        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+
+        cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
+        unix(cmd);
+
         delete(GOrdSurfFile);
         delete(GOrdVolFile);
     else

@@ -42,10 +42,11 @@ read -d '' usage <<EOF
     fpr: False positive rate parameter of the filter (.mat)
     memory: 'auto' or number in GB
     MutiThreading: 0 for off or 1 for off.
+    scbpath: path of scb file for tNLMPDF filtering
 EOF
 
 # Parse inputs
-if [ $# -lt 5 ]; then
+if [ $# -lt 6 ]; then
   echo
   echo "$usage";
   echo
@@ -57,6 +58,7 @@ GOrdOutFile=$2
 fpr=$3
 memory=$4
 MultiThreading=$5
+scbpath=$6
 
 # Set up path for MCR applications.
 PATH=${exe_dir}:${PATH} ;
@@ -75,6 +77,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/tNLMPDFGOrdfMRI "${GOrdInFile}" "${GOrdOutFile}" "${fpr}" "${memory}" "${MultiThreading}" 
+${exe_dir}/tNLMPDFGOrdfMRI "${GOrdInFile}" "${GOrdOutFile}" "${fpr}" "${memory}" "${MultiThreading}" "${scbpath}"
 
 exit

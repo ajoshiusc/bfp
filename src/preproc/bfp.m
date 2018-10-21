@@ -452,8 +452,8 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-            %          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
-            cmd = sprintf('%s %s %s %s %s %s %d', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading);
+            %          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
+            cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
             unix(cmd);
             
         else
@@ -478,7 +478,7 @@ if config.EnableShapeMeasures>0
     if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
         %     generateGOrdSCT(subbasename, GOrdSurfIndFile);
         
-        cmd = sprintf('%s %s %s %s %s %s %d', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
+        cmd = sprintf('%s %s %s', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
         unix(cmd);
         
     else

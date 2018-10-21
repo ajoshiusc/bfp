@@ -1,6 +1,6 @@
  %#function gcp
 
-function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,fpr,memory,MultiThreading)
+function tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,fpr,memory,MultiThreading, scbPath)
 
 load(GOrdInFile);
 option = tNLMGPDF();
@@ -19,7 +19,7 @@ else
     option.numCPU='auto';
 end
 
-option.memoryLimit = config.memory;
-option.SCBFile = config.scbPath;
+option.memoryLimit = memory;
+option.SCBFile = scbPath;
 dtseries=tNLMGPDF(dtseries, option);
 save(GOrdOutFile,'dtseries');

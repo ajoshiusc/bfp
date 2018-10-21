@@ -113,7 +113,7 @@ ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.n
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 GOrdVolIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_vol_ind.mat');
 nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
-func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
+%func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
 fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
@@ -256,7 +256,7 @@ if ~exist(t1ds,'file')
     unix(cmd);
     cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
     unix(cmd);
-%    nii2int16(t1ds,t1ds);
+    %    nii2int16(t1ds,t1ds);
 else
     fprintf('Already ');
 end
@@ -268,7 +268,7 @@ fprintf('## Performing Skull Extraction\n');
 bse=fullfile(BrainSuitePath,'bin','bse');
 
 if config.T1SpaceProcessing
-    bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));    
+    bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
 else
     bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
 end
@@ -294,10 +294,10 @@ end
 if ~exist(bsenew,'file')
     unix(cmd);
     
-%    nii2int16(bsenew, bsenew, 0);
+    %    nii2int16(bsenew, bsenew, 0);
     cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
     unix(cmd);
-%    
+    %
 end
 
 bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
@@ -305,11 +305,11 @@ bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
 if ~exist(bsenew2,'file')
     if config.T1SpaceProcessing
         copyfile(bseout,bsenew2);
-
+        
         %nii2int16(bsenew2, bsenew2,0);
         cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
         unix(cmd);
-
+        
     else
         copyfile(bsenew,bsenew2);
     end
@@ -368,8 +368,8 @@ for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
     if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
         func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,FSLRigid);
-
-%        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
+        
+        %        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
     end
@@ -391,7 +391,7 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-%       resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
+        %       resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
         cmd = sprintf('%s %s %s %d', resample2surf_bin, fmri2standard, fmri2surfFile, config.MultiThreading);
         unix(cmd);
     else
@@ -401,8 +401,8 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-%       generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
-
+        %       generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+        
         cmd = sprintf('%s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
         unix(cmd);
         
@@ -413,23 +413,23 @@ for ind = 1:length(fmri)
     end
     fprintf('done\n');
     fprintf('Generating Volume Grayordinates\n');
-    if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')       
-%        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
-
+    if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
+        %        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+        
         cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
         unix(cmd);
-
+        
     else
         fprintf('Already ');
     end
     fprintf('done\n');
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
-%        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
-
+        %        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+        
         cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
         unix(cmd);
-
+        
         delete(GOrdSurfFile);
         delete(GOrdVolFile);
     else
@@ -437,7 +437,7 @@ for ind = 1:length(fmri)
     end
     fprintf('done\n');
 end
-fprintf('The grayordinates file is: %s\n',GOrdFile);
+fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 %% tNLMPDF
 % This part of the code takes grayordinate data generated by the previous pipeline
 % and performs tNLMPdf filtering.
@@ -452,16 +452,16 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-%          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
-           cmd = sprintf('%s %s %s %s %s %s %d', tNLMPDFGOrdfMRI_bin, GOrdInFile, GOrdOutFile, config.fpr, config.memory, config.MultiThreading);
-           unix(cmd);
-
+            %          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
+            cmd = sprintf('%s %s %s %s %s %s %d', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading);
+            unix(cmd);
+            
         else
             fprintf('Already ');
         end
         fprintf('done\n');
     end
-    fprintf('The output filtered grayordinates files are ready !! \n Good Night!\n');
+    fprintf('The tNLMPDF filtered fMRI grayordinates files are ready!');
 end
 
 if config.EnableShapeMeasures>0
@@ -476,8 +476,11 @@ if config.EnableShapeMeasures>0
     end
     
     if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
-        generateGOrdSCT(subbasename, GOrdSurfIndFile);
-        generateGOrdSCT_bin
+        %     generateGOrdSCT(subbasename, GOrdSurfIndFile);
+        
+        cmd = sprintf('%s %s %s %s %s %s %d', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
+        unix(cmd);
+        
     else
         fprintf('Already done SCT');
     end

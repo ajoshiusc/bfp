@@ -7,6 +7,10 @@ if ~strcmpi(memory,'auto')
     memory=str2double(memory);
 end
 
+if ischar(MultiThreading)
+    MultiThreading = str2double(MultiThreading);
+end
+
 if MultiThreading == 0
     option.numCPU=1;
 else

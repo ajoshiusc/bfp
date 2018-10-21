@@ -173,6 +173,7 @@ generateGOrdSCT_bin = fullfile(BFPPATH, 'generateGOrdSCT.sh');
 generateSurfGOrdfMRI_bin = fullfile(BFPPATH, 'generateSurfGOrdfMRI.sh');
 generateVolGOrdfMRI_bin = fullfile(BFPPATH, 'generateVolGOrdfMRI.sh');
 combineSurfVolGOrdfMRI_bin = fullfile(BFPPATH, 'combineSurfVolGOrdfMRI.sh');
+tNLMPDFGOrdfMRI_bin = fullfile(BFPPATH,'tNLMPDFGOrdfMRI.sh');
 
 %% Create Directory Structure
 % This directory structure is in BIDS format
@@ -451,7 +452,10 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-%            tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
+%          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading);
+           cmd = sprintf('%s %s %s %s %s %s %d', tNLMPDFGOrdfMRI_bin, GOrdInFile, GOrdOutFile, config.fpr, config.memory, config.MultiThreading);
+           unix(cmd);
+
         else
             fprintf('Already ');
         end

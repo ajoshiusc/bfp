@@ -16,11 +16,28 @@ mcc -m -v bfp.m
 mcc -m -v nii2int16.m
 mcc -m -v resample2surf.m
 mcc -m -v generateGOrdSurfFile.m
+mcc -m -v generateVolGOrdfMRI.m
+mcc -m -v tNLMPDFGOrdfMRI.m
+mcc -m -v generateGOrdSCT.m
+mcc -m -v combineSurfVolGOrdfMRI.m
 
 copyfile('../scripts/bfp_linux.sh', [bfp_bin_dir,'/bfp.sh']);
 movefile('bfp', bfp_bin_dir);
 copyfile('../scripts/nii2int16_linux.sh', [bfp_bin_dir,'/nii2int16.sh']);
 movefile('nii2int16', bfp_bin_dir);
+
+copyfile('../scripts/resample2surf_linux.sh', [bfp_bin_dir,'/resample2surf.sh']);
+movefile('resample2surf', bfp_bin_dir);
+copyfile('../scripts/generateGOrdSurfFile_linux.sh', [bfp_bin_dir,'/generateGOrdSurfFile.sh']);
+movefile('generateGOrdSurfFile', bfp_bin_dir);
+copyfile('../scripts/generateVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/generateVolGOrdfMRI.sh']);
+movefile('generateVolGOrdfMRI', bfp_bin_dir);
+copyfile('../scripts/tNLMPDFGOrdfMRI_linux.sh', [bfp_bin_dir,'/tNLMPDFGOrdfMRI.sh']);
+movefile('tNLMPDFGOrdfMRI', bfp_bin_dir);
+copyfile('../scripts/generateGOrdSCT_linux.sh', [bfp_bin_dir,'/generateGOrdSCT.sh']);
+movefile('generateGOrdSCT', bfp_bin_dir);
+copyfile('../scripts/combineSurfVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/combineSurfVolGOrdfMRI.sh']);
+movefile('combineSurfVolGOrdfMRI', bfp_bin_dir);
 
 copyfile('../../supp_data', [bfp_bin_dir,'/supp_data']);
 copyfile('bfp_version.txt',bfp_bin_dir);

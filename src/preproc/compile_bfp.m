@@ -13,6 +13,8 @@ end
 
 mkdir(bfp_bin_dir);
 mcc -m -v bfp.m
+
+% Compile auxillary binaries
 mcc -m -v nii2int16.m
 mcc -m -v resample2surf.m
 mcc -m -v generateGOrdSurfFile.m
@@ -21,11 +23,13 @@ mcc -m -v tNLMPDFGOrdfMRI.m
 mcc -m -v generateGOrdSCT.m
 mcc -m -v combineSurfVolGOrdfMRI.m
 
+% Main BFP binary
 copyfile('../scripts/bfp_linux.sh', [bfp_bin_dir,'/bfp.sh']);
 movefile('bfp', bfp_bin_dir);
+
+% Auxillary binaries
 copyfile('../scripts/nii2int16_linux.sh', [bfp_bin_dir,'/nii2int16.sh']);
 movefile('nii2int16', bfp_bin_dir);
-
 copyfile('../scripts/resample2surf_linux.sh', [bfp_bin_dir,'/resample2surf.sh']);
 movefile('resample2surf', bfp_bin_dir);
 copyfile('../scripts/generateGOrdSurfFile_linux.sh', [bfp_bin_dir,'/generateGOrdSurfFile.sh']);
@@ -42,6 +46,7 @@ movefile('combineSurfVolGOrdfMRI', bfp_bin_dir);
 copyfile('../../supp_data', [bfp_bin_dir,'/supp_data']);
 copyfile('bfp_version.txt',bfp_bin_dir);
 
+% Pack the build
 tar(sprintf('bfp_%s.tar.gz', bfp_version),bfp_bin_dir);
 rmdir(bfp_bin_dir, 's');
 

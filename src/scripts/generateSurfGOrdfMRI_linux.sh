@@ -31,11 +31,11 @@ fi
 
 read -d '' usage <<EOF
 
-  generateGOrdSurfFile : Generate Surface grayordinates.
+  generateSurfGOrdfMRI : Generate Surface grayordinates.
   Authored by Anand A. Joshi, Signal and Image Processing Institute
   Department of Electrical Engineering, Viterbi School of Engineering, USC
   
-  Usage: generateGOrdSurfFile.sh GOrdSurfIndFile fmri2surfFile, GOrdSurfFile
+  Usage: generateSurfGOrdfMRI.sh GOrdSurfIndFile fmri2surfFile, GOrdSurfFile
 
     GOrdSurfIndFile is the indices of surface grayordinates. It is a .mat file.
     fmri2surfFile as surface file on which data needs to be resampled

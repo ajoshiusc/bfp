@@ -17,7 +17,7 @@ mcc -m -v bfp.m
 % Compile auxillary binaries
 mcc -m -v nii2int16.m
 mcc -m -v resample2surf.m
-mcc -m -v generateGOrdSurfFile.m
+mcc -m -v generateSurfGOrdfMRI.m
 mcc -m -v generateVolGOrdfMRI.m
 mcc -m -v tNLMPDFGOrdfMRI.m
 mcc -m -v generateGOrdSCT.m

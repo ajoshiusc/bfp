@@ -99,8 +99,9 @@ setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
 setenv('FSLDIR', config.FSLPATH);
 setenv('BrainSuiteDir',config.BrainSuitePath);
 setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
-
-
+% some newer afni versions throw warnings for non-float data 
+% creating parsing errors. This takes care of that.
+setenv('AFNI_NIFTI_TYPE_WARN','NO');
 
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;

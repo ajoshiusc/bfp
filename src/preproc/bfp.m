@@ -99,8 +99,9 @@ setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
 setenv('FSLDIR', config.FSLPATH);
 setenv('BrainSuiteDir',config.BrainSuitePath);
 setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
-
-
+% some newer afni versions throw warnings for non-float data
+% creating parsing errors. This takes care of that.
+setenv('AFNI_NIFTI_TYPE_WARN','NO');
 
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
@@ -254,9 +255,12 @@ end
 
 if ~exist(t1ds,'file')
     unix(cmd);
-    cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
-    unix(cmd);
-    %    nii2int16(t1ds,t1ds);
+    if isdeployed
+        cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
+        unix(cmd);
+    else
+        nii2int16(t1ds,t1ds);
+    end
 else
     fprintf('Already ');
 end
@@ -294,9 +298,12 @@ end
 if ~exist(bsenew,'file')
     unix(cmd);
     
-    %    nii2int16(bsenew, bsenew, 0);
-    cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
-    unix(cmd);
+    if isdeployed
+        cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
+        unix(cmd);
+    else
+        nii2int16(bsenew, bsenew, 0);
+    end
     %
 end
 
@@ -305,11 +312,13 @@ bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
 if ~exist(bsenew2,'file')
     if config.T1SpaceProcessing
         copyfile(bseout,bsenew2);
-        
-        %nii2int16(bsenew2, bsenew2,0);
-        cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
-        unix(cmd);
-        
+        %
+        if isdeployed
+            cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
+            unix(cmd);
+        else
+            nii2int16(bsenew2, bsenew2,0);
+        end
     else
         copyfile(bsenew,bsenew2);
     end
@@ -391,9 +400,12 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        %       resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
-        cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);
-        unix(cmd);
+        if isdeployed
+            cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);
+            unix(cmd);
+        else
+            resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
+        end
     else
         fprintf('Already ');
     end
@@ -401,10 +413,13 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        %       generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
-        
-        cmd = sprintf('%s %s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
-        unix(cmd);
+        %
+        if isdeployed
+            cmd = sprintf('%s %s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
+            unix(cmd);
+        else
+            generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+        end
         
         % The surf file is very large, deleting to save space
         delete(fmri2surfFile);
@@ -414,10 +429,14 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Generating Volume Grayordinates\n');
     if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
-        %        generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
         
-        cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
-        unix(cmd);
+        %
+        if isdeployed
+            cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
+            unix(cmd);
+        else
+            generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+        end
         
     else
         fprintf('Already ');
@@ -425,10 +444,13 @@ for ind = 1:length(fmri)
     fprintf('done\n');
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
-        %        combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
-        
-        cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
-        unix(cmd);
+        %   combine surface and volume grayordinates
+        if isdeployed
+            cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
+            unix(cmd);
+        else
+            combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+        end
         
         delete(GOrdSurfFile);
         delete(GOrdVolFile);
@@ -452,9 +474,13 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-            %          tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
-            cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
-            unix(cmd);
+            %
+            if isdeployed
+                cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
+                unix(cmd);
+            else
+                tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
+            end
             
         else
             fprintf('Already ');
@@ -476,10 +502,14 @@ if config.EnableShapeMeasures>0
     end
     
     if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
-        %     generateGOrdSCT(subbasename, GOrdSurfIndFile);
+        %
         
-        cmd = sprintf('%s %s %s', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
-        unix(cmd);
+        if isdeployed
+            cmd = sprintf('%s %s %s', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
+            unix(cmd);
+        else
+            generateGOrdSCT(subbasename, GOrdSurfIndFile);
+        end
         
     else
         fprintf('Already done SCT');

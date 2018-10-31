@@ -479,7 +479,7 @@ if config.EnabletNLMPdfFiltering>0
                 cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
                 unix(cmd);
             else
-                tNLMPDFGOrdfMRI(GOrdInFile,GOrdOutFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
+                tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
             end
             
         else

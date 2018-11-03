@@ -1,5 +1,3 @@
-%AUM
-%Shree Ganeshaya Namaha
 
 function func_preproc(t1,fmri,func_dir,TR,nuisance_template, FWHM, hp,lp,FSLRigidReg)
 

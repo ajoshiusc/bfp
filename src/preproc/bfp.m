@@ -35,6 +35,10 @@ if nargin ~=7
     error('exiting');
 end
 disp('Starting BFP Processing');
+
+
+
+
 p=inputParser;
 
 addRequired(p,'configfile',@ischar);
@@ -119,7 +123,27 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
-FSLRigid=1; %PUT THIS IN CONFIG FILE
+FSLRigid=1; %PUT THIS IN CONFIG FILE Overriding config file here since USCRigid registration is not tested.
+
+ver_file = fullfile(BFPPATH, 'bfp_version.txt');
+
+if ~exist(ver_file, 'file')
+    ver_file = fullfile(BFPPATH, '/src/preproc', 'bfp_version.txt');
+end
+
+fid = fopen(ver_file, 'w');
+ver = fscanf(fid, '%s');
+fclose(fid);
+
+logfname=fullfile(studydir,subid,'BFP_log.txt');
+fp=fopen(logfname,'a+');
+fprintf('BFP version: %s\n', ver);
+fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri,studydir,subid,sessionid,TR);
+
+fclose(fp);
+
+
+
 
 if isfield(config, 'MultiThreading')
     config.MultiThreading=str2double(config.MultiThreading);

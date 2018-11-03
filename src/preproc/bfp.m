@@ -123,7 +123,7 @@ fwhm=config.FWHM;
 hp=config.HIGHPASS;
 lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
-FSLRigid=1; %PUT THIS IN CONFIG FILE Overriding config file here since USCRigid registration is not tested.
+%FSLRigid=1; %PUT THIS IN CONFIG FILE Overriding config file here since USCRigid registration is not tested.
 
 ver_file = fullfile(BFPPATH, 'bfp_version.txt');
 
@@ -141,8 +141,6 @@ fprintf(fp, 'BFP version: %s\n', ver);
 fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
 
 fclose(fp);
-
-
 
 
 if isfield(config, 'MultiThreading')
@@ -400,7 +398,7 @@ fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
     if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
-        func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,FSLRigid);
+        func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid);
         
         %        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
     else

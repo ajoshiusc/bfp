@@ -120,10 +120,15 @@ if FSLRigidReg > 0
 else
     disp('Using USC rigid registration');    
     opts.similarity = 'inversion';
-%      opts.init_method = 'none';
+        m = [fmri,'_mask.nii.gz'];
+        mm = load_untouch_nii_gz(m);
+        mm.img = imdilate(mm.img, strel('cube',3));
+        mmf = [fmri,'_mask_dilate.nii.gz'];
+        save_untouch_nii_gz(mm,mmf);
+    opts.moving_mask = mmf;
         moving_filename = [example,'_func.nii.gz'];
         static_filename = [t1,'.bfc.nii.gz'];
-        output_filename = [example,'_func2t1_my.nii.gz'];
+        output_filename = [example,'_func2t1.nii.gz'];
         register_files_affine(moving_filename, static_filename, output_filename, opts)    
 end
 % 
@@ -139,6 +144,7 @@ else
     opts.similarity = 'inversion';
     moving_filename = [example,'_func.nii.gz'];%fullfile(funcDir,sprintf('%s_%s_bold_example_func.nii.gz',subid,sessionid{ind}));
     static_filename = 'standard.nii.gz';
+    opts.moving_mask = mmf;
     output_filename = [example,'_func2standard.nii.gz'];
     register_files_affine(moving_filename, static_filename, output_filename, opts)    
 end
@@ -173,7 +179,11 @@ disp(['Extracting global signal for subject']);
 unix(['3dmaskave -mask ',fmri,'_pp_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
 % 
 % ## 17. csf
-unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',t1,'.func.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
+if FSLRigidReg > 0
+    unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',t1,'.func.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
+else
+    transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [t1,'.func.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+end
 % 
 unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 5.5 -bin ',t1,'.func.csf.mask.nii.gz']);
 unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',t1,'.func.wm.mask.nii.gz']);
@@ -212,7 +222,11 @@ unix(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d_mean.nii.gz ',nuisance
 unix(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/res4d_mean.nii.gz -expr ''(a-b)+100'' -prefix ',fmri,'_res.nii.gz']);
 % 
 % ## 9. Resampling residuals to MNI space
-unix(['flirt -ref ',func_dir,'/standard -in ',fmri,'_res -out ',fmri,'_res2standard -applyxfm -init ',func_dir,'/',example,'_func2standard.mat -interp trilinear']);
+if FSLRigidReg > 0
+    unix(['flirt -ref ',func_dir,'/standard -in ',fmri,'_res -out ',fmri,'_res2standard -applyxfm -init ',func_dir,'/',example,'_func2standard.mat -interp trilinear']);
+else
+    transform_data_affine([fmri,'_res.nii.gz'], 'm', [fmri,'_res2standard.nii.gz'], [example,'_func.nii.gz'], 'standard.nii.gz', [fmri,'_example_func2standard.rigid_registration_result.mat'], 'linear');
+end
 % 
 cd(cwd);
 

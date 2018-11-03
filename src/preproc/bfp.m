@@ -49,7 +49,7 @@ addRequired(p,'subid',@ischar);
 addRequired(p,'sessionid',@(x) ischar(x)||iscellstr(x));
 addRequired(p,'TR',@(x) isnumeric(x)||ischar(x));
 %addOptional(p,'contprevrun',@(x) isnumeric(x)||ischar(x));
-
+fmri_orig=fmri;
 parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 %%
 subdir=fullfile(studydir,subid);
@@ -131,14 +131,14 @@ if ~exist(ver_file, 'file')
     ver_file = fullfile(BFPPATH, '/src/preproc', 'bfp_version.txt');
 end
 
-fid = fopen(ver_file, 'w');
-ver = fscanf(fid, '%s');
+fid = fopen(ver_file, 'r');
+[ver,n] = fscanf(fid, '%s',Inf);
 fclose(fid);
 
 logfname=fullfile(studydir,subid,'BFP_log.txt');
 fp=fopen(logfname,'a+');
-fprintf('BFP version: %s\n', ver);
-fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri,studydir,subid,sessionid,TR);
+fprintf(fp, 'BFP version: %s\n', ver);
+fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
 
 fclose(fp);
 

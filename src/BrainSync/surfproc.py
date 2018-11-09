@@ -448,28 +448,28 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.tri as mtri
 import matplotlib.pyplot as plt
 from matplotlib.colors import LightSource
-from vispy import scene
-from vispy.color import Color
-from vispy import gloo
-from vispy.scene.cameras import TurntableCamera
-import vispy.io
-import vispy.geometry
+#from vispy import scene
+#from vispy.color import Color
+#from vispy import gloo
+#from vispy.scene.cameras import TurntableCamera
+#import vispy.io
+#import vispy.geometry
 import ply
 import sys
 
-def view_patch_vispy(r, attrib=[], opacity=1, fig=0, show=1, colorbar=1, clim=[0], outfile=0, azimuth=0, elevation=-90, colormap='jet'):
-    meshdata = vispy.geometry.MeshData(vertices=r.vertices, faces=r.faces, vertex_colors=r.vColor)
-    canvas = scene.SceneCanvas(keys='interactive', size=(800, 600), show=True)
-    mesh = scene.visuals.Mesh(meshdata=meshdata, shading='smooth')
-    view = canvas.central_widget.add_view()
-    view.add(mesh)
-    view.bgcolor = '#efefef'
-    view.camera = TurntableCamera(azimuth=azimuth, elevation=elevation)
-    color = Color("#3f51b5")
-#    mesh.set_gl_state('translucent', depth_test=True, cull_face=True)
-    axis = scene.visuals.XYZAxis(parent=view.scene)
-    if __name__ == '__main__' and sys.flags.interactive == 0:
-        canvas.app.run()
+#def view_patch_vispy(r, attrib=[], opacity=1, fig=0, show=1, colorbar=1, clim=[0], outfile=0, azimuth=0, elevation=-90, colormap='jet'):
+#    meshdata = vispy.geometry.MeshData(vertices=r.vertices, faces=r.faces, vertex_colors=r.vColor)
+#    canvas = scene.SceneCanvas(keys='interactive', size=(800, 600), show=True)
+#    mesh = scene.visuals.Mesh(meshdata=meshdata, shading='smooth')
+#    view = canvas.central_widget.add_view()
+#    view.add(mesh)
+#    view.bgcolor = '#efefef'
+#    view.camera = TurntableCamera(azimuth=azimuth, elevation=elevation)
+#    color = Color("#3f51b5")
+##    mesh.set_gl_state('translucent', depth_test=True, cull_face=True)
+#    axis = scene.visuals.XYZAxis(parent=view.scene)
+#    if __name__ == '__main__' and sys.flags.interactive == 0:
+#        canvas.app.run()
 
 
 def view_patch_mplt(r, attrib=[], opacity=1, fig=0, show=1, colorbar=1, clim=[0], outfile=0, azimuth=0, elevation=-90, colormap='jet'):

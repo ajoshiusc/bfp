@@ -42,7 +42,7 @@ for sub in lst:
 
     sub_data[:, :, count1] = d
     count1 += 1
-    print(count1,)
+    print(count1, )
 
 #%%
 r = h5py.File('/big_disk/ajoshi/fmri_Atlas_Result/result_raw.mat')
@@ -59,20 +59,22 @@ for ind1 in range(nSub):
     for ind2 in range(nSub):
         dist_all_orig[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] -
                                                    sub_data[:, :, ind2])
-        sub_data_rot, _ = brainSync(X=sub_data[:, :, ind1],
-                                    Y=sub_data[:, :, ind2])
+        sub_data_rot, _ = brainSync(
+            X=sub_data[:, :, ind1], Y=sub_data[:, :, ind2])
         dist_all_rot[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] -
                                                   sub_data_rot)
         print(ind1, ind2)
 
-
-sp.savez('Haleh_pairwise_dist_all_sub_by_sub2.npz', dist_all_rot=dist_all_rot,
-         dist_all_orig=dist_all_orig, lst=lst)
+sp.savez(
+    'Haleh_pairwise_dist_all_sub_by_sub2.npz',
+    dist_all_rot=dist_all_rot,
+    dist_all_orig=dist_all_orig,
+    lst=lst)
 ######
 #%%
 a = sp.load('Haleh_pairwise_dist_all_sub_by_sub2.npz')
 lst = a['lst']
-lst2 = [None]*(nsub+1)
+lst2 = [None] * (nsub + 1)
 ctr = 0
 for sub in lst:
     fname = os.path.join(p_dir, sub, 'rfMRI_1_LR.mat')
@@ -96,7 +98,7 @@ for i in range(e.shape[0]):
 diff = 0
 for ind in range(nsub):
     Y2, _ = brainSync(X=sub_data[:, :, q], Y=sub_data[:, :, ind])
-    diff += (Y2 - sub_data[:, :, q]) ** 2
+    diff += (Y2 - sub_data[:, :, q])**2
 
 spio.savemat('diff_individual_atlas.mat', {'diff': diff})
 
@@ -110,11 +112,10 @@ atlas /= nsub
 diff = 0
 for ind in range(nsub):
     Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
-    diff += (Y2 - atlas) ** 2
-    print(ind,)
+    diff += (Y2 - atlas)**2
+    print(ind, )
 
 spio.savemat('diff_average_atlas.mat', {'diff': diff})
-
 
 #%% Compute difference for the virtual subject
 diff = 0
@@ -122,5 +123,5 @@ r = h5py.File('/big_disk/ajoshi/fmri_Atlas_Result/result_raw.mat')
 atlas = sp.array(r['X2']).T
 for ind in range(nsub):
     Y2, _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
-    diff += (Y2 - atlas) ** 2
+    diff += (Y2 - atlas)**2
 spio.savemat('diff_avg_atlas.mat', {'diff': diff})

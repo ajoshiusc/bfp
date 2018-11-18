@@ -46,7 +46,7 @@ copyfile('../scripts/combineSurfVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/combineSur
 movefile('combineSurfVolGOrdfMRI', bfp_bin_dir);
 copyfile('../scripts/transform_data_affine_linux.sh', [bfp_bin_dir,'/transform_data_affine.sh']);
 movefile('transform_data_affine', bfp_bin_dir);
-copyfile('../scripts/usc_rigid_reg.sh', [bfp_bin_dir,'/usc_rigid_reg.sh']);
+copyfile('../scripts/usc_rigid_reg_linux.sh', [bfp_bin_dir,'/usc_rigid_reg.sh']);
 movefile('usc_rigid_reg', bfp_bin_dir);
 
 

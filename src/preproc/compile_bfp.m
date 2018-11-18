@@ -22,6 +22,8 @@ mcc -m -v generateVolGOrdfMRI.m
 mcc -m -v tNLMPDFGOrdfMRI.m
 mcc -m -v generateGOrdSCT.m
 mcc -m -v combineSurfVolGOrdfMRI.m
+mcc -m -v transform_data_affine.m
+mcc -m -v usc_rigid_reg.m
 
 % Main BFP binary
 copyfile('../scripts/bfp_linux.sh', [bfp_bin_dir,'/bfp.sh']);
@@ -42,6 +44,11 @@ copyfile('../scripts/generateGOrdSCT_linux.sh', [bfp_bin_dir,'/generateGOrdSCT.s
 movefile('generateGOrdSCT', bfp_bin_dir);
 copyfile('../scripts/combineSurfVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/combineSurfVolGOrdfMRI.sh']);
 movefile('combineSurfVolGOrdfMRI', bfp_bin_dir);
+copyfile('../scripts/transform_data_affine_linux.sh', [bfp_bin_dir,'/transform_data_affine.sh']);
+movefile('transform_data_affine', bfp_bin_dir);
+copyfile('../scripts/usc_rigid_reg.sh', [bfp_bin_dir,'/usc_rigid_reg.sh']);
+movefile('usc_rigid_reg', bfp_bin_dir);
+
 
 copyfile('../../supp_data', [bfp_bin_dir,'/supp_data']);
 copyfile('bfp_version.txt',bfp_bin_dir);

@@ -3,10 +3,11 @@ addpath(genpath('/big_disk/ajoshi/coding_ground/bfp/src'));
 
 % Set the input arguments
 configfile='/big_disk/ajoshi/bfp_sample/config.ini';
-t1='/big_disk/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
-fmri='/big_disk/ajoshi/bfp_sample/input/sub08001/func/rest.nii.gz';
-studydir='/big_disk/ajoshi/bfp_sample/output/matlab';
-subid='sub11';
+t1='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005_T1w.nii.gz'
+%t1='/big_disk/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
+fmri='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.BOLD.resting.nii.gz';
+studydir='/home/ajoshi/Downloads/BFP_issues';
+subid='ACTL005';
 sessionid='rest';
 TR='2';
  

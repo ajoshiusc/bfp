@@ -398,7 +398,7 @@ fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
     if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
-        func_preproc(subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid);
+        func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid);
         
         %        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
     else

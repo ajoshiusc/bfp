@@ -1,5 +1,5 @@
 
-function func_preproc(t1,fmri,func_dir,TR,nuisance_template, FWHM, hp,lp,FSLRigidReg)
+function func_preproc(BFPPATH,t1,fmri,func_dir,TR,nuisance_template, FWHM, hp,lp,FSLRigidReg)
 
 %##########################################################################################################################
 %## SCRIPT TO PREPROCESS THE FUNCTIONAL SCAN
@@ -25,7 +25,7 @@ TRend=n_vols-1;
 sigma=str2double(FWHM)/2.3548;
 
 usc_rigid_reg_bin = fullfile(BFPPATH, 'usc_rigid_reg.sh');
-transform_data_affine_bin = fullfile(BFP_PATH, 'transform_data_affine.sh');
+transform_data_affine_bin = fullfile(BFPPATH, 'transform_data_affine.sh');
 
 % 
 % 

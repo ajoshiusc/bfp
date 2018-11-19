@@ -2,8 +2,8 @@ clc;clear all;close all;restoredefaultpath;
 addpath(genpath('/big_disk/ajoshi/coding_ground/bfp/src'));
 
 % Set the input arguments
-configfile='/big_disk/ajoshi/bfp_sample/config.ini';
-t1='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005_T1w.nii.gz'
+configfile='/big_disk/ajoshi/coding_ground/bfp/supp_data/config.ini';
+t1='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.nii.gz'
 %t1='/big_disk/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
 fmri='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.BOLD.resting.nii.gz';
 studydir='/home/ajoshi/Downloads/BFP_issues';

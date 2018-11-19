@@ -126,7 +126,7 @@ else
 %    opts.similarity = 'inversion';
     m = [fmri,'_mask.nii.gz'];
     mm = load_untouch_nii_gz(m);
-    mm.img = imdilate(mm.img, strel('cube',3));
+    mm.img = imdilate(mm.img, ones(3,3,3));
     mmf = [fmri,'_mask_dilate.nii.gz'];
     save_untouch_nii_gz(mm,mmf);
 %    opts.moving_mask = mmf;

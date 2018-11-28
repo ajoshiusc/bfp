@@ -563,7 +563,9 @@ def smooth_patch(surf, iterations=15, relaxation=0.1):
     faces1 = surf1.GetPolys()
     f1 = faces1.GetData()
     f2 = vtk_to_numpy(f1)
-    f2 = f2.reshape(len(f2) / 4, 4)
+    f2 = f2.reshape(sp.int16(len(f2) / 4), 4)
+
+
 
     class surf2(surf):
         pass

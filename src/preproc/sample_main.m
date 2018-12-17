@@ -1,13 +1,16 @@
 clc;clear all;close all;restoredefaultpath;
-addpath(genpath('/big_disk/ajoshi/coding_ground/bfp/src'));
+addpath(genpath('/home/rcf-40/ajoshi/aaj/git_sandbox/bfp/src'));
 
 % Set the input arguments
-configfile='/big_disk/ajoshi/coding_ground/bfp/supp_data/config.ini';
-t1='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.nii.gz'
+configfile='/home/rcf-40/ajoshi/aaj/git_sandbox/bfp/supp_data/hpcconfig.ini';
+
+t1='/home/rcf-40/ajoshi/aaj/maryland_rao_v1/TBI_INVAP401RGR/T1mni.nii.gz'
 %t1='/big_disk/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
-fmri='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.BOLD.resting.nii.gz';
-studydir='/home/ajoshi/Downloads/BFP_issues';
-subid='ACTL005';
+fmri='/home/rcf-40/ajoshi/aaj/maryland_rao_v1/TBI_INVAP401RGR/rest.nii'
+
+%fmri='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.BOLD.resting.nii.gz';
+studydir='/home/rcf-40/ajoshi/aaj/maryland_rao_v1_bfp';
+subid='TBI_INVAP401RGR';
 sessionid='rest';
 TR='2';
  

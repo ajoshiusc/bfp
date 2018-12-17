@@ -135,12 +135,6 @@ fid = fopen(ver_file, 'r');
 [ver,n] = fscanf(fid, '%s',Inf);
 fclose(fid);
 
-logfname=fullfile(studydir,subid,'BFP_log.txt');
-fp=fopen(logfname,'a+');
-fprintf(fp, 'BFP version: %s\n', ver);
-fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
-
-fclose(fp);
 
 
 if isfield(config, 'MultiThreading')
@@ -210,6 +204,15 @@ if ~exist(subdir,'dir')
     mkdir(subdir)
 end
 fprintf('Creating Dir:%s\n',anatDir);
+
+% BFP log file in subject dir
+logfname=fullfile(studydir,subid,'BFP_log.txt');
+fp=fopen(logfname,'a+');
+fprintf(fp, 'BFP version: %s\n', ver);
+fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
+
+fclose(fp);
+
 
 if ~exist(anatDir,'dir')
     mkdir(anatDir);

@@ -70,6 +70,6 @@ export XAPPLRESDIR;
 
 
 # Run the executable
-${exe_dir}/generateGOrdSCT.sh "${subbasename}" "${GOrdSurfIndFile}" 
+${exe_dir}/generateGOrdSCT "${subbasename}" "${GOrdSurfIndFile}" 
 
 exit

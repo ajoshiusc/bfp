@@ -36,9 +36,6 @@ if nargin ~=7
 end
 disp('Starting BFP Processing');
 
-
-
-
 p=inputParser;
 
 addRequired(p,'configfile',@ischar);

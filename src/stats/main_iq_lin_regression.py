@@ -119,19 +119,19 @@ def main():
     print(corr_pval_fdr.shape, labs.shape)
     corr_pval_fdr = corr_pval_fdr * (labs > 0)
 
-    nVert = lsurf.vertices.shape[0]
+    num_vert = lsurf.vertices.shape[0]
 
     # ### Visualize the norm of the difference of Normal Controls from the atlas, at each point on the cortical surface
 
     # In[13]:
 
     lsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
-    lsurf.attributes = lsurf.attributes[:nVert]
+    lsurf.attributes = lsurf.attributes[:num_vert]
     rsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
-    rsurf.attributes = rsurf.attributes[nVert:2 * nVert]
+    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
     lsurf = patch_color_attrib(lsurf, clim=[0, .05])
     rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-    print(lsurf.attributes.shape, nVert, lsurf.vColor.shape)
+    print(lsurf.attributes.shape, num_vert, lsurf.vColor.shape)
     view_patch_vtk(
         lsurf,
         azimuth=100,
@@ -152,12 +152,12 @@ def main():
     # ### All Done!! The outputs are saved as png files.
 
     lsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
-    lsurf.attributes = lsurf.attributes[:nVert]
+    lsurf.attributes = lsurf.attributes[:num_vert]
     rsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
-    rsurf.attributes = rsurf.attributes[nVert:2 * nVert]
+    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
     lsurf = patch_color_attrib(lsurf, clim=[0, .05])
     rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-    print(lsurf.attributes.shape, nVert, lsurf.vColor.shape)
+    print(lsurf.attributes.shape, num_vert, lsurf.vColor.shape)
     view_patch_vtk(
         lsurf,
         azimuth=100,

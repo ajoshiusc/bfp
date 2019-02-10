@@ -1,3 +1,5 @@
+*.nii*
+*.mat
 *.old*
 *.npz
 *.swp

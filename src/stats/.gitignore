@@ -1,15 +1,7 @@
-*.old*
-*.npz
-*.swp
-*.tar.gz
-*.gif
 *.png
-# 
-#
-#
-# Byt
-#
-# e-compiled / optimized / DLL files
+*.mat
+
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
@@ -31,6 +23,8 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg

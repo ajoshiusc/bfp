@@ -32,9 +32,8 @@ from dfsio import readdfs
 import os
 from brainsync import normalizeData, brainSync
 from sklearn.decomposition import PCA
-import statsmodels.api as sm
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import read_fcon1000_data
+from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
 
@@ -85,9 +84,6 @@ def main():
 
     print('Atlas computed and saved')
     # ### Learn PCA basis
-    print('Compute PCA basis function from the atlas')
-    pca = PCA(n_components=NDIM)
-    pca.fit(avg_atlas.T)
     print('PCA done')
 
     # Read normal control subjects for statistical testing
@@ -100,45 +96,13 @@ def main():
         num_sub=NUM_SUB,
         len_time=LEN_TIME)
 
-    print(
-        'Synchronize the subject data to the atlas and perform PCA of the result'
-    )
-    print(
-        'Then compute difference between atlas and the subject. This is the test statistic.'
-    )
+    print('performing stats based on distance to atlas')
+    corr_pval, corr_pval_fdr = dist2atlas_reg(
+        ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var)
 
-    diff = sp.zeros([sub_data.shape[1], NUM_SUB])
-    rData = sp.zeros((NDIM, sub_data.shape[1], NUM_SUB))
-
-    for ind in tqdm(range(NUM_SUB)):
-        Y2, _ = brainSync(X=avg_atlas, Y=sub_data[:, :, ind])
-        rData[:, :, ind] = pca.transform(Y2.T).T
-        diff[:, ind] = sp.sum((Y2 - avg_atlas)**2, axis=0)
-
-    spio.savemat('diff_avg_atlas.mat', {'diff': diff})
-
-    # In[9]:
-
-    rcorr = sp.zeros(diff.shape[0])
-    r = sp.array(reg_var[:NUM_SUB])
-    r = sp.absolute(r - sp.mean(r))
-    pval_surf = sp.zeros(diff.shape[0])
-
-    for nv in range(diff.shape[0]):
-        a = sp.corrcoef(diff[nv, :], r)
-        rcorr[nv] = a[0, 1]
-
-        X = rData[:, nv, :]
-        X = sm.add_constant(X.T)
-        est = sm.OLS(r, X)
-        pval_surf[nv] = est.fit().f_pvalue
-
-    print('Regression is done')
-
-    m = np.isnan(pval_surf)
-    pval_surf[m] = .5
-    _, pval_surf_corr = fdrcorrection(pval_surf)
-    #  ### Read surfaces for visualization
+    print('performing stats based on linear regression')
+    lin_pval, lin_pval_fdr = lin_reg(
+        ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var, ndim=20)
 
     # In[12]:
 
@@ -152,8 +116,8 @@ def main():
     lsurf = smooth_patch(lsurf, iterations=1500)
     rsurf = smooth_patch(rsurf, iterations=1500)
     labs[sp.isnan(labs)] = 0
-    print(rcorr.shape, labs.shape)
-    rcorr = rcorr * (labs > 0)
+    print(corr_pval_fdr.shape, labs.shape)
+    corr_pval_fdr = corr_pval_fdr * (labs > 0)
 
     nVert = lsurf.vertices.shape[0]
 
@@ -161,35 +125,35 @@ def main():
 
     # In[13]:
 
-    lsurf.attributes = rcorr.squeeze()
+    lsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
     lsurf.attributes = lsurf.attributes[:nVert]
-    rsurf.attributes = rcorr.squeeze()
+    rsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
     rsurf.attributes = rsurf.attributes[nVert:2 * nVert]
-    lsurf = patch_color_attrib(lsurf, clim=[-.5, .5])
-    rsurf = patch_color_attrib(rsurf, clim=[-.5, .5])
+    lsurf = patch_color_attrib(lsurf, clim=[0, .05])
+    rsurf = patch_color_attrib(rsurf, clim=[0, .05])
     print(lsurf.attributes.shape, nVert, lsurf.vColor.shape)
     view_patch_vtk(
         lsurf,
         azimuth=100,
         elevation=180,
         roll=90,
-        outfile='l1corr.png',
+        outfile='right_corr_pval.png',
         show=1)
     view_patch_vtk(
         rsurf,
         azimuth=-100,
         elevation=180,
         roll=-90,
-        outfile='r1corr.png',
+        outfile='right_corr_pval.png',
         show=1)
 
     # ### Visualize the norm of the difference of ADHD from the atlas
 
     # ### All Done!! The outputs are saved as png files.
 
-    lsurf.attributes = 0.05 - pval_surf_corr.squeeze()
+    lsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
     lsurf.attributes = lsurf.attributes[:nVert]
-    rsurf.attributes = 0.05 - pval_surf_corr.squeeze()
+    rsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
     rsurf.attributes = rsurf.attributes[nVert:2 * nVert]
     lsurf = patch_color_attrib(lsurf, clim=[0, .05])
     rsurf = patch_color_attrib(rsurf, clim=[0, .05])
@@ -209,32 +173,13 @@ def main():
         outfile='r1_pavl.png',
         show=1)
 
-    # ### Visualize the norm of the difference of ADHD from the atlas
-    lsurf = patch_color_attrib(lsurf, clim=[0, .5])
-    rsurf = patch_color_attrib(rsurf, clim=[0, .5])
-    print(lsurf.attributes.shape, nVert, lsurf.vColor.shape)
-    view_patch_vtk(
-        lsurf,
-        azimuth=100,
-        elevation=180,
-        roll=90,
-        outfile='l1_pval_p5.png',
-        show=1)
-    view_patch_vtk(
-        rsurf,
-        azimuth=-100,
-        elevation=180,
-        roll=-90,
-        outfile='r1_pavl_p5.png',
-        show=1)
-
     print('Saving results')
     spio.savemat(
         'iq_reg_res.mat', {
             'lsurf': lsurf,
             'rsurf': rsurf,
-            'pval_surf': pval_surf,
-            'pval_surf_corr': pval_surf_corr
+            'lin_pval': lin_pval,
+            'lin_pval_fdr': lin_pval_fdr
         })
 
     print('Results saved')

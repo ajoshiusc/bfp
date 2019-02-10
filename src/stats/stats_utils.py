@@ -6,6 +6,9 @@ import scipy as sp
 import scipy.io as spio
 from brainsync import normalizeData, brainSync
 from tqdm import tqdm
+from statsmodels.stats.multitest import fdrcorrection
+from sklearn.decomposition import PCA
+import statsmodels.api as sm
 
 
 def read_fcon1000_data(csv_fname,
@@ -50,7 +53,7 @@ def read_fcon1000_data(csv_fname,
             reg_var.append(float(rvar))
 
             count1 += 1
-            pbar.update(1) # update the progress bar
+            pbar.update(1)  # update the progress bar
             #print('%d,' % count1, end='')
             if count1 == num_sub:
                 break
@@ -65,5 +68,65 @@ def read_fcon1000_data(csv_fname,
 def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
 
+    # Assume that the sub_data is already normalized
+    syn_data = sp.zeros(sub_data.shape)
     for ind in tqdm(range(sub_data.shape[2])):
-        sub_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
+        syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
+
+    return syn_data
+
+
+def dist2atlas_reg(ref_atlas, sub_data, reg_var):
+    """ Perform regression stats based on distance to atlas """
+    print('dist2atlas_reg, assume that the data is normalized')
+
+    num_vert = sub_data.shape[1]
+    num_sub = sub_data.shape[2]
+
+    diff = sp.zeros([sub_data.shape[1], num_sub])
+
+    # Compute distance to atlas
+    for ind in tqdm(range(num_sub)):
+        Y2, _ = brainSync(X=ref_atlas, Y=sub_data[:, :, ind])
+        diff[:, ind] = sp.sum((Y2 - ref_atlas)**2, axis=0)
+
+    corr_pval = sp.zeros(num_vert)
+    for v in tqdm(range()):
+        _, corr_pval[v] = sp.stats.pearsonr(diff[v, :], reg_var)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+    _, corr_pval_fdr = fdrcorrection(corr_pval)
+
+    return corr_pval, corr_pval_fdr
+
+
+def lin_reg(ref_atlas, sub_data, reg_var, ndim=20):
+    """ Perform regression stats based on distance to atlas """
+
+    num_vert = sub_data.shape[1]
+    num_sub = sub_data.shape[2]
+
+    print('Computing PCA basis function from the atlas')
+    pca = PCA(n_components=ndim)
+    pca.fit(ref_atlas.T)
+
+    rData = sp.zeros((ndim, sub_data.shape[1], num_sub))
+    for ind in tqdm(range(num_sub)):
+        Y2, _ = brainSync(X=ref_atlas, Y=sub_data[:, :, ind])
+        rData[:, :, ind] = pca.transform(Y2.T).T
+
+    pval_linreg = sp.zeros(num_vert)
+
+    for v in tqdm(range(num_vert)):
+        X = rData[:, v, :]
+        X = sm.add_constant(X.T)
+        est = sm.OLS(reg_var, X)
+        pval_linreg[v] = est.fit().f_pvalue
+
+    print('Regression is done')
+
+    pval_linreg[sp.isnan(pval_linreg)] = .5
+    _, pval_linreg_fdr = fdrcorrection(pval_linreg)
+
+    return pval_linreg, pval_linreg_fdr
+

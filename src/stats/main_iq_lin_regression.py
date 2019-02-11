@@ -97,17 +97,19 @@ def main():
         len_time=LEN_TIME)
 
     print('performing stats based on distance to atlas')
-    corr_pval, corr_pval_fdr = dist2atlas_reg(
+    _, corr_pval_fdr = dist2atlas_reg(
         ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var)
-
-    print('performing stats based on linear regression')
-    lin_pval, lin_pval_fdr = lin_reg(
-        ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var, ndim=20)
 
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr')
 
-    vis_save_pval(bfp_path=BFPPATH, pval_map=lin_pval_fdr, surf_name='lin_reg')
+
+    for ndim in range(5,150,20):
+        print('performing stats based on linear regression')
+        _, lin_pval_fdr = lin_reg(
+            ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var, ndim=ndim)
+
+        vis_save_pval(bfp_path=BFPPATH, pval_map=lin_pval_fdr, surf_name='lin_reg'+str(ndim))
 
     print('Results saved')
 

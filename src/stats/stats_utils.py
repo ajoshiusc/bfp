@@ -157,8 +157,8 @@ def vis_save_pval(bfp_path, pval_map, surf_name, smooth_iter=1500):
     rsurf = patch_color_attrib(rsurf, clim=[0, .05])
 
     # If p value above .05 then make the surface grey
-    lsurf.vcolor[lsurf.attributes < 0, :] = .5
-    rsurf.vcolor[rsurf.attributes < 0, :] = .5
+    lsurf.vColor[lsurf.attributes < 0, :] = .5
+    rsurf.vColor[rsurf.attributes < 0, :] = .5
 
     # Visualize left hemisphere
     view_patch_vtk(

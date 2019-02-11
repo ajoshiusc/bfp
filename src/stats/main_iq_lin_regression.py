@@ -33,7 +33,7 @@ import os
 from brainsync import normalizeData, brainSync
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg
+from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg, vis_save_pval
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
 
@@ -59,6 +59,8 @@ NUM_SUB = 150  # Number of subjects for the study
 def main():
 
     # Read NUM_SUB_ATLAS subjects for creating the atlas
+    print('Reading subjects for atlas creation')
+
     sub_ids, reg_var, sub_data = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
@@ -83,8 +85,6 @@ def main():
     spio.savemat('avg_atlas.mat', {'avg_atlas': avg_atlas})
 
     print('Atlas computed and saved')
-    # ### Learn PCA basis
-    print('PCA done')
 
     # Read normal control subjects for statistical testing
     print('Reading subjects')
@@ -104,83 +104,10 @@ def main():
     lin_pval, lin_pval_fdr = lin_reg(
         ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var, ndim=20)
 
-    # In[12]:
+    vis_save_pval(
+        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr')
 
-    lsurf = readdfs(BFPPATH + '/supp_data/bci32kleft.dfs')
-    rsurf = readdfs(BFPPATH + '/supp_data/bci32kright.dfs')
-    a = spio.loadmat(BFPPATH + '/supp_data/USCBrain_grayord_labels.mat')
-    labs = a['labels']
-
-    lsurf.attributes = np.zeros((lsurf.vertices.shape[0]))
-    rsurf.attributes = np.zeros((rsurf.vertices.shape[0]))
-    lsurf = smooth_patch(lsurf, iterations=1500)
-    rsurf = smooth_patch(rsurf, iterations=1500)
-    labs[sp.isnan(labs)] = 0
-    print(corr_pval_fdr.shape, labs.shape)
-    corr_pval_fdr = corr_pval_fdr * (labs > 0)
-
-    num_vert = lsurf.vertices.shape[0]
-
-    # ### Visualize the norm of the difference of Normal Controls from the atlas, at each point on the cortical surface
-
-    # In[13]:
-
-    lsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
-    lsurf.attributes = lsurf.attributes[:num_vert]
-    rsurf.attributes = 0.05 - corr_pval_fdr.squeeze()
-    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
-    lsurf = patch_color_attrib(lsurf, clim=[0, .05])
-    rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-    print(lsurf.attributes.shape, num_vert, lsurf.vColor.shape)
-    view_patch_vtk(
-        lsurf,
-        azimuth=100,
-        elevation=180,
-        roll=90,
-        outfile='right_corr_pval.png',
-        show=1)
-    view_patch_vtk(
-        rsurf,
-        azimuth=-100,
-        elevation=180,
-        roll=-90,
-        outfile='right_corr_pval.png',
-        show=1)
-
-    # ### Visualize the norm of the difference of ADHD from the atlas
-
-    # ### All Done!! The outputs are saved as png files.
-
-    lsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
-    lsurf.attributes = lsurf.attributes[:num_vert]
-    rsurf.attributes = 0.05 - lin_pval_fdr.squeeze()
-    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
-    lsurf = patch_color_attrib(lsurf, clim=[0, .05])
-    rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-    print(lsurf.attributes.shape, num_vert, lsurf.vColor.shape)
-    view_patch_vtk(
-        lsurf,
-        azimuth=100,
-        elevation=180,
-        roll=90,
-        outfile='l1_pval.png',
-        show=1)
-    view_patch_vtk(
-        rsurf,
-        azimuth=-100,
-        elevation=180,
-        roll=-90,
-        outfile='r1_pavl.png',
-        show=1)
-
-    print('Saving results')
-    spio.savemat(
-        'iq_reg_res.mat', {
-            'lsurf': lsurf,
-            'rsurf': rsurf,
-            'lin_pval': lin_pval,
-            'lin_pval_fdr': lin_pval_fdr
-        })
+    vis_save_pval(bfp_path=BFPPATH, pval_map=lin_pval_fdr, surf_name='lin_reg')
 
     print('Results saved')
 

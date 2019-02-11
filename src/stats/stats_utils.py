@@ -4,11 +4,13 @@ import csv
 import os
 import scipy as sp
 import scipy.io as spio
-from brainsync import normalizeData, brainSync
 from tqdm import tqdm
+import statsmodels.api as sm
 from statsmodels.stats.multitest import fdrcorrection
 from sklearn.decomposition import PCA
-import statsmodels.api as sm
+from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
+from dfsio import readdfs
+from brainsync import normalizeData, brainSync
 
 
 def read_fcon1000_data(csv_fname,
@@ -91,7 +93,7 @@ def dist2atlas_reg(ref_atlas, sub_data, reg_var):
         diff[:, ind] = sp.sum((Y2 - ref_atlas)**2, axis=0)
 
     corr_pval = sp.zeros(num_vert)
-    for v in tqdm(range()):
+    for v in tqdm(range(num_vert)):
         _, corr_pval[v] = sp.stats.pearsonr(diff[v, :], reg_var)
 
     corr_pval[sp.isnan(corr_pval)] = .5
@@ -130,3 +132,47 @@ def lin_reg(ref_atlas, sub_data, reg_var, ndim=20):
 
     return pval_linreg, pval_linreg_fdr
 
+
+def vis_save_pval(bfp_path, pval_map, surf_name, smooth_iter=1500):
+    lsurf = readdfs(bfp_path + '/supp_data/bci32kleft.dfs')
+    rsurf = readdfs(bfp_path + '/supp_data/bci32kright.dfs')
+    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
+    labs = a['labels']
+
+    lsurf.attributes = sp.zeros((lsurf.vertices.shape[0]))
+    rsurf.attributes = sp.zeros((rsurf.vertices.shape[0]))
+    lsurf = smooth_patch(lsurf, iterations=smooth_iter)
+    rsurf = smooth_patch(rsurf, iterations=smooth_iter)
+    labs[sp.isnan(labs)] = 0
+    pval_map = pval_map * (labs > 0)
+
+    num_vert = lsurf.vertices.shape[0]
+
+    lsurf.attributes = 0.05 - pval_map.squeeze()
+    lsurf.attributes = lsurf.attributes[:num_vert]
+    rsurf.attributes = 0.05 - pval_map.squeeze()
+    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
+
+    lsurf = patch_color_attrib(lsurf, clim=[0, .05])
+    rsurf = patch_color_attrib(rsurf, clim=[0, .05])
+
+    # If p value above .05 then make the surface grey
+    lsurf.vcolor[lsurf.attributes < 0, :] = .5
+    rsurf.vcolor[rsurf.attributes < 0, :] = .5
+
+    # Visualize left hemisphere
+    view_patch_vtk(
+        lsurf,
+        azimuth=100,
+        elevation=180,
+        roll=90,
+        outfile='left_' + surf_name + 'corr_pval.png',
+        show=0)
+    # Visualize right hemisphere
+    view_patch_vtk(
+        rsurf,
+        azimuth=-100,
+        elevation=180,
+        roll=-90,
+        outfile='right_' + surf_name + '_pval.png',
+        show=0)

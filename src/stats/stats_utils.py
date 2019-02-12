@@ -82,7 +82,7 @@ def sync2atlas(atlas, sub_data):
     return syn_data
 
 
-def dist2atlas_reg(ref_atlas, sub_data, reg_var):
+def dist2atlas_reg(bfp_path, ref_atlas, sub_data, reg_var):
     """ Perform regression stats based on distance to atlas """
     print('dist2atlas_reg, assume that the data is normalized')
 
@@ -105,17 +105,26 @@ def dist2atlas_reg(ref_atlas, sub_data, reg_var):
         _, corr_pval[v] = sp.stats.pearsonr(diff[v, :], reg_var)
 
     corr_pval[sp.isnan(corr_pval)] = .5
-    _, corr_pval_fdr = fdrcorrection(corr_pval)
+
+    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
+    labs = a['labels'].squeeze()
+
+    corr_pval_fdr = sp.zeros(num_vert)
+    _, pv = fdrcorrection(corr_pval[labs > 0])
+    corr_pval_fdr[labs > 0] = pv
 
     return corr_pval, corr_pval_fdr
 
 
-def lin_reg(ref_atlas, sub_data, reg_var, ndim=20):
+def lin_reg(bfp_path, ref_atlas, sub_data, reg_var, ndim=20):
     """ Perform regression stats based on distance to atlas """
 
     num_vert = sub_data.shape[1]
     num_sub = sub_data.shape[2]
+    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
+    labs = a['labels'].squeeze()
 
+    labs[sp.isnan(labs)] = 0
     print('Computing PCA basis function from the atlas')
     pca = PCA(n_components=ndim)
     pca.fit(ref_atlas.T)
@@ -136,7 +145,10 @@ def lin_reg(ref_atlas, sub_data, reg_var, ndim=20):
     print('Regression is done')
 
     pval_linreg[sp.isnan(pval_linreg)] = .5
-    _, pval_linreg_fdr = fdrcorrection(pval_linreg)
+
+    pval_linreg_fdr = sp.zeros(num_vert)
+    _, pv = fdrcorrection(pval_linreg[labs > 0])
+    pval_linreg_fdr[labs > 0] = pv
 
     return pval_linreg, pval_linreg_fdr
 
@@ -144,15 +156,11 @@ def lin_reg(ref_atlas, sub_data, reg_var, ndim=20):
 def vis_save_pval(bfp_path, pval_map, surf_name, smooth_iter=1500):
     lsurf = readdfs(bfp_path + '/supp_data/bci32kleft.dfs')
     rsurf = readdfs(bfp_path + '/supp_data/bci32kright.dfs')
-    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
-    labs = a['labels']
 
     lsurf.attributes = sp.zeros((lsurf.vertices.shape[0]))
     rsurf.attributes = sp.zeros((rsurf.vertices.shape[0]))
     lsurf = smooth_patch(lsurf, iterations=smooth_iter)
     rsurf = smooth_patch(rsurf, iterations=smooth_iter)
-    labs[sp.isnan(labs)] = 0
-    pval_map = pval_map * (labs > 0)
 
     num_vert = lsurf.vertices.shape[0]
 

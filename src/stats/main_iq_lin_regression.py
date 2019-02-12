@@ -36,7 +36,6 @@ from statsmodels.stats.multitest import fdrcorrection
 from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg, vis_save_pval
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
-
 # In[2]:
 
 BFPPATH = '/home/ajoshi/coding_ground/bfp'
@@ -96,20 +95,32 @@ def main():
         num_sub=NUM_SUB,
         len_time=LEN_TIME)
 
+    # Shuffle reg_var for testing
+    #reg_var = sp.random.permutation(reg_var)
+
     print('performing stats based on distance to atlas')
-    _, corr_pval_fdr = dist2atlas_reg(
+    corr_pval, corr_pval_fdr = dist2atlas_reg(
         ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var)
 
+    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
+
     vis_save_pval(
-        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr')
+        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-
-    for ndim in range(5,150,20):
+    for ndim in range(15, 150, 20):
         print('performing stats based on linear regression')
-        _, lin_pval_fdr = lin_reg(
+        lin_pval, lin_pval_fdr = lin_reg(
             ref_atlas=avg_atlas, sub_data=sub_data, reg_var=reg_var, ndim=ndim)
 
-        vis_save_pval(bfp_path=BFPPATH, pval_map=lin_pval_fdr, surf_name='lin_reg'+str(ndim))
+        vis_save_pval(
+            bfp_path=BFPPATH,
+            pval_map=lin_pval,
+            surf_name='lin_reg' + str(ndim))
+
+        vis_save_pval(
+            bfp_path=BFPPATH,
+            pval_map=lin_pval_fdr,
+            surf_name='lin_reg_fdr' + str(ndim))
 
     print('Results saved')
 

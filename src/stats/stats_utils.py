@@ -17,7 +17,8 @@ def read_fcon1000_data(csv_fname,
                        data_dir,
                        reg_var_name='Verbal IQ',
                        num_sub=5,
-                       len_time=250):
+                       len_time=250,
+                       reg_var_positive=1):
     """ reads fcon1000 csv and data"""
 
     count1 = 0
@@ -38,6 +39,9 @@ def read_fcon1000_data(csv_fname,
 
             # If the data does not exist for this subject then skip it
             if not os.path.isfile(fname) or int(row['QC_Rest_1']) != 1:
+                continue
+
+            if reg_var_positive == 1 and sp.float64(rvar) < 0:
                 continue
 
             # Load data and normalize it
@@ -64,7 +68,7 @@ def read_fcon1000_data(csv_fname,
     print('CSV file and the data has been read\nThere are %d subjects' %
           (len(sub_ids)))
 
-    return sub_ids, reg_var, sub_data
+    return sub_ids, sp.array(reg_var), sp.array(sub_data)
 
 
 def sync2atlas(atlas, sub_data):
@@ -84,6 +88,10 @@ def dist2atlas_reg(ref_atlas, sub_data, reg_var):
 
     num_vert = sub_data.shape[1]
     num_sub = sub_data.shape[2]
+
+    # Take absolute value of difference from the mean
+    # for the IQ measure
+    reg_var = sp.absolute(reg_var - sp.mean(reg_var))
 
     diff = sp.zeros([sub_data.shape[1], num_sub])
 
@@ -166,7 +174,7 @@ def vis_save_pval(bfp_path, pval_map, surf_name, smooth_iter=1500):
         azimuth=100,
         elevation=180,
         roll=90,
-        outfile='left_' + surf_name + 'corr_pval.png',
+        outfile='left_' + surf_name + '_pval.png',
         show=0)
     # Visualize right hemisphere
     view_patch_vtk(

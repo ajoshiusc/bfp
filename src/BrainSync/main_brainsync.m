@@ -30,8 +30,8 @@ g2.dtseries=g2.dtseries(msk.LR_flag,:);
 % aa=toc(a)
 % save LBO LBO
 load LBO
-g1.dtseries = laplaceBeltramiSmooth(LBO, g1.dtseries, 40);
-g2.dtseries = laplaceBeltramiSmooth(LBO, g2.dtseries, 40);
+g1.dtseries = laplaceBeltramiSmooth(LBO, g1.dtseries, 20);
+g2.dtseries = laplaceBeltramiSmooth(LBO, g2.dtseries, 20);
 
 g1.dtseries=normalizeData(g1.dtseries')';
 g2.dtseries=normalizeData(g2.dtseries')';
@@ -47,5 +47,5 @@ fprintf('Correlation before=%g, after=%g\n',mean(rho_before), mean(rho_after));
 
 figure;
 patch('faces',sl.faces,'vertices',sl.vertices,'facevertexcdata',rho_after,'facecolor','interp','edgecolor','none');
-view(-90,0);axis equal;axis off;camlight;material dull;caxis([0,1]);colormap jet;
+view(-90,0);axis equal;axis off;camlight;material dull;caxis([0,1]);
 

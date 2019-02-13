@@ -52,7 +52,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 NUM_SUB_ATLAS = 50  # number of subjects for atlas creation
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 150  # Number of subjects for the study
+NUM_SUB = 200  # Number of subjects for the study
 
 
 def main():
@@ -110,7 +110,7 @@ def main():
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-    for ndim in range(10, 50, 10):
+    for ndim in range(5, 50, 5):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

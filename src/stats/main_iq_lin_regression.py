@@ -63,7 +63,7 @@ def main():
     sub_ids, reg_var, sub_data = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index', #Verbal IQ',
+        reg_var_name='ADHD Index',  #Verbal IQ',
         num_sub=NUM_SUB_ATLAS,
         len_time=LEN_TIME)
 
@@ -91,7 +91,7 @@ def main():
     sub_ids, reg_var, sub_data = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index', #'Verbal IQ',
+        reg_var_name='ADHD Index',  #'Verbal IQ',
         num_sub=NUM_SUB,
         len_time=LEN_TIME)
 

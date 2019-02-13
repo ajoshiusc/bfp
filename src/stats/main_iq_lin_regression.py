@@ -63,7 +63,7 @@ def main():
     sub_ids, reg_var, sub_data = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='Verbal IQ',
+        reg_var_name='ADHD Index', #Verbal IQ',
         num_sub=NUM_SUB_ATLAS,
         len_time=LEN_TIME)
 
@@ -91,7 +91,7 @@ def main():
     sub_ids, reg_var, sub_data = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='Verbal IQ',
+        reg_var_name='ADHD Index', #'Verbal IQ',
         num_sub=NUM_SUB,
         len_time=LEN_TIME)
 
@@ -110,7 +110,7 @@ def main():
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-    for ndim in range(30, 150, 20):
+    for ndim in range(10, 50, 10):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

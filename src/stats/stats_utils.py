@@ -35,7 +35,7 @@ def read_fcon1000_data(csv_fname,
 
             # Read the filtered data by default
             fname = os.path.join(
-                data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.filt.mat')
+                data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.mat')
 
             # If the data does not exist for this subject then skip it
             if not os.path.isfile(fname) or int(row['QC_Rest_1']) != 1:

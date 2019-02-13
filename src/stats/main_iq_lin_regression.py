@@ -96,7 +96,7 @@ def main():
         len_time=LEN_TIME)
 
     # Shuffle reg_var for testing
-    #reg_var = sp.random.permutation(reg_var)
+    reg_var = sp.random.permutation(reg_var)
 
     print('performing stats based on distance to atlas')
     corr_pval, corr_pval_fdr = dist2atlas_reg(
@@ -110,7 +110,7 @@ def main():
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-    for ndim in range(5, 50, 5):
+    for ndim in range(18, 25):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

@@ -39,7 +39,6 @@ from tqdm import tqdm
 # In[2]:
 
 BFPPATH = '/home/ajoshi/coding_ground/bfp'
-NDIM = 200  # Dimensionality reduction for analysis
 
 # study directory where all the grayordinate files lie
 DATA_DIR = '/deneb_disk/ADHD_Peking_gord'
@@ -52,7 +51,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 NUM_SUB_ATLAS = 50  # number of subjects for atlas creation
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 200  # Number of subjects for the study
+NUM_SUB = 250  # Number of subjects for the study
 
 
 def main():
@@ -96,7 +95,7 @@ def main():
         len_time=LEN_TIME)
 
     # Shuffle reg_var for testing
-    reg_var = sp.random.permutation(reg_var)
+    #reg_var = sp.random.permutation(reg_var)
 
     print('performing stats based on distance to atlas')
     corr_pval, corr_pval_fdr = dist2atlas_reg(
@@ -110,7 +109,7 @@ def main():
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-    for ndim in range(18, 25):
+    for ndim in range(18, 23):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

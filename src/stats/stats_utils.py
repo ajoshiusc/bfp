@@ -68,7 +68,9 @@ def read_fcon1000_data(csv_fname,
     print('CSV file and the data has been read\nThere are %d subjects' %
           (len(sub_ids)))
 
-    return sub_ids, sp.array(reg_var), sp.array(sub_data)
+    sub_data = sub_data[:, :, :count1]
+
+    return sub_ids, sp.array(reg_var), sub_data
 
 
 def sync2atlas(atlas, sub_data):

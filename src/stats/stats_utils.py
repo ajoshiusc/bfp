@@ -17,7 +17,6 @@ def read_fcon1000_data(csv_fname,
                        data_dir,
                        reg_var_name='Verbal IQ',
                        num_sub=5,
-                       len_time=250,
                        reg_var_positive=1):
     """ reads fcon1000 csv and data"""
 
@@ -44,17 +43,12 @@ def read_fcon1000_data(csv_fname,
             if reg_var_positive == 1 and sp.float64(rvar) < 0:
                 continue
 
-            # Load data and normalize it
-            data = spio.loadmat(fname)
-            data = data['dtseries'].T
-            data, _, _ = normalizeData(data)
-
             if count1 == 0:
-                sub_data = sp.zeros((len_time, data.shape[1], num_sub))
+                sub_data_files = []
 
             # Truncate the data at a given number of time samples This is needed because
             # BrainSync needs same number of time sampples
-            sub_data[:, :, count1] = data[:len_time, ]
+            sub_data_files.append(fname)
             sub_ids.append(row['ScanDir ID'])
             reg_var.append(float(rvar))
 
@@ -68,9 +62,7 @@ def read_fcon1000_data(csv_fname,
     print('CSV file and the data has been read\nThere are %d subjects' %
           (len(sub_ids)))
 
-    sub_data = sub_data[:, :, :count1]
-
-    return sub_ids, sp.array(reg_var), sub_data
+    return sub_ids, sp.array(reg_var), sub_data_files
 
 
 def sync2atlas(atlas, sub_data):
@@ -84,32 +76,54 @@ def sync2atlas(atlas, sub_data):
     return syn_data
 
 
-def dist2atlas_reg(bfp_path, ref_atlas, sub_data, reg_var):
-    """ Perform regression stats based on distance to atlas """
+def ref_avg_atlas(ref_id, sub_files, len_time=235):
+    ''' Generates atlas by syncing to one reference subject'''
+
+    ref_data = spio.loadmat(sub_files[ref_id])['dtseries'].T
+    ref_data, _, _ = normalizeData(ref_data[:len_time, :])
+
+    for ind in tqdm(range(len(sub_files))):
+        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
+        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+        s_data, _ = brainSync(X=ref_data, Y=sub_data)
+        if ind == 0:
+            avg_atlas = s_data
+        else:
+            avg_atlas += s_data
+
+    avg_atlas, _, _ = normalizeData(avg_atlas)
+
+    return avg_atlas
+
+
+def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
+    """ Perform regression stats based on square distance to atlas """
     print('dist2atlas_reg, assume that the data is normalized')
 
-    num_vert = sub_data.shape[1]
-    num_sub = sub_data.shape[2]
+    num_vert = ref_atlas.shape[1]
+    num_sub = len(sub_files)
 
     # Take absolute value of difference from the mean
     # for the IQ measure
     reg_var = sp.absolute(reg_var - sp.mean(reg_var))
 
-    diff = sp.zeros([sub_data.shape[1], num_sub])
+    diff = sp.zeros((num_vert, num_sub))
 
     # Compute distance to atlas
     for ind in tqdm(range(num_sub)):
-        Y2, _ = brainSync(X=ref_atlas, Y=sub_data[:, :, ind])
+        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
+        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+        Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
         diff[:, ind] = sp.sum((Y2 - ref_atlas)**2, axis=0)
 
     corr_pval = sp.zeros(num_vert)
-    for v in tqdm(range(num_vert)):
-        _, corr_pval[v] = sp.stats.pearsonr(diff[v, :], reg_var)
+    for vrt in tqdm(range(num_vert)):
+        _, corr_pval[vrt] = sp.stats.pearsonr(diff[vrt, :], reg_var)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
-    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
-    labs = a['labels'].squeeze()
+    lab = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
+    labs = lab['labels'].squeeze()
 
     corr_pval_fdr = sp.zeros(num_vert)
     _, pv = fdrcorrection(corr_pval[labs > 0])
@@ -118,11 +132,11 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_data, reg_var):
     return corr_pval, corr_pval_fdr
 
 
-def lin_reg(bfp_path, ref_atlas, sub_data, reg_var, ndim=20):
+def lin_reg(bfp_path, ref_atlas, sub_files, reg_var, ndim=20, len_time=235):
     """ Perform regression stats based on distance to atlas """
 
-    num_vert = sub_data.shape[1]
-    num_sub = sub_data.shape[2]
+    num_vert = ref_atlas.shape[1]
+    num_sub = len(sub_files)
     a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
     labs = a['labels'].squeeze()
 
@@ -131,9 +145,12 @@ def lin_reg(bfp_path, ref_atlas, sub_data, reg_var, ndim=20):
     pca = PCA(n_components=ndim)
     pca.fit(ref_atlas.T)
 
-    rData = sp.zeros((ndim, sub_data.shape[1], num_sub))
+    rData = sp.zeros((ndim, num_vert, num_sub))
     for ind in tqdm(range(num_sub)):
-        Y2, _ = brainSync(X=ref_atlas, Y=sub_data[:, :, ind])
+
+        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
+        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+        Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
         rData[:, :, ind] = pca.transform(Y2.T).T
 
     pval_linreg = sp.zeros(num_vert)

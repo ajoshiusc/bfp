@@ -91,7 +91,9 @@ def ref_avg_atlas(ref_id, sub_files, len_time=235):
         else:
             avg_atlas += s_data
 
-    avg_atlas, _, _ = normalizeData(avg_atlas)
+    avg_atlas /= len(sub_files)
+
+#    avg_atlas, _, _ = normalizeData(avg_atlas)
 
     return avg_atlas
 

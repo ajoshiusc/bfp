@@ -62,7 +62,7 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='Verbal IQ',  #ADHD Index,
+        reg_var_name='ADHD Index',  #'Verbal IQ', 
         num_sub=NUM_SUB_ATLAS)
 
     # ### Generate average subject
@@ -80,7 +80,7 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='Verbal IQ',  #ADHD Index,
+        reg_var_name='ADHD Index',
         num_sub=NUM_SUB)
 
     # Shuffle reg_var for testing
@@ -99,7 +99,7 @@ def main():
     vis_save_pval(
         bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
 
-    for ndim in range(18, 23):
+    for ndim in range(5, 145, 5):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

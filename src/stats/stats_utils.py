@@ -93,7 +93,7 @@ def ref_avg_atlas(ref_id, sub_files, len_time=235):
 
     avg_atlas /= len(sub_files)
 
-#    avg_atlas, _, _ = normalizeData(avg_atlas)
+    #    avg_atlas, _, _ = normalizeData(avg_atlas)
 
     return avg_atlas
 
@@ -134,7 +134,13 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
     return corr_pval, corr_pval_fdr
 
 
-def lin_reg(bfp_path, ref_atlas, sub_files, reg_var, ndim=20, len_time=235):
+def lin_reg(bfp_path,
+            ref_atlas,
+            sub_files,
+            reg_var,
+            Vndim=235,
+            Sndim=20,
+            len_time=235):
     """ Perform regression stats based on distance to atlas """
 
     num_vert = ref_atlas.shape[1]
@@ -144,24 +150,33 @@ def lin_reg(bfp_path, ref_atlas, sub_files, reg_var, ndim=20, len_time=235):
 
     labs[sp.isnan(labs)] = 0
     print('Computing PCA basis function from the atlas')
-    pca = PCA(n_components=ndim)
+    pca = PCA(n_components=Vndim)
     pca.fit(ref_atlas.T)
 
-    rData = sp.zeros((ndim, num_vert, num_sub))
+    reduced_data = sp.zeros((Vndim, num_vert, num_sub))
     for ind in tqdm(range(num_sub)):
 
         sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
         sub_data, _, _ = normalizeData(sub_data[:len_time, :])
         Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
-        rData[:, :, ind] = pca.transform(Y2.T).T
+
+        if Vndim == len_time:
+            reduced_data[:, :, ind] = sub_data
+        else:
+            reduced_data[:, :, ind] = pca.transform(Y2.T).T
 
     pval_linreg = sp.zeros(num_vert)
 
-    for v in tqdm(range(num_vert)):
-        X = rData[:, v, :]
+    pca = PCA(n_components=Sndim)
+
+    for vrt in tqdm(range(num_vert)):
+        X = reduced_data[:, vrt, :]
+        if Sndim != num_sub:
+            pca.fit(X.T)
+            X = pca.transform(X.T).T
         X = sm.add_constant(X.T)
         est = sm.OLS(reg_var, X)
-        pval_linreg[v] = est.fit().f_pvalue
+        pval_linreg[vrt] = est.fit().f_pvalue
 
     print('Regression is done')
 

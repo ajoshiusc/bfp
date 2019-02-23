@@ -62,7 +62,7 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index', #'Verbal IQ',  #'ADHD Index',  # 
+        reg_var_name='ADHD Index',  #'Verbal IQ',  #'ADHD Index',  # 
         num_sub=NUM_SUB_ATLAS)
 
     # ### Generate average subject
@@ -80,33 +80,34 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index',#'Verbal IQ',  #
+        reg_var_name='ADHD Index',  #'Verbal IQ',  #
         num_sub=NUM_SUB)
 
     # Shuffle reg_var for testing
-    reg_var = sp.random.permutation(reg_var)
+    # reg_var = sp.random.permutation(reg_var)
 
     print('performing stats based on distance to atlas')
-    corr_pval, corr_pval_fdr = dist2atlas_reg(
-        bfp_path=BFPPATH,
-        ref_atlas=avg_atlas,
-        sub_files=sub_files,
-        reg_var=reg_var,
-        len_time=LEN_TIME)
+#    corr_pval, corr_pval_fdr = dist2atlas_reg(
+#        bfp_path=BFPPATH,
+#        ref_atlas=avg_atlas,
+#        sub_files=sub_files,
+#        reg_var=reg_var,
+#        len_time=LEN_TIME)
 
-    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
+#    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
 
-    vis_save_pval(
-        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
-
-    for ndim in range(20, 21, 1):
+ #   vis_save_pval(
+ #       bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
+    num_sub = len(sub_files)
+    for ndim in range(15, 30, 3):
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,
             ref_atlas=avg_atlas,
             sub_files=sub_files,
             reg_var=reg_var,
-            ndim=ndim,
+            Vndim=ndim, #LEN_TIME,
+            Sndim=num_sub, #ndim,
             len_time=LEN_TIME)
 
         vis_save_pval(

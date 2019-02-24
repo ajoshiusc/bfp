@@ -19,8 +19,8 @@ def normalizeData(pre_signal):
      norm_vector : 1 x Vertices norm for each time series
     """
 
-    if sp.any(sp.isnan(pre_signal)):
-        print('there are NaNs in the data matrix, making them zero')
+#    if sp.any(sp.isnan(pre_signal)):
+#        print('there are NaNs in the data matrix, making them zero')
 
     pre_signal[sp.isnan(pre_signal)] = 0
     mean_vector = sp.mean(pre_signal, axis=0, keepdims=True)
@@ -59,6 +59,7 @@ that the input is time x vertices!')
 
 
 def groupBrainSync(S):
+    # Group BrainSync algorithm developed by Haleh Akrami
 
     numT = S.shape[0]
     numV = S.shape[1]

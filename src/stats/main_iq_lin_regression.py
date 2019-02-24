@@ -87,17 +87,17 @@ def main():
     # reg_var = sp.random.permutation(reg_var)
 
     print('performing stats based on distance to atlas')
-#    corr_pval, corr_pval_fdr = dist2atlas_reg(
-#        bfp_path=BFPPATH,
-#        ref_atlas=avg_atlas,
-#        sub_files=sub_files,
-#        reg_var=reg_var,
-#        len_time=LEN_TIME)
+    #    corr_pval, corr_pval_fdr = dist2atlas_reg(
+    #        bfp_path=BFPPATH,
+    #        ref_atlas=avg_atlas,
+    #        sub_files=sub_files,
+    #        reg_var=reg_var,
+    #        len_time=LEN_TIME)
 
-#    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
+    #    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
 
- #   vis_save_pval(
- #       bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
+    #   vis_save_pval(
+    #       bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
     num_sub = len(sub_files)
     for ndim in range(15, 30, 3):
         print('performing stats based on linear regression')
@@ -106,8 +106,8 @@ def main():
             ref_atlas=avg_atlas,
             sub_files=sub_files,
             reg_var=reg_var,
-            Vndim=ndim, #LEN_TIME,
-            Sndim=num_sub, #ndim,
+            Vndim=ndim,  #LEN_TIME,
+            Sndim=num_sub,  #ndim,
             len_time=LEN_TIME)
 
         vis_save_pval(

@@ -1,4 +1,5 @@
 import scipy as sp
+import numpy as np
 from numpy.random import random
 from scipy.stats import special_ortho_group
 from tqdm import tqdm
@@ -19,8 +20,8 @@ def normalizeData(pre_signal):
      norm_vector : 1 x Vertices norm for each time series
     """
 
-#    if sp.any(sp.isnan(pre_signal)):
-#        print('there are NaNs in the data matrix, making them zero')
+    #    if sp.any(sp.isnan(pre_signal)):
+    #        print('there are NaNs in the data matrix, making them zero')
 
     pre_signal[sp.isnan(pre_signal)] = 0
     mean_vector = sp.mean(pre_signal, axis=0, keepdims=True)
@@ -110,9 +111,9 @@ def groupBrainSync(S):
 
             # Update Orthogonal matrix with BrainSync projection technique
             U, _, V = sp.linalg.svd(sp.dot(Y, S[:, :, i].T))
-            Os[:, :, i] = sp.dot(U, V.T)
+            Os[:, :, i] = sp.dot(U, V)
 
-        print('calculate error')
+    # print('calculate error')
         Error = 0
         # New Average with all subject updated orthogonal matrix
         # update last subject outside loop
@@ -124,14 +125,13 @@ def groupBrainSync(S):
             Error = Error + sp.trace(sp.dot(etemp,
                                             etemp.T))  #calculating error
 
-        relcost = sp.abs(Error - PreError) / sp.abs(InError)
+        relcost = np.abs(Error - PreError) / np.abs(InError)
         Costdif[var] = PreError - Error
         PreError = Error
 
-        var
-        relcost
+        print('Error = %g, var = %g, relcost = %g\n' % (Error, var, relcost))
 
-    Costdif[var:] = []
+    Costdif= Costdif[:var] # = []
     Costdif = Costdif[1:]
     TotalError = Error
 

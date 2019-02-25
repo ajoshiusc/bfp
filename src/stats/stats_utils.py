@@ -10,6 +10,8 @@ from statsmodels.stats.multitest import fdrcorrection
 from sklearn.decomposition import PCA
 from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
 from dfsio import readdfs
+import sys
+sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 
 

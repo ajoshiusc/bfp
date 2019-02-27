@@ -397,10 +397,15 @@ fprintf('done\n');
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
-    if ~exist([fmribasename,'_res2standard.nii.gz'],'file')
-        func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid);
-        
-        %        unix(sprintf('%s %s %s %s %s %s %s %s %s',func_prepro_script,subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp));
+    if str2double(config.RunNSR)>0
+        BFP_outfile = [fmribasename,'_res2standard.nii.gz'];
+    elseif str2double(config.RunDetrend) > 0
+        BFP_outfile = [fmribasename,'_pp2standard.nii.gz'];
+    else
+        BFP_outfile = [fmribasename,'_gms2standard.nii.gz'];
+    end
+    if ~exist(BFP_outfile,'file')
+        BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid,config);
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
     end
@@ -417,7 +422,7 @@ fprintf('## Transferring data from subject to atlas...\n');
 for ind = 1:length(fmri)
     fmri2surfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf.mat',subid,sessionid{ind}));
     GOrdSurfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf_GOrd.mat',subid,sessionid{ind}));
-    fmri2standard=fullfile(funcDir,sprintf('%s_%s_bold_res2standard.nii.gz',subid,sessionid{ind}));
+    fmri2standard=BFP_outfile;
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol_GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')

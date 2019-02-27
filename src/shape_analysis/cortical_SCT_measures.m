@@ -28,41 +28,41 @@ Cmean=max(p(1),min(Cmean,p(2)));
 p=prctile(Cgaussian,[1,99]);
 Cgaussian=max(p(1),min(Cgaussian,p(2)));
 
-a=bipolar;
-figure;
-patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',-Cmean,'edgecolor','none','facecolor','interp');
-caxis([-.25,.25]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
-figure;
-patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Cgaussian,'edgecolor','none','facecolor','interp');
-caxis([-.0015,.0015]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+% a=bipolar;
+% figure;
+% patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',-Cmean,'edgecolor','none','facecolor','interp');
+% caxis([-.25,.25]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+% figure;
+% patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Cgaussian,'edgecolor','none','facecolor','interp');
+% caxis([-.0015,.0015]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
 
 % compute shape index and curvedness
 S=-(2/pi)*atan((Lambda2+Lambda1)./(Lambda2-Lambda1));
 C=0.5*(Lambda2.^2+Lambda1.^2).^0.5 ;
 
-a=bipolar;
-figure;
-patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',S,'edgecolor','none','facecolor','interp');
-caxis([-1,1]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
-figure;
-patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',C,'edgecolor','none','facecolor','interp');
-caxis([0,.5]); axis equal;camlight;material dull;view(-90,0);camlight;colorbar;axis off;
+% a=bipolar;
+% figure;
+% patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',S,'edgecolor','none','facecolor','interp');
+% caxis([-1,1]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+% figure;
+% patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',C,'edgecolor','none','facecolor','interp');
+% caxis([0,.5]); axis equal;camlight;material dull;view(-90,0);camlight;colorbar;axis off;
 
 % shape index at multiple scales
 Sm(:,1)=S;
 for jj=2:NLevels
     Sm(:,jj)=smooth_surf_function(s,Sm(:,jj-1));
-    figure;
-    patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Sm(:,jj),'edgecolor','none','facecolor','interp');
-    caxis([-1,1]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+%     figure;
+%     patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Sm(:,jj),'edgecolor','none','facecolor','interp');
+%     caxis([-1,1]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
 end
 % curvedness at multiple scales
 Cm(:,1)=C;
 for jj=2:NLevels
     Cm(:,jj)=smooth_surf_function(s,Cm(:,jj-1));
-    figure;
-    patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Cm(:,jj),'edgecolor','none','facecolor','interp');
-    caxis([0,.5]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+%     figure;
+%     patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Cm(:,jj),'edgecolor','none','facecolor','interp');
+%     caxis([0,.5]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
 end
 % thickness at multiple scales
 
@@ -70,9 +70,9 @@ th_surf = readdfs(thickness_surf);
 Tm(:,1) = th_surf.attributes;
 for jj=2:NLevels
     Tm(:,jj)=smooth_surf_function(s,Tm(:,jj-1));
-    figure;
-    patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Tm(:,jj),'edgecolor','none','facecolor','interp');
-    caxis([0,4]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
+%     figure;
+%     patch('faces',s.faces,'vertices',s.vertices,'facevertexcdata',Tm(:,jj),'edgecolor','none','facecolor','interp');
+%     caxis([0,4]); axis equal;camlight;material dull;view(-90,0);camlight;colormap(a);colorbar;axis off;
 end
 
 % Sm is a 2D matrix: (number of mesh nodes X number of scales)

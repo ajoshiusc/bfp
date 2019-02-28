@@ -100,6 +100,53 @@ def ref_avg_atlas(ref_id, sub_files, len_time=235):
     return avg_atlas
 
 
+def randpairsdist_reg(bfp_path,
+                      sub_files,
+                      reg_var,
+                      num_pairs=1000,
+                      len_time=235):
+    """ Perform regression stats based on square distance between random pairs """
+    print('dist2atlas_reg, assume that the data is normalized')
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+
+    #Generate random pairs
+    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2), replace=True)
+
+    fmri_diff = sp.zeros((num_vert, num_pairs))
+    regvar_diff = sp.zeros(num_pairs)
+
+    print('Reading subjects')
+
+    # Compute distance to atlas
+    for ind in tqdm(range(num_pairs)):
+        sub1_data = spio.loadmat(sub_files[rand_pairs[ind, 0]])['dtseries'].T
+        sub2_data = spio.loadmat(sub_files[rand_pairs[ind, 1]])['dtseries'].T
+
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+
+        sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
+        fmri_diff[:, ind] = sp.sum((sub2_data - sub1_data)**2, axis=0)
+        regvar_diff[ind] = sp.square(reg_var[rand_pairs[ind, 0]] -
+                                     reg_var[rand_pairs[ind, 1]])
+
+    corr_pval = sp.zeros(num_vert)
+    for ind in tqdm(range(num_vert)):
+        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    labs = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat'
+                        )['labels'].squeeze()
+
+    corr_pval_fdr = sp.zeros(num_vert)
+    _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
+
+    return corr_pval, corr_pval_fdr
+
+
 def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
     """ Perform regression stats based on square distance to atlas """
     print('dist2atlas_reg, assume that the data is normalized')

@@ -101,7 +101,7 @@ def main():
     #   vis_save_pval(
     #       bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
     num_sub = len(sub_files)
-    for ndim in range(15, 30, 3):
+    for ndim in {20}:
         print('performing stats based on linear regression')
         lin_pval, lin_pval_fdr = lin_reg(
             bfp_path=BFPPATH,

@@ -3,6 +3,7 @@
 import csv
 import os
 import scipy as sp
+import numpy as np
 import scipy.io as spio
 from tqdm import tqdm
 import statsmodels.api as sm
@@ -11,6 +12,8 @@ from sklearn.decomposition import PCA
 from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
 from dfsio import readdfs
 import sys
+import multiprocessing
+from functools import partial
 sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 
@@ -100,6 +103,71 @@ def ref_avg_atlas(ref_id, sub_files, len_time=235):
     return avg_atlas
 
 
+def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
+    """ Pair distance """
+    sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
+    sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+
+    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+
+    sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
+    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+    regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
+
+    return fmri_diff, regvar_diff
+
+
+def randpairsdist_reg_parallel(bfp_path,
+                               sub_files,
+                               reg_var,
+                               num_pairs=1000,
+                               len_time=235,
+                               num_proc=4):
+    """ Perform regression stats based on square distance between random pairs """
+    print('dist2atlas_reg, assume that the data is normalized')
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+
+    #Generate random pairs
+    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2), replace=True)
+
+    fmri_diff = sp.zeros((num_vert, num_pairs))
+    regvar_diff = sp.zeros(num_pairs)
+
+    results = multiprocessing.Pool(num_proc).imap(
+        partial(
+            pair_dist, sub_files=sub_files, reg_var=reg_var,
+            len_time=len_time), rand_pairs)
+
+    ind = 0
+    for res in results:
+        fmri_diff[:, ind] = res[0]
+        regvar_diff[ind] = res[1]
+        ind += 1
+
+    corr_pval = sp.zeros(num_vert)
+    for ind in tqdm(range(num_vert)):
+        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    labs = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat'
+                        )['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0
+
+    corr_pval[labs == 0] = 0.5
+
+    corr_pval_fdr = 0.5 * sp.ones(num_vert)
+    _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
+
+    return corr_pval, corr_pval_fdr
+
+
+'''Deprecated'''
+
+
 def randpairsdist_reg(bfp_path,
                       sub_files,
                       reg_var,
@@ -107,6 +175,7 @@ def randpairsdist_reg(bfp_path,
                       len_time=235):
     """ Perform regression stats based on square distance between random pairs """
     print('dist2atlas_reg, assume that the data is normalized')
+    print('This function is deprecated')
 
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
@@ -276,4 +345,19 @@ def vis_save_pval(bfp_path, pval_map, surf_name, smooth_iter=1500):
         elevation=180,
         roll=-90,
         outfile='right_' + surf_name + '_pval.png',
+        show=0)
+    view_patch_vtk(
+        lsurf,
+        azimuth=100,
+        elevation=0,
+        roll=90,
+        outfile='left_' + surf_name + '_2pval.png',
+        show=0)
+    # Visualize right hemisphere
+    view_patch_vtk(
+        rsurf,
+        azimuth=-100,
+        elevation=0,
+        roll=-90,
+        outfile='right_' + surf_name + '_2pval.png',
         show=0)

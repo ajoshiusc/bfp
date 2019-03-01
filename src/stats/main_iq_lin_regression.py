@@ -35,9 +35,10 @@ sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg, vis_save_pval, ref_avg_atlas, randpairsdist_reg
+from stats_utils import read_fcon1000_data, dist2atlas_reg, lin_reg, vis_save_pval, ref_avg_atlas, randpairsdist_reg_parallel, randpairsdist_reg
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
+import time
 # In[2]:
 
 BFPPATH = '/home/ajoshi/coding_ground/bfp'
@@ -53,7 +54,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 NUM_SUB_ATLAS = 50  # number of subjects for atlas creation
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 150  # Number of subjects for the study
+NUM_SUB = 250  # Number of subjects for the study
 
 
 def main():
@@ -72,7 +73,7 @@ def main():
 
     print('Create Average atlas by synchronizing all subjects to one subject')
 
-#    avg_atlas = ref_avg_atlas(ref_id=3, sub_files=sub_files, len_time=LEN_TIME)
+    #    avg_atlas = ref_avg_atlas(ref_id=3, sub_files=sub_files, len_time=LEN_TIME)
 
     print('Atlas computed ')
 
@@ -88,34 +89,39 @@ def main():
     # Shuffle reg_var for testing
     # reg_var = sp.random.permutation(reg_var)
 
-#    print('performing stats based on distance to atlas')
-#    corr_pval, corr_pval_fdr = dist2atlas_reg(
-#        bfp_path=BFPPATH,
-#        ref_atlas=avg_atlas,
-#        sub_files=sub_files,
-#        reg_var=reg_var,
-#        len_time=LEN_TIME)
+    #    print('performing stats based on distance to atlas')
+    #    corr_pval, corr_pval_fdr = dist2atlas_reg(
+    #        bfp_path=BFPPATH,
+    #        ref_atlas=avg_atlas,
+    #        sub_files=sub_files,
+    #        reg_var=reg_var,
+    #        len_time=LEN_TIME)
 
-#    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
+    #    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
 
-#    vis_save_pval(
-#        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
-
+    #    vis_save_pval(
+    #        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
+    t0 = time.time()
     print('performing stats based on random pairwise distances')
-    corr_pval, corr_pval_fdr = randpairsdist_reg(
+
+    corr_pval, corr_pval_fdr = randpairsdist_reg_parallel(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=200,
-        len_time=LEN_TIME)
+        num_pairs=2000,
+        len_time=LEN_TIME,
+        num_proc=4)
+    t1 = time.time()
+
+    print(t1 - t0)
 
     vis_save_pval(
-        bfp_path=BFPPATH, pval_map=corr_pval, surf_name='rand_dist_corr')
+        bfp_path=BFPPATH, pval_map=corr_pval, surf_name='rand_dist_corr_par')
 
     vis_save_pval(
         bfp_path=BFPPATH,
         pval_map=corr_pval_fdr,
-        surf_name='rand_dist_corr_fdr')
+        surf_name='rand_dist_corr_fdr_par')
 
     return
 

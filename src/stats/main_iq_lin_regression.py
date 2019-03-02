@@ -65,7 +65,8 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index',  #'Verbal IQ',  #'ADHD Index',  # 
+        reg_var_name=
+        'Verbal IQ',  #'ADHD Index',  #'Verbal IQ',  #'ADHD Index',  # 
         num_sub=NUM_SUB_ATLAS)
 
     # ### Generate average subject
@@ -83,11 +84,11 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='ADHD Index',  #'Verbal IQ',  #
+        reg_var_name='Verbal IQ',  #'ADHD Index',  #  #
         num_sub=NUM_SUB)
 
     # Shuffle reg_var for testing
-    # reg_var = sp.random.permutation(reg_var)
+    #reg_var = sp.random.permutation(reg_var)
 
     #    print('performing stats based on distance to atlas')
     #    corr_pval, corr_pval_fdr = dist2atlas_reg(
@@ -108,7 +109,7 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=2000,
+        num_pairs=1000,
         len_time=LEN_TIME,
         num_proc=4)
     t1 = time.time()

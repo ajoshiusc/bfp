@@ -1,3 +1,6 @@
+
+% The purpose of this file is to generate a file that gives a vector of
+% grayordinate labels, its id lookup tables
 clc;clear all;close all;
 addpath(genpath('/home/ajoshi/coding_ground/bfp/dev/gifti-1.6'));
 addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
@@ -41,8 +44,10 @@ for kk=1:1:num_rois
     
 end
 
+LookUpTable.IDs=IDs;
+LookUpTable.IDNames=IDNames;
 
-save('BCI-DNI_brain_grayordinate_labels.mat','IDs', 'IDNames', 'labels');
+save('BCI-DNI_brain_grayordinate_labels.mat', 'LookUpTable', 'labels');
 
 
 

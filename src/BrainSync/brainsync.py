@@ -7,8 +7,6 @@ from tqdm import tqdm
 Created on Tue Jul 11 22:42:56 2017
 Author Anand A Joshi (ajoshi@usc.edu)
 """
-
-
 def normalizeData(pre_signal):
     """
      normed_signal, mean_vector, std_vector = normalizeData(pre_signal)
@@ -31,7 +29,6 @@ def normalizeData(pre_signal):
     normed_signal = normed_signal / norm_vector
 
     return normed_signal, mean_vector, norm_vector
-
 
 def brainSync(X, Y):
     """
@@ -58,6 +55,48 @@ that the input is time x vertices!')
     Y2 = sp.dot(R, Y)
     return Y2, R
 
+def IDrefsub_BrainSync(sub_data):
+    ''' input vector x time x subject data matrix containing reference subjects 
+        load data by using module stats_utils.load_bfp_data
+        outputs vector x time matrix the of most representative subject '''
+    nSub = sub_data.shape[2]
+
+    dist_all_orig = sp.zeros([nSub, nSub])
+    dist_all_rot = dist_all_orig.copy()
+
+    for ind1 in range(nSub):
+        for ind2 in range(nSub):
+            dist_all_orig[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] - sub_data[:, :, ind2])
+            sub_data_rot, _ = brainSync(X=sub_data[:, :, ind1], Y=sub_data[:, :, ind2])
+            dist_all_rot[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] -sub_data_rot)
+            print(ind1, ind2, dist_all_rot[ind1, ind2])
+
+    q = sp.argmin(dist_all_rot.sum(1))
+    subRef_data = sub_data[:, :, q]
+    
+    return subRef_data, q
+
+def ref_avg_atlas(ref_id, sub_files, len_time=235):
+    ''' Generates atlas by syncing to one reference subject'''
+    ''' Input '''
+
+    ref_data = spio.loadmat(sub_files[ref_id])['dtseries'].T
+    ref_data, _, _ = normalizeData(ref_data[:len_time, :])
+
+    for ind in tqdm(range(len(sub_files))):
+        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
+        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+        s_data, _ = brainSync(X=ref_data, Y=sub_data)
+        if ind == 0:
+            avg_atlas = s_data
+        else:
+            avg_atlas += s_data
+
+    avg_atlas /= len(sub_files)
+
+    #    avg_atlas, _, _ = normalizeData(avg_atlas)
+
+    return avg_atlas
 
 def groupBrainSync(S):
     # Group BrainSync algorithm developed by Haleh Akrami

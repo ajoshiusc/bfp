@@ -14,7 +14,6 @@ from dfsio import readdfs
 import sys
 import multiprocessing
 from functools import partial
-sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 
 def read_demoCSV(csvfname,
@@ -26,10 +25,9 @@ def read_demoCSV(csvfname,
                 colvar_main,
                 colvar_reg1,
                 colvar_reg2):
-''' loads csv file containing subjects' demographic information
-    csv file should contain the following 5 columns for: subjectID, subjects to exclude (1=exclude), main effect variable, and 2 covariates to control for.
-    if less than 2 covariates, create columns where all subjects have value of 1 so regression has no effect. '''
-
+    ''' loads csv file containing subjects' demographic information
+        csv file should contain the following 5 columns for: subjectID, subjects to exclude (1=exclude), main effect variable, and 2 covariates to control for.
+        if less than 2 covariates, create columns where all subjects have value of 1 so regression has no effect. '''
     file = open(csvfname)
     numline = len(file.readlines())
     subN = numline-1
@@ -67,13 +65,13 @@ def read_demoCSV(csvfname,
     return sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2
 
 def load_bfp_data(sub_fname, LenTime):
-    ''' sub_fname: list of filenames of .mat files that contains vertex * time matrix of subjects' preprocessed fMRI data '''
+    ''' sub_fname: list of filenames of .mat files that contains Time x Vertex matrix of subjects' preprocessed fMRI data '''
     ''' LenTime: number of timepoints in data. this should be the same in all subjects '''
-    ''' Outputs 3D matrix: vector x time x subjects '''
+    ''' Outputs 3D matrix: Time x Vector x Subjects '''
     count1 = 0
     subN = len(sub_fname)
-    pbar = tqdm(total=subN)
     print('loading data for ' + str(subN) + ' subjects')
+    pbar = tqdm(total=subN)
     for ind in range(subN):
         fname = sub_fname[ind]
         df = spio.loadmat(fname)
@@ -96,9 +94,11 @@ def load_bfp_data(sub_fname, LenTime):
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
 
-
-
-def dist2atlas(atlas, syn_data):    
+def dist2atlas(atlas, syn_data):
+    ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
+    inputs: atlas: Time x Vector matrix of reference atlas (see brainsync.py)
+            syn_data: Time x Vector x Subjects matrix of subjects already synchronized to the atlas.
+    output: diff Vector x Subjects data matrix'''
     numSub = syn_data.shape[2]
     numVert = syn_data.shape[1]
     print('calculating geodesic distances between ' + str(numSub) + ' subjects to the atlas in ' + str(numVert) + ' vertices.')
@@ -116,28 +116,6 @@ def dist2atlas(atlas, syn_data):
     
     print('done')
     return diff
-
-def ref_avg_atlas(ref_id, sub_files, len_time=235):
-    ''' Generates atlas by syncing to one reference subject'''
-    ''' Input '''
-
-    ref_data = spio.loadmat(sub_files[ref_id])['dtseries'].T
-    ref_data, _, _ = normalizeData(ref_data[:len_time, :])
-
-    for ind in tqdm(range(len(sub_files))):
-        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
-        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
-        s_data, _ = brainSync(X=ref_data, Y=sub_data)
-        if ind == 0:
-            avg_atlas = s_data
-        else:
-            avg_atlas += s_data
-
-    avg_atlas /= len(sub_files)
-
-    #    avg_atlas, _, _ = normalizeData(avg_atlas)
-
-    return avg_atlas
 
 def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
     """ Pair distance """
@@ -201,7 +179,17 @@ def randpairsdist_reg_parallel(bfp_path,
 
 
 '''Deprecated'''
-
+def pearsons_corr():
+    rcorr = sp.zeros(diff.shape[0])
+    r = sp.array(reg_var[:diff.shape[1]])
+    r = sp.absolute(r - sp.mean(r))
+    pcorr = sp.zeros(diff.shape[0])
+    for nv in range(diff.shape[0]):
+        rho, pval  = sp.stats.pearsonr(diff[nv,:],r)
+        rcorr[nv] = rho
+        pcorr[nv] = pval
+        
+    print(nv)
 
 def randpairsdist_reg(bfp_path,
                       sub_files,
@@ -295,6 +283,39 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
 
     return corr_pval, corr_pval_fdr
 
+def LinReg_resid(x,y):
+    slope,intercept,_,_, _ = sp.stats.linregress(x,y)
+    predicted = x*slope + intercept
+    resid = y - predicted
+    
+    return resid
+
+def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
+    print('regressing out 1st covariate')
+    diff_resid1 = sp.zeros(subTest_diff.shape)
+    numV = subTest_diff.shape[0]    
+    for nv in tqdm(range(numV)):
+        diff_resid1[nv,:] = LinReg_resid(subTest_varc1, subTest_diff[nv,:])
+    
+    print('regressing out 2nd covariate')
+    diff_resid2 = sp.zeros(subTest_diff.shape)
+    for nv in tqdm(range(numV)):
+        diff_resid2[nv,:] = LinReg_resid(subTest_varc2, diff_resid1[nv,:])
+    
+    print('computing correlation against main variable')
+    rval = sp.zeros(numV); pval = sp.zeros(numV)    
+    for nv in tqdm(range(numV)):
+        _,_,rval[nv],pval[nv], _ = sp.stats.linregress(subTest_varmain, diff_resid2[nv,:])
+    
+    a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
+    labs = a['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0    
+    pval_fdr = sp.zeros(numV)
+    _, pv = fdrcorrection(pval[labs > 0])
+    pval_fdr[labs > 0] = pv
+    
+    return rval, pval, pval_fdr
+
 def lin_reg(bfp_path,
             ref_atlas,
             sub_files,
@@ -349,7 +370,6 @@ def lin_reg(bfp_path,
 
     return pval_linreg, pval_linreg_fdr
 
-
 def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
     lsurf = readdfs(bfp_path + '/supp_data/bci32kleft.dfs')
     rsurf = readdfs(bfp_path + '/supp_data/bci32kright.dfs')
@@ -381,6 +401,13 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
         roll=90,
         outfile=out_dir + '/left_' + surf_name + '_pval.png',
         show=0)
+    view_patch_vtk(
+        lsurf,
+        azimuth=-100,
+        elevation=180,
+        roll=-90,
+        outfile=out_dir + '/left_' + surf_name + '_2pval.png',
+        show=0)
     # Visualize right hemisphere
     view_patch_vtk(
         rsurf,
@@ -390,20 +417,13 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
         outfile=out_dir + '/right_' + surf_name + '_pval.png',
         show=0)
     view_patch_vtk(
-        lsurf,
-        azimuth=100,
-        elevation=0,
-        roll=90,
-        outfile=out_dir + '/left_' + surf_name + '_2pval.png',
-        show=0)
-    # Visualize right hemisphere
-    view_patch_vtk(
         rsurf,
-        azimuth=-100,
-        elevation=0,
-        roll=-90,
+        azimuth=100,
+        elevation=180,
+        roll=90,
         outfile=out_dir + '/right_' + surf_name + '_2pval.png',
         show=0)
+    
 def read_fcon1000_data(csv_fname,
                        data_dir,
                        reg_var_name='Verbal IQ',

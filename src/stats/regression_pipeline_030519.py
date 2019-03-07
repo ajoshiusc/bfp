@@ -1,5 +1,6 @@
 #%%
 ### Required Inputs
+useGroupSync = False # False if you'd like to create reference atlas by identifying one representative subject
 ### Set the directories for BFP software
 import sys
 BFPPATH = '/home/sychoi/Documents/MATLAB/bfp/'
@@ -21,26 +22,20 @@ LenTime = 150 #number of timepoints
 import scipy.io as spio
 import scipy as sp
 import numpy as np
-from tqdm import tqdm
 import os
-import csv
-from sklearn.decomposition import PCA
-from statsmodels.stats.multitest import fdrcorrection
-import time
-
+### Import BrainSync libraries
 sys.path.append(BFPPATH + "/src/BrainSync/") 
-from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
 from dfsio import readdfs,writedfs
-from brainsync import IDrefsub_BrainSync, normalizeData, brainSync, groupBrainSync
+from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 sys.path.append(BFPPATH + "/src/stats/") 
-from stats_utils import dist2atlas, load_bfp_data, read_demoCSV, sync2atlas, dist2atlas_reg, lin_reg, vis_save_pval, ref_avg_atlas, randpairsdist_reg_parallel, randpairsdist_reg
-
+from stats_utils import LinReg_corr, dist2atlas, load_bfp_data, read_demoCSV, sync2atlas, vis_save_pval
 
 #%% 
+os.chdir(BFPPATH)
 print(out_dir + ": writing output directory")
 if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
-#%% read demographic csv file
+# read demographic csv file
 sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(csvfname,
                 data_dir,
                 file_ext,
@@ -50,93 +45,57 @@ sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(cs
                 colvar_main,
                 colvar_reg1,
                 colvar_reg2)
-
-#%% ID reference subjects
-print('Identifying subjects for atlas creation...')
-subAtlas_fname = []; subAtlas_IDs = []
+#%% makes file list for subjects
+print('Identifying subjects for atlas creation and hypothesis testing...')
+subTest_fname = []; subTest_IDs = []; subAtlas_fname = []; subAtlas_IDs = []
 for ind in range(len(sub_ID)):
-    if int(subAtlas_idx[ind]) !=0:
-        sub = sub_ID[ind]
-        #print(sub)
-        fname = sub_fname[ind]
+    sub = sub_ID[ind]
+    fname = sub_fname[ind]
+    if int(subAtlas_idx[ind]) !=1:        
+        subTest_fname.append(fname)
+        subTest_IDs.append(sub)
+    else:
         subAtlas_fname.append(fname)  
         subAtlas_IDs.append(sub)
-np.savetxt(out_dir + "/subjects_atlas.csv", subAtlas_IDs, delimiter=",", fmt='%s')
-#%%
-print('Identifying subjects for hypothesis testing...')
-subTest_fname = []; subTest_IDs = []; 
+len(subTest_IDs)
+
+count1=0
+subTest_varmain = sp.zeros(len(subTest_IDs)); subTest_varc1 = sp.zeros(len(subTest_IDs)); subTest_varc2 = sp.zeros(len(subTest_IDs))
 for ind in range(len(sub_ID)):
-    if int(subAtlas_idx[ind]) !=1:
-        sub = sub_ID[ind]
-        #print(sub)
-        fname = sub_fname[ind]
-        subTest_fname.append(fname)
-        subTest_IDs.append(sub)  
+    varmain = reg_var[ind]
+    varc1 = reg_cvar1[ind]
+    varc2 = reg_cvar2[ind]
+    if int(subAtlas_idx[ind]) !=1:  
+        subTest_varmain[count1] = varmain
+        subTest_varc1[count1] = varc1
+        subTest_varc2[count1] = varc2
+        count1 +=1
+
 np.savetxt(out_dir + "/subjects_testing.csv", subTest_IDs, delimiter=",", fmt='%s')
+np.savetxt(out_dir + "/subjects_atlas.csv", subAtlas_IDs, delimiter=",", fmt='%s')
+print(str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.')
+print(str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 #%%
-# reads reference data and creates atlas by Group BrainSync algorithm
-dataAtlas = load_bfp_data(subAtlas_fname, LenTime)
-refAtlas, q = IDrefsub_BrainSync(dataAtlas)
-print(str(q))
-#X2, Os, Costdif, TotalError = groupBrainSync(dataAtlas)
-
-spio.savemat(os.path.join(out_dir + '/atlas.mat'), {'refAtlas': refAtlas})
-del dataAtlas# Os, Costdif, TotalError
-
-# reads subject data
-dataTest = load_bfp_data(subTest_fname, LenTime)
-#%%
-# sync and calculates geodesic distances
-syn_data = sync2atlas(refAtlas, dataTest)
-#spio.savemat(os.path.join(out_dir + '/sync2atlas.mat'), {'syn_data': syn_data})
-diff = dist2atlas(refAtlas, syn_data)
-spio.savemat(os.path.join(out_dir + '/dist2atlas.mat'), {'diff': diff})
-del dataTest
-#%%
-rcorr = sp.zeros(diff.shape[0])
-r = sp.array(reg_var[:diff.shape[1]])
-r = sp.absolute(r - sp.mean(r))
-pcorr = sp.zeros(diff.shape[0])
-for nv in range(diff.shape[0]):
-    rho, pval  = sp.stats.pearsonr(diff[nv,:],r)
-    rcorr[nv] = rho
-    pcorr[nv] = pval
+# reads reference data and creates atlas by BrainSync algorithm
+subAtlas_data = load_bfp_data(subAtlas_fname, LenTime)
+if useGroupSync == True:
+    print('User Option: Group BrainSync algorithm will be used for atlas creation')
+    atlas_data, _, _, _ = groupBrainSync(subAtlas_data)
+else:
+    print('User Option: representative subject will be used for atlas creation')
+    subRef_data, subRef_num = IDrefsub_BrainSync(subAtlas_data)
+    print('Subject number ' + str(subRef_num) + ' will be used for atlas creation')
+    atlas_data = generate_avgAtlas(subRef_data, subAtlas_data)
     
-print(nv)
+spio.savemat(os.path.join(out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
+del subAtlas_data
+#%% sync and calculates geodesic distances
+subTest_data = load_bfp_data(subTest_fname, LenTime)
+subTest_syndata = sync2atlas(atlas_data, subTest_data)
+subTest_diff = dist2atlas(atlas_data, subTest_syndata)
+spio.savemat(os.path.join(out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
+del subTest_data, subTest_syndata
+#%% computes correlation after controlling for two covariates
+rval, pval, pval_fdr = LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
 #%%
-vis_save_pval(BFPPATH, pcorr, 'test', out_dir, smooth_iter=1500)
-
-#%%
-lsurf = readdfs(BFPPATH + '/supp_data/bci32kleft.dfs')
-rsurf = readdfs(BFPPATH + '/supp_data/bci32kright.dfs')
-a = spio.loadmat(BFPPATH + '/supp_data/USCBrain_grayord_labels.mat')
-labs = a['labels']
-
-lsurf.attributes = np.zeros((lsurf.vertices.shape[0]))
-rsurf.attributes = np.zeros((rsurf.vertices.shape[0]))
-lsurf = smooth_patch(lsurf, iterations=1500)
-rsurf = smooth_patch(rsurf, iterations=1500)
-labs[sp.isnan(labs)] = 0
-print(pcorr.shape, labs.shape)
-pcorr = pcorr*(labs > 0)
-
-nVert = lsurf.vertices.shape[0]
-
-p = abs(pcorr)
-
-lsurf.attributes = p.squeeze()
-lsurf.attributes = lsurf.attributes[:nVert]
-rsurf.attributes = p.squeeze()
-rsurf.attributes = rsurf.attributes[nVert:2*nVert]
-lsurf = patch_color_attrib(lsurf, clim=[0, .05])
-rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-lsurf.vColor[lsurf.attributes < 0, :] = .05
-rsurf.vColor[rsurf.attributes < 0, :] = .05
-writedfs(out_dir + '/rcorr.dfs',rsurf)
-writedfs(out_dir + '/lcorr.dfs',lsurf)
-spio.savemat(os.path.join(out_dir + '/rcorr.mat'), {'rcorr': rcorr})
-
-print(lsurf.attributes.shape, nVert, lsurf.vColor.shape)
-view_patch_vtk(lsurf, azimuth=100, elevation=180, roll=90, outfile=out_dir + '/l1corr.png', show=1)
-view_patch_vtk(rsurf, azimuth=-100, elevation=180, roll=-90,
-               outfile=out_dir + '/r1corr.png', show=1)
+vis_save_pval(BFPPATH, pval, 'test', out_dir, smooth_iter=1000)

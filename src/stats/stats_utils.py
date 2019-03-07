@@ -10,7 +10,7 @@ import statsmodels.api as sm
 from statsmodels.stats.multitest import fdrcorrection
 from sklearn.decomposition import PCA
 from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
-from dfsio import readdfs
+from dfsio import readdfs, writedfs
 import sys
 import multiprocessing
 from functools import partial
@@ -423,6 +423,9 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
         roll=90,
         outfile=out_dir + '/right_' + surf_name + '_2pval.png',
         show=0)
+    
+    writedfs(out_dir + '/right_' + surf_name + '_sigpval.dfs', rsurf)
+    writedfs(out_dir + '/left_'+ surf_name + '_sigpval.dfs', lsurf)
     
 def read_fcon1000_data(csv_fname,
                        data_dir,

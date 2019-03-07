@@ -9,6 +9,7 @@ NDim = 5 # Dimensionality reduction for analysis
 data_dir = '/NCAdisk/BFPtest/hypoxia_data' #input directory
 out_dir = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/022119/hypoxia_BFPstatTest' #output directory
 csvfname = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/022119/hypoxia/demohypoxia.csv' #csv file with demographics
+outname = 'hgbCorr-agesexregress' # file subnames for result outputs (example: outdir/outname_pval.png)
 colsubj = 'SubjectID'
 colvar_main = 'HGB'
 colvar_reg1 = 'age'
@@ -25,7 +26,6 @@ import numpy as np
 import os
 ### Import BrainSync libraries
 sys.path.append(BFPPATH + "/src/BrainSync/") 
-from dfsio import readdfs,writedfs
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 sys.path.append(BFPPATH + "/src/stats/") 
 from stats_utils import LinReg_corr, dist2atlas, load_bfp_data, read_demoCSV, sync2atlas, vis_save_pval
@@ -98,4 +98,5 @@ del subTest_data, subTest_syndata
 #%% computes correlation after controlling for two covariates
 rval, pval, pval_fdr = LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
 #%%
-vis_save_pval(BFPPATH, pval, 'test', out_dir, smooth_iter=1000)
+vis_save_pval(BFPPATH, pval, outname , out_dir, smooth_iter=1000)
+vis_save_pval(BFPPATH, pval_fdr, outname + '_fdr', out_dir, smooth_iter=1000)

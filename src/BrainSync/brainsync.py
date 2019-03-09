@@ -3,12 +3,13 @@ import numpy as np
 from numpy.random import random
 from scipy.stats import special_ortho_group
 from tqdm import tqdm
+import scipy.io as spio
 """
 Created on Tue Jul 11 22:42:56 2017
 Author Anand A Joshi (ajoshi@usc.edu)
+   Please cite the following publication:
+   Joshi, A. A., Chong, M., Li, J., Choi, S., & Leahy, R. M. (2018). Are you thinking what I'm thinking? Synchronization of resting fMRI time-series across subjects. NeuroImage, 172, 740-752. https://doi.org/10.1016/j.neuroimage.2018.01.058
 """
-
-
 def normalizeData(pre_signal):
     """
      normed_signal, mean_vector, std_vector = normalizeData(pre_signal)
@@ -32,7 +33,6 @@ def normalizeData(pre_signal):
 
     return normed_signal, mean_vector, norm_vector
 
-
 def brainSync(X, Y):
     """
    Input:
@@ -42,11 +42,6 @@ def brainSync(X, Y):
    Output:
        Y2 - Synced subject data (Time x Vertex)\n
        R - The orthogonal rotation matrix (Time x Time)
-
-   Please cite the following publication:
-       AA Joshi, M Chong, RM Leahy, BrainSync: An Orthogonal Transformation
-       for Synchronization of fMRI Data Across Subjects, Proc. MICCAI 2017,
-       in press.
        """
     if X.shape[0] > X.shape[1]:
         print('The input is possibly transposed. Please check to make sure \
@@ -58,6 +53,70 @@ that the input is time x vertices!')
     Y2 = sp.dot(R, Y)
     return Y2, R
 
+def IDrefsub_BrainSync(sub_data):
+    ''' 
+    Input:
+        sub_data: input vector x time x subject data matrix containing reference subjects 
+            load data by using module stats_utils.load_bfp_data
+    Ouput:
+        subRef_data = vector x time matrix the of most representative subject
+        q = # of reference subject according to order of sub_data input 
+    '''
+    nSub = sub_data.shape[2]
+    print('calculating pairwise correlations between all pairs of ' + str(nSub) + ' subjects')
+    dist_all_orig = sp.zeros([nSub, nSub])
+    dist_all_rot = dist_all_orig.copy()
+
+    for ind1 in range(nSub):
+        for ind2 in range(nSub):
+            dist_all_orig[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] - sub_data[:, :, ind2])
+            sub_data_rot, _ = brainSync(X=sub_data[:, :, ind1], Y=sub_data[:, :, ind2])
+            dist_all_rot[ind1, ind2] = sp.linalg.norm(sub_data[:, :, ind1] -sub_data_rot)
+            print(ind1, ind2, dist_all_rot[ind1, ind2])
+    q = sp.argmin(dist_all_rot.sum(1))
+    subRef_data = sub_data[:, :, q]
+    print('Subject number ' + str(q) + ' identified as most representative subject')
+    return subRef_data, q
+
+def generate_avgAtlas(subRef_data, sub_data):
+    ''' 
+    generates atlas by syncing data across subjects to one reference subject 
+    Inputs:
+        subRef_data: Vertex x Time matrix of reference subject
+        sub_data: Vertex x Time x Subject matrix of subject data
+    Output:
+        avgAtlas_data: Vertex x Time matrix of average atlas
+    '''
+    subNum = sub_data.shape[2]
+    numT = subRef_data.shape[0]
+    numV = subRef_data.shape[1]
+    avg_atlas = sp.zeros((numT,numV))
+    for ind in range(int(subNum)):
+        s_data, _ = brainSync(subRef_data, sub_data[:,:,ind])
+        avg_atlas += s_data
+    avg_atlas /= subNum
+
+    return avg_atlas
+
+def ref_avg_atlas(ref_id, sub_files, len_time=235):
+    ''' Generates atlas by syncing to one reference subject'''
+    ''' Input '''
+
+    ref_data = spio.loadmat(sub_files[ref_id])['dtseries'].T
+    ref_data, _, _ = normalizeData(ref_data[:len_time, :])
+
+    for ind in tqdm(range(len(sub_files))):
+        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
+        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+        s_data, _ = brainSync(X=ref_data, Y=sub_data)
+        if ind == 0:
+            avg_atlas = s_data
+        else:
+            avg_atlas += s_data
+
+    avg_atlas /= len(sub_files)
+
+    return avg_atlas
 
 def groupBrainSync(S):
     # Group BrainSync algorithm developed by Haleh Akrami

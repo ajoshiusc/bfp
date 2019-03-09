@@ -6,6 +6,7 @@ import scipy as sp
 import numpy as np
 import scipy.io as spio
 from tqdm import tqdm
+import itertools
 import statsmodels.api as sm
 from statsmodels.stats.multitest import fdrcorrection
 from sklearn.decomposition import PCA
@@ -118,6 +119,62 @@ def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
     return fmri_diff, regvar_diff
 
 
+def pairsdist_regression(bfp_path,
+                         sub_files,
+                         reg_var,
+                         num_perm=1000,
+                         num_pairs=0,
+                         len_time=235):
+    """ Perform regression stats based on square distance between random pairs """
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+    num_sub = len(sub_files)
+
+    # Allocate memory for subject data
+    sub_data = np.zeros(shape=(len_time, num_vert, num_sub))
+
+    #Generate random pairs
+    print('Reading subjects')
+    for subno, filename in enumerate(tqdm(sub_files)):
+        data = spio.loadmat(filename)['dtseries'].T
+        sub_data[:, :, subno], _, _ = normalizeData(data[:len_time, :])
+
+    pairs = list(itertools.combinations(range(num_sub), r=2))
+
+    if num_pairs > 0:
+        rn = np.random.permutation(len(pairs))
+        pairs = [pairs[i] for i in rn]
+        pairs = pairs[:num_pairs]
+
+    fmri_diff = sp.zeros((num_vert, len(pairs)))
+    regvar_diff = sp.zeros(len(pairs))
+
+    print('Computing pairwise differences')
+    for pn, pair in enumerate(tqdm(pairs)):
+        Y2, _ = brainSync(X=sub_data[:, :, pair[0]], Y=sub_data[:, :, pair[1]])
+        fmri_diff[:, pn] = np.sum((Y2 - sub_data[:, :, pair[0]])**2, axis=0)
+        regvar_diff[pn] = (reg_var[pair[0]] - reg_var[pair[1]])**2
+
+    corr_pval = sp.zeros(num_vert)
+    for ind in tqdm(range(num_vert)):
+        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    labs = spio.loadmat(
+        bfp_path +
+        '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0
+
+    corr_pval[labs == 0] = 0.5
+
+    corr_pval_fdr = 0.5 * sp.ones(num_vert)
+    _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
+
+    return corr_pval, corr_pval_fdr
+
+
 def randpairsdist_reg_parallel(bfp_path,
                                sub_files,
                                reg_var,
@@ -125,13 +182,12 @@ def randpairsdist_reg_parallel(bfp_path,
                                len_time=235,
                                num_proc=4):
     """ Perform regression stats based on square distance between random pairs """
-    print('dist2atlas_reg, assume that the data is normalized')
 
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
     #Generate random pairs
-    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2), replace=True)
+    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2))
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
@@ -153,8 +209,9 @@ def randpairsdist_reg_parallel(bfp_path,
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
-    labs = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat'
-                        )['labels'].squeeze()
+    labs = spio.loadmat(
+        bfp_path +
+        '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
     labs[sp.isnan(labs)] = 0
 
     corr_pval[labs == 0] = 0.5
@@ -175,7 +232,7 @@ def randpairsdist_reg(bfp_path,
                       len_time=235):
     """ Perform regression stats based on square distance between random pairs """
     print('dist2atlas_reg, assume that the data is normalized')
-    print('This function is deprecated')
+    print('This function is deprecated!!!!!!!!!!')
 
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]

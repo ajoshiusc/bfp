@@ -54,7 +54,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 NUM_SUB_ATLAS = 50  # number of subjects for atlas creation
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 250  # Number of subjects for the study
+NUM_SUB = 50  # Number of subjects for the study
 
 
 def main():
@@ -66,7 +66,7 @@ def main():
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
         reg_var_name=
-        'Verbal IQ',  #'ADHD Index',  #'Verbal IQ',  #'ADHD Index',  # 
+        'ADHD Index',  #'Verbal IQ',  #'ADHD Index',  # 'Verbal IQ',  #
         num_sub=NUM_SUB_ATLAS)
 
     # ### Generate average subject
@@ -84,7 +84,7 @@ def main():
     sub_ids, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
-        reg_var_name='Verbal IQ',  #'ADHD Index',  #  #
+        reg_var_name='ADHD Index',  #'Verbal IQ',  #  #
         num_sub=NUM_SUB)
 
     # Shuffle reg_var for testing
@@ -109,7 +109,7 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=5000,
+        num_pairs=1000,
         len_time=LEN_TIME,
         num_proc=4)
     t1 = time.time()

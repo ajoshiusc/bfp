@@ -13,44 +13,43 @@ from sklearn.decomposition import PCA
 from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
 from dfsio import readdfs, writedfs
 import sys
+sys.path.append('../BrainSync')
 import multiprocessing
 from functools import partial
 from brainsync import normalizeData, brainSync
 
-def read_demoCSV(csvfname,
-                data_dir,
-                file_ext,
-                colsubj,
-                colvar_exclude,
-                colvar_atlas,
-                colvar_main,
-                colvar_reg1,
-                colvar_reg2):
+
+def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
+                 colvar_atlas, colvar_main, colvar_reg1, colvar_reg2):
     ''' loads csv file containing subjects' demographic information
         csv file should contain the following 5 columns for: subjectID, subjects to exclude (1=exclude), main effect variable, and 2 covariates to control for.
         if less than 2 covariates, create columns where all subjects have value of 1 so regression has no effect. '''
     file = open(csvfname)
     numline = len(file.readlines())
-    subN = numline-1
-    
-    sub_ID = []; sub_fname = []; subAtlas_idx = []
-    reg_var=[]; reg_cvar1 = []; reg_cvar2 = []
+    subN = numline - 1
+
+    sub_ID = []
+    sub_fname = []
+    subAtlas_idx = []
+    reg_var = []
+    reg_cvar1 = []
+    reg_cvar2 = []
     count1 = 0
     pbar = tqdm(total=subN)
     lst = os.listdir(data_dir)
-    with open(csvfname, newline='') as csvfile:    
+    with open(csvfname, newline='') as csvfile:
         creader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
         for row in creader:
             sub = row[colsubj]
             fname = os.path.join(data_dir, sub + "/func/" + sub + file_ext)
-            if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:           
+            if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:
                 continue
             rvar = row[colvar_main]
             rcvar1 = row[colvar_reg1]
             rcvar2 = row[colvar_reg2]
-            
+
             subAtlas_idx.append(row[colvar_atlas])
-            sub_fname.append(fname)      
+            sub_fname.append(fname)
             sub_ID.append(sub)
             reg_var.append(float(rvar))
             reg_cvar1.append(float(rcvar1))
@@ -59,11 +58,12 @@ def read_demoCSV(csvfname,
             pbar.update(1)
             if count1 == subN:
                 break
-    
+
     pbar.close()
     print('CSV file read\nThere are %d subjects' % (len(sub_ID)))
 
     return sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2
+
 
 def load_bfp_data(sub_fname, LenTime):
     ''' sub_fname: list of filenames of .mat files that contains Time x Vertex matrix of subjects' preprocessed fMRI data '''
@@ -77,23 +77,25 @@ def load_bfp_data(sub_fname, LenTime):
         fname = sub_fname[ind]
         df = spio.loadmat(fname)
         data = df['dtseries'].T
-        if int(data.shape[0]) !=LenTime:
-            print(sub_fname[ind] + ' does not have the correct number of timepoints')
+        if int(data.shape[0]) != LenTime:
+            print(sub_fname[ind] +
+                  ' does not have the correct number of timepoints')
         d, _, _ = normalizeData(data)
-    
+
         if count1 == 0:
             sub_data = sp.zeros((LenTime, d.shape[1], subN))
-    
+
         sub_data[:, :, count1] = d[:LenTime, ]
         count1 += 1
         pbar.update(1)
         if count1 == subN:
             break
-    
+
     pbar.close()
-    
+
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
+
 
 def dist2atlas(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
@@ -102,21 +104,23 @@ def dist2atlas(atlas, syn_data):
     output: diff Vector x Subjects data matrix'''
     numSub = syn_data.shape[2]
     numVert = syn_data.shape[1]
-    print('calculating geodesic distances between ' + str(numSub) + ' subjects to the atlas in ' + str(numVert) + ' vertices.')
+    print('calculating geodesic distances between ' + str(numSub) +
+          ' subjects to the atlas in ' + str(numVert) + ' vertices.')
     count1 = 0
     pbar = tqdm(total=numSub)
     diff = sp.zeros([numVert, numSub])
     for ind in range(numSub):
-        diff[:, ind] = sp.sum((syn_data[:,:,ind] - atlas)**2, axis=0)         
+        diff[:, ind] = sp.sum((syn_data[:, :, ind] - atlas)**2, axis=0)
         count1 += 1
         pbar.update(1)  # update the progress bar
-            #print('%d,' % count1, end='')
+        #print('%d,' % count1, end='')
         if count1 == numSub:
             break
     pbar.close()
-    
+
     print('done')
     return diff
+
 
 def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
     """ Pair distance """
@@ -170,11 +174,13 @@ def pairsdist_regression(bfp_path,
         fmri_diff[:, pn] = np.sum((Y2 - sub_data[:, :, pair[0]])**2, axis=0)
         regvar_diff[pn] = (reg_var[pair[0]] - reg_var[pair[1]])**2
 
-    corr_pval = sp.zeros(num_vert)
-    for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+    corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff)
 
-    corr_pval[sp.isnan(corr_pval)] = .5
+    #    corr_pval = sp.zeros(num_vert)
+    #    for ind in tqdm(range(num_vert)):
+    #        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+    #    corr_pval[sp.isnan(corr_pval)] = .5
+    #
 
     labs = spio.loadmat(
         bfp_path +
@@ -187,6 +193,28 @@ def pairsdist_regression(bfp_path,
     _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
 
     return corr_pval, corr_pval_fdr
+
+
+def corr_perm_test(X, Y, nperm=1000):
+    #X: nsub x vertices
+    #Y: cognitive scores nsub X 1
+
+    X, _, _ = normalizeData(X)
+    Y, _, _ = normalizeData(Y)
+
+    nsub = X.shape[0]
+    num_vert = X.shape[1]
+    rho_vert = np.sum(X * Y[:, None], axis=0)
+    max_null = np.zeros(nperm)
+
+    print('Permutation testing')
+    for ind in tqdm(range(nperm)):
+        perm1 = np.random.permutation(nsub)
+        max_null[ind] = np.amax(np.sum(X * Y[perm1, None], axis=0))
+
+    pval = np.sum(rho_vert[:, None] < max_null[None, :], axis=1) / nperm
+
+    return pval
 
 
 def randpairsdist_reg_parallel(bfp_path,
@@ -217,9 +245,11 @@ def randpairsdist_reg_parallel(bfp_path,
         regvar_diff[ind] = res[1]
         ind += 1
 
-    corr_pval = sp.zeros(num_vert)
-    for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
+    corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff)
+
+    #    corr_pval = sp.zeros(num_vert)
+    #    for ind in tqdm(range(num_vert)):
+    #        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -237,17 +267,20 @@ def randpairsdist_reg_parallel(bfp_path,
 
 
 '''Deprecated'''
+
+
 def pearsons_corr():
     rcorr = sp.zeros(diff.shape[0])
     r = sp.array(reg_var[:diff.shape[1]])
     r = sp.absolute(r - sp.mean(r))
     pcorr = sp.zeros(diff.shape[0])
     for nv in range(diff.shape[0]):
-        rho, pval  = sp.stats.pearsonr(diff[nv,:],r)
+        rho, pval = sp.stats.pearsonr(diff[nv, :], r)
         rcorr[nv] = rho
         pcorr[nv] = pval
-        
+
     print(nv)
+
 
 def randpairsdist_reg(bfp_path,
                       sub_files,
@@ -296,6 +329,7 @@ def randpairsdist_reg(bfp_path,
 
     return corr_pval, corr_pval_fdr
 
+
 def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
 
@@ -305,6 +339,7 @@ def sync2atlas(atlas, sub_data):
         syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
 
     return syn_data
+
 
 def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
     """ Perform regression stats based on square distance to atlas """
@@ -341,38 +376,43 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
 
     return corr_pval, corr_pval_fdr
 
-def LinReg_resid(x,y):
-    slope,intercept,_,_, _ = sp.stats.linregress(x,y)
-    predicted = x*slope + intercept
+
+def LinReg_resid(x, y):
+    slope, intercept, _, _, _ = sp.stats.linregress(x, y)
+    predicted = x * slope + intercept
     resid = y - predicted
-    
+
     return resid
+
 
 def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
     print('regressing out 1st covariate')
     diff_resid1 = sp.zeros(subTest_diff.shape)
-    numV = subTest_diff.shape[0]    
+    numV = subTest_diff.shape[0]
     for nv in tqdm(range(numV)):
-        diff_resid1[nv,:] = LinReg_resid(subTest_varc1, subTest_diff[nv,:])
-    
+        diff_resid1[nv, :] = LinReg_resid(subTest_varc1, subTest_diff[nv, :])
+
     print('regressing out 2nd covariate')
     diff_resid2 = sp.zeros(subTest_diff.shape)
     for nv in tqdm(range(numV)):
-        diff_resid2[nv,:] = LinReg_resid(subTest_varc2, diff_resid1[nv,:])
-    
+        diff_resid2[nv, :] = LinReg_resid(subTest_varc2, diff_resid1[nv, :])
+
     print('computing correlation against main variable')
-    rval = sp.zeros(numV); pval = sp.zeros(numV)    
+    rval = sp.zeros(numV)
+    pval = sp.zeros(numV)
     for nv in tqdm(range(numV)):
-        _,_,rval[nv],pval[nv], _ = sp.stats.linregress(subTest_varmain, diff_resid2[nv,:])
-    
+        _, _, rval[nv], pval[nv], _ = sp.stats.linregress(
+            subTest_varmain, diff_resid2[nv, :])
+
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0    
+    labs[sp.isnan(labs)] = 0
     pval_fdr = sp.zeros(numV)
     _, pv = fdrcorrection(pval[labs > 0])
     pval_fdr[labs > 0] = pv
-    
+
     return rval, pval, pval_fdr
+
 
 def lin_reg(bfp_path,
             ref_atlas,
@@ -428,6 +468,7 @@ def lin_reg(bfp_path,
 
     return pval_linreg, pval_linreg_fdr
 
+
 def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
     lsurf = readdfs(bfp_path + '/supp_data/bci32kleft.dfs')
     rsurf = readdfs(bfp_path + '/supp_data/bci32kright.dfs')
@@ -481,10 +522,11 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
         roll=90,
         outfile=out_dir + '/right_' + surf_name + '_2pval.png',
         show=0)
-    
+
     writedfs(out_dir + '/right_' + surf_name + '_sigpval.dfs', rsurf)
-    writedfs(out_dir + '/left_'+ surf_name + '_sigpval.dfs', lsurf)
-    
+    writedfs(out_dir + '/left_' + surf_name + '_sigpval.dfs', lsurf)
+
+
 def read_fcon1000_data(csv_fname,
                        data_dir,
                        reg_var_name='Verbal IQ',
@@ -498,7 +540,7 @@ def read_fcon1000_data(csv_fname,
     pbar = tqdm(total=num_sub)
 
     with open(csv_fname, newline='') as csvfile:
-        creader = csv.DictReader(csvfile, delimiter=',', quotechar='"')      
+        creader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
         for row in creader:
 
             # read the regression variable
@@ -535,5 +577,3 @@ def read_fcon1000_data(csv_fname,
           (len(sub_ids)))
 
     return sub_ids, sp.array(reg_var), sub_data_files
-
-

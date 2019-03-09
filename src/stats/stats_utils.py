@@ -221,6 +221,7 @@ def randpairsdist_reg_parallel(bfp_path,
                                sub_files,
                                reg_var,
                                num_pairs=1000,
+                               nperm=1000,
                                len_time=235,
                                num_proc=4):
     """ Perform regression stats based on square distance between random pairs """
@@ -245,7 +246,7 @@ def randpairsdist_reg_parallel(bfp_path,
         regvar_diff[ind] = res[1]
         ind += 1
 
-    corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff)
+    corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
 
     #    corr_pval = sp.zeros(num_vert)
     #    for ind in tqdm(range(num_vert)):

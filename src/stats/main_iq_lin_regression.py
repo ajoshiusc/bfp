@@ -109,7 +109,8 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=5000,
+        num_pairs=10000,,
+        nperm=10000,
         len_time=LEN_TIME,
         num_proc=4)
     t1 = time.time()

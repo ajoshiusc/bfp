@@ -90,18 +90,6 @@ def main():
     # Shuffle reg_var for testing
     # reg_var = sp.random.permutation(reg_var)
 
-    #    print('performing stats based on distance to atlas')
-    #    corr_pval, corr_pval_fdr = dist2atlas_reg(
-    #        bfp_path=BFPPATH,
-    #        ref_atlas=avg_atlas,
-    #        sub_files=sub_files,
-    #        reg_var=reg_var,
-    #        len_time=LEN_TIME)
-
-    #    vis_save_pval(bfp_path=BFPPATH, pval_map=corr_pval, surf_name='dist_corr')
-
-    #    vis_save_pval(
-    #        bfp_path=BFPPATH, pval_map=corr_pval_fdr, surf_name='dist_corr_fdr')
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
@@ -109,8 +97,8 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=10000,
-        nperm=10000,
+        num_pairs=2000,
+        nperm=2000,
         len_time=LEN_TIME,
         num_proc=4)
     t1 = time.time()
@@ -129,29 +117,6 @@ def main():
         pval_map=corr_pval_fdr,
         surf_name='rand_dist_corr_fdr_par')
 
-    return
-
-    num_sub = len(sub_files)
-    for ndim in {20}:
-        print('performing stats based on linear regression')
-        lin_pval, lin_pval_fdr = lin_reg(
-            bfp_path=BFPPATH,
-            ref_atlas=avg_atlas,
-            sub_files=sub_files,
-            reg_var=reg_var,
-            Vndim=ndim,  #LEN_TIME,
-            Sndim=num_sub,  #ndim,
-            len_time=LEN_TIME)
-
-        vis_save_pval(
-            bfp_path=BFPPATH,
-            pval_map=lin_pval,
-            surf_name='lin_reg' + str(ndim))
-
-        vis_save_pval(
-            bfp_path=BFPPATH,
-            pval_map=lin_pval_fdr,
-            surf_name='lin_reg_fdr' + str(ndim))
 
     print('Results saved')
 

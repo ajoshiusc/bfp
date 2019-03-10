@@ -54,7 +54,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 NUM_SUB_ATLAS = 5  # number of subjects for atlas creation
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 200  # Number of subjects for the study
+NUM_SUB = 50  # Number of subjects for the study
 
 
 def main():
@@ -97,8 +97,8 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=2000,
-        nperm=2000,
+        num_pairs=5000,
+        nperm=1000,
         len_time=LEN_TIME,
         num_proc=4)
     t1 = time.time()
@@ -110,12 +110,6 @@ def main():
         out_dir='.',
         pval_map=corr_pval,
         surf_name='rand_dist_corr_par')
-
-    vis_save_pval(
-        bfp_path=BFPPATH,
-        out_dir='.',
-        pval_map=corr_pval_fdr,
-        surf_name='rand_dist_corr_fdr_par')
 
 
     print('Results saved')

@@ -248,10 +248,6 @@ def randpairsdist_reg_parallel(bfp_path,
 
     corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
 
-    #    corr_pval = sp.zeros(num_vert)
-    #    for ind in tqdm(range(num_vert)):
-    #        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
-
     corr_pval[sp.isnan(corr_pval)] = .5
 
     labs = spio.loadmat(
@@ -261,10 +257,7 @@ def randpairsdist_reg_parallel(bfp_path,
 
     corr_pval[labs == 0] = 0.5
 
-    corr_pval_fdr = 0.5 * sp.ones(num_vert)
-    _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
-
-    return corr_pval, corr_pval_fdr
+    return corr_pval
 
 
 '''Deprecated'''

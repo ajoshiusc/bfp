@@ -229,8 +229,16 @@ def randpairsdist_reg_parallel(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    #Generate random pairs
-    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2))
+    # Generate pairs, 
+    pairs = list(itertools.combinations(range(len(sub_files)), r=2))
+
+    if num_pairs > 0:
+        rn = np.random.permutation(len(pairs))
+        pairs = [pairs[i] for i in rn]
+        if num_pairs < len(pairs):
+            pairs = pairs[:num_pairs]
+        else:
+            num_pairs = len(pairs)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
@@ -238,7 +246,7 @@ def randpairsdist_reg_parallel(bfp_path,
     results = multiprocessing.Pool(num_proc).imap(
         partial(
             pair_dist, sub_files=sub_files, reg_var=reg_var,
-            len_time=len_time), rand_pairs)
+            len_time=len_time), pairs)
 
     ind = 0
     for res in results:

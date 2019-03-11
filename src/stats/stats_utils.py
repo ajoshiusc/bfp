@@ -229,7 +229,7 @@ def randpairsdist_reg_parallel(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    # Generate pairs, 
+    # Generate pairs
     pairs = list(itertools.combinations(range(len(sub_files)), r=2))
 
     if num_pairs > 0:

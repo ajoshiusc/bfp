@@ -60,18 +60,17 @@ def main():
 
     print('Reading subjects')
 
-    sub_ids, reg_var, sub_files = read_fcon1000_data(
+    _, reg_var, sub_files = read_fcon1000_data(
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
         reg_var_name='ADHD Index',  #'Verbal IQ',  #  #
-        num_sub=NUM_SUB)
+        num_sub=200)
 
     # Shuffle reg_var and subjects for testing
     # reg_var = sp.random.permutation(reg_var)
     ran_perm = sp.random.permutation(len(reg_var))
-    reg_var = reg_var[ran_perm]
-    sub_files = [sub_files[i] for i in ran_perm]
-
+    reg_var = reg_var[ran_perm][:NUM_SUB]
+    sub_files = [sub_files[i] for i in ran_perm][:NUM_SUB]
 
     t0 = time.time()
     print('performing stats based on random pairwise distances')

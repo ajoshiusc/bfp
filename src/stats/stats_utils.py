@@ -202,7 +202,7 @@ def corr_pearson_fdr(X, Y, nperm=1000):
 
     corr_pval = sp.zeros(num_vert)
     for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(X[ind, :], Y)
+        _, corr_pval[ind] = sp.stats.pearsonr(X[:,ind], Y)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 

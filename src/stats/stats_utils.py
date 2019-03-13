@@ -195,6 +195,22 @@ def pairsdist_regression(bfp_path,
     return corr_pval, corr_pval_fdr
 
 
+def corr_pearson_fdr(X, Y, nperm=1000):
+    #X: nsub x vertices
+    #Y: cognitive scores nsub X 1
+    num_vert = X.shape[1]
+
+    corr_pval = sp.zeros(num_vert)
+    for ind in tqdm(range(num_vert)):
+        _, corr_pval[ind] = sp.stats.pearsonr(X[ind, :], Y)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    _, corr_pval_fdr = fdrcorrection(corr_pval)
+
+    return corr_pval_fdr
+
+
 def corr_perm_test(X, Y, nperm=1000):
     #X: nsub x vertices
     #Y: cognitive scores nsub X 1
@@ -203,7 +219,6 @@ def corr_perm_test(X, Y, nperm=1000):
     Y, _, _ = normalizeData(Y)
 
     nsub = X.shape[0]
-    num_vert = X.shape[1]
     rho_vert = np.sum(X * Y[:, None], axis=0)
     max_null = np.zeros(nperm)
 
@@ -220,10 +235,11 @@ def corr_perm_test(X, Y, nperm=1000):
 def randpairsdist_reg_parallel(bfp_path,
                                sub_files,
                                reg_var,
-                               num_pairs=1000,
+                               num_pairs=2000,
                                nperm=1000,
                                len_time=235,
-                               num_proc=4):
+                               num_proc=4,
+                               fdr_test=0):
     """ Perform regression stats based on square distance between random pairs """
 
     # Get the number of vertices from a file
@@ -254,7 +270,12 @@ def randpairsdist_reg_parallel(bfp_path,
         regvar_diff[ind] = res[1]
         ind += 1
 
-    corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+    if fdr_test == 0:
+        print('Performing Permutation test with MAX statistic')
+        corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+    else:
+        print('Performing Pearson correlation with FDR testing')
+        corr_pval = corr_pearson_fdr(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -269,19 +290,6 @@ def randpairsdist_reg_parallel(bfp_path,
 
 
 '''Deprecated'''
-
-
-def pearsons_corr():
-    rcorr = sp.zeros(diff.shape[0])
-    r = sp.array(reg_var[:diff.shape[1]])
-    r = sp.absolute(r - sp.mean(r))
-    pcorr = sp.zeros(diff.shape[0])
-    for nv in range(diff.shape[0]):
-        rho, pval = sp.stats.pearsonr(diff[nv, :], r)
-        rcorr[nv] = rho
-        pcorr[nv] = pval
-
-    print(nv)
 
 
 def randpairsdist_reg(bfp_path,

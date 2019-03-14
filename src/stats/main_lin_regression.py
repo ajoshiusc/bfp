@@ -69,8 +69,8 @@ def main():
     # Shuffle reg_var and subjects for testing
     # reg_var = sp.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
-    #reg_var = reg_var[50:100]
-    #sub_files = [sub_files[i] for i in range(50, 100)]
+#    reg_var = reg_var[100:200]
+#    sub_files = [sub_files[i] for i in range(100, 200)]
 
     t0 = time.time()
     print('performing stats based on random pairwise distances')
@@ -79,7 +79,7 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=2000,
+        num_pairs=5000,
         nperm=1000,
         len_time=LEN_TIME,
         num_proc=4,

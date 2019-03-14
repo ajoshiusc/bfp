@@ -239,7 +239,7 @@ def randpairsdist_reg_parallel(bfp_path,
                                nperm=1000,
                                len_time=235,
                                num_proc=4,
-                               fdr_test=0):
+                               fdr_test=False):
     """ Perform regression stats based on square distance between random pairs """
 
     # Get the number of vertices from a file
@@ -270,7 +270,7 @@ def randpairsdist_reg_parallel(bfp_path,
         regvar_diff[ind] = res[1]
         ind += 1
 
-    if fdr_test == 0:
+    if not fdr_test:
         print('Performing Permutation test with MAX statistic')
         corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
     else:

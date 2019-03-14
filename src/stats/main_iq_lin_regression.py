@@ -53,7 +53,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 50  # Number of subjects for the study
+NUM_SUB = 100  # Number of subjects for the study
 
 
 def main():
@@ -64,13 +64,13 @@ def main():
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
         reg_var_name='ADHD Index',  #'Verbal IQ',  #  #
-        num_sub=200)
+        num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
     # reg_var = sp.random.permutation(reg_var)
-    ran_perm = sp.random.permutation(len(reg_var))
-    reg_var = reg_var[ran_perm][:NUM_SUB]
-    sub_files = [sub_files[i] for i in ran_perm][:NUM_SUB]
+    #ran_perm = sp.random.permutation(len(reg_var))
+    #reg_var = reg_var[50:100]
+    #sub_files = [sub_files[i] for i in range(50, 100)]
 
     t0 = time.time()
     print('performing stats based on random pairwise distances')
@@ -82,7 +82,8 @@ def main():
         num_pairs=2000,
         nperm=1000,
         len_time=LEN_TIME,
-        num_proc=4)
+        num_proc=4,
+        fdr_test=False)
     t1 = time.time()
 
     print(t1 - t0)

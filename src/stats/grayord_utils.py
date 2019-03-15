@@ -8,8 +8,8 @@ sys.path.append('src/stats')
 from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
 from dfsio import readdfs, writedfs
 
-def visdata_grayord(data, surf_name, out_dir, smooth_iter, colorbar_lim):
-    lsurf, rsurf = label_surf(data, colorbar_lim, smooth_iter)
+def visdata_grayord(data, surf_name, out_dir, smooth_iter, colorbar_lim, colormap):
+    lsurf, rsurf = label_surf(data, colorbar_lim, smooth_iter, colormap)
     vis_save_surf(lsurf, rsurf, out_dir, surf_name)
 
 def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter):

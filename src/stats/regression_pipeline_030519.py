@@ -28,8 +28,8 @@ import os
 sys.path.append(BFPPATH + "/src/BrainSync/") 
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 sys.path.append(BFPPATH + "/src/stats/") 
-from stats_utils import LinReg_corr, dist2atlas, load_bfp_data, read_demoCSV, sync2atlas, vis_save_pval
-
+from stats_utils import LinReg_corr, dist2atlas, load_bfp_data, read_demoCSV, sync2atlas
+from grayord_utils import vis_grayord_sigcorr
 #%% 
 os.chdir(BFPPATH)
 print(out_dir + ": writing output directory")
@@ -98,5 +98,5 @@ del subTest_data, subTest_syndata
 #%% computes correlation after controlling for two covariates
 rval, pval, pval_fdr = LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
 #%%
-vis_save_pval(BFPPATH, pval, outname , out_dir, smooth_iter=1000)
-vis_save_pval(BFPPATH, pval_fdr, outname + '_fdr', out_dir, smooth_iter=1000)
+vis_grayord_sigcorr(pval, rval, outname, out_dir, 1000)
+vis_grayord_sigcorr(pval_fdr, rval, outname + '_fdr', out_dir, 1000)

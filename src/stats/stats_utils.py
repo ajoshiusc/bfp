@@ -489,11 +489,16 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
     rsurf = smooth_patch(rsurf, iterations=smooth_iter)
 
     num_vert = lsurf.vertices.shape[0]
+    
+    lab = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayordinate_labels.mat')
+    labs = lab['labels'].squeeze()
 
     lsurf.attributes = 0.05 - pval_map.squeeze()
     lsurf.attributes = lsurf.attributes[:num_vert]
     rsurf.attributes = 0.05 - pval_map.squeeze()
     rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
+    
+    lsurf.attributes[labs[:num_vert]==0]=sp.nan
 
     lsurf = patch_color_attrib(lsurf, clim=[0, .05])
     rsurf = patch_color_attrib(rsurf, clim=[0, .05])
@@ -501,6 +506,8 @@ def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
     # If p value above .05 then make the surface grey
     lsurf.vColor[lsurf.attributes < 0, :] = .5
     rsurf.vColor[rsurf.attributes < 0, :] = .5
+    lsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
+    rsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
 
     # Visualize left hemisphere
     view_patch_vtk(

@@ -35,7 +35,8 @@ sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import compare_sub2ctrl, read_gord_data, dist2atlas_reg, lin_reg, vis_save_pval, randpairsdist_reg_parallel, randpairsdist_reg
+from stats_utils import compare_sub2ctrl, read_gord_data, dist2atlas_reg, randpairsdist_reg_parallel, randpairsdist_reg
+from grayord_utils import vis_grayord_sigpval
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
 import time
@@ -44,12 +45,12 @@ import time
 BFPPATH = '/big_disk/ajoshi/coding_ground/bfp'
 
 # study directory where all the grayordinate files lie
-CTRL_DIR = '/big_disk/ajoshi/CN_new_gord'
+CTRL_DIR = '/big_disk/ajoshi/ADHD_Peking_gord'
 
 SUB_DATA = '/big_disk/ajoshi/for_cleveland/bfpout/study13072/func/study13072_rest_bold.32k.GOrd.filt.mat'
 
-LEN_TIME = 100  # length of the time series
-NUM_CTRL = 10  # Number of control subjects for the study
+LEN_TIME = 235  # length of the time series
+NUM_CTRL = 200  # Number of control subjects for the study
 
 
 def main():
@@ -68,17 +69,18 @@ def main():
         num_pairs=2000,
         nperm=1000,
         len_time=LEN_TIME,
-        num_proc=1,
+        num_proc=4,
         fdr_test=True)
     t1 = time.time()
 
     print(t1 - t0)
 
-    vis_save_pval(
+    vis_grayord_sigpval(
         bfp_path=BFPPATH,
-        out_dir='.',
-        pval_map=pval,
-        surf_name='sub2ctrl_diff')
+        pval=pval,
+        surf_name='subdiff',
+        out_dir='/big_disk/ajoshi/coding_ground/bfp/src/stats',
+        smooth_iter=1000)
 
     print('Results saved')
 

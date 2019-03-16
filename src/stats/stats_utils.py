@@ -1,22 +1,44 @@
 """ This module contains helpful utility function for running statistics using BFP """
 
 import csv
-import os
-import scipy as sp
-import numpy as np
-import scipy.io as spio
-from tqdm import tqdm
+import glob
 import itertools
-import statsmodels.api as sm
-from statsmodels.stats.multitest import fdrcorrection
-from sklearn.decomposition import PCA
-from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
-from dfsio import readdfs, writedfs
-import sys
-sys.path.append('../BrainSync')
 import multiprocessing
+import os
+import sys
 from functools import partial
-from brainsync import normalizeData, brainSync
+
+import numpy as np
+import scipy as sp
+import scipy.io as spio
+import statsmodels.api as sm
+from sklearn.decomposition import PCA
+from statsmodels.stats.multitest import fdrcorrection
+from tqdm import tqdm
+
+from brainsync import brainSync, normalizeData
+from dfsio import readdfs, writedfs
+from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
+                      view_patch_vtk)
+
+sys.path.append('../BrainSync')
+
+
+def read_gord_data(data_dir, num_sub=1e6):
+
+    dirlist = glob.glob(data_dir + '/*.filt.mat')
+    subno = 0
+
+    sub_data_files = []
+
+    for fname in dirlist:
+        full_fname = os.path.join(data_dir, fname)
+
+        if os.path.isfile(full_fname) and subno < num_sub:
+            sub_data_files.append(full_fname)
+            subno += 1
+
+    return sub_data_files
 
 
 def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
@@ -122,7 +144,25 @@ def dist2atlas(atlas, syn_data):
     return diff
 
 
-def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
+def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
+    """ Compare a subject to controls """
+
+    sub_data = spio.loadmat(sub_file)['dtseries'].T
+    sub_data, _, _ = normalizeData(sub_data[:len_time, :])
+
+    num_vert = sub_data.shape[1]
+    fmri_diff = sp.zeros((num_vert, len(ctrl_files)))
+
+    for ind, fname in enumerate(tqdm(ctrl_files)):
+        ctrl_data = spio.loadmat(fname)['dtfiles'].T
+        ctrl_data, _, _ = normalizeData(ctrl_data[:len_time, :])
+        ctrl_data, _ = brainSync(X=sub_data, Y=ctrl_data)
+        fmri_diff[:, ind] = sp.sum((sub_data - ctrl_data)**2, axis=0)
+
+    return fmri_diff
+
+
+def pair_dist(rand_pair, sub_files, reg_var=[], len_time=235):
     """ Pair distance """
     sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
     sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
@@ -132,7 +172,8 @@ def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-    regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
+    if len(reg_var) > 0:
+        regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
 
     return fmri_diff, regvar_diff
 
@@ -202,7 +243,7 @@ def corr_pearson_fdr(X, Y, nperm=1000):
 
     corr_pval = sp.zeros(num_vert)
     for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(X[:,ind], Y)
+        _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -287,6 +328,60 @@ def randpairsdist_reg_parallel(bfp_path,
     corr_pval[labs == 0] = 0.5
 
     return corr_pval
+
+
+def compare_sub2ctrl(bfp_path,
+                     sub_file,
+                     ctrl_files,
+                     num_pairs=2000,
+                     nperm=1000,
+                     len_time=235,
+                     num_proc=4,
+                     fdr_test=False):
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(ctrl_files[0])['dtseries'].shape[0]
+
+    # Generate pairs
+    pairs = list(itertools.combinations(range(len(ctrl_files)), r=2))
+
+    if num_pairs > 0:
+        rn = np.random.permutation(len(pairs))
+        pairs = [pairs[i] for i in rn]
+        if num_pairs < len(pairs):
+            pairs = pairs[:num_pairs]
+        else:
+            num_pairs = len(pairs)
+
+    fmri_diff_null = sp.zeros((num_vert, num_pairs))
+
+    results = multiprocessing.Pool(num_proc).imap(
+        partial(pair_dist, sub_files=ctrl_files, len_time=len_time), pairs)
+
+    ind = 0
+    for res in results:
+        fmri_diff_null[:, ind] = res[0]
+        ind += 1
+
+    sub2ctrl_diff = sub2ctrl_dist(
+        sub_file=sub_file, ctrl_files=ctrl_files, len_time=len_time)
+    if not fdr_test:
+        print('Performing Permutation test with MAX statistic')
+        corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
+    else:
+        print('Performing Pearson correlation with FDR testing')
+        corr_pval = corr_pearson_fdr(X=fmri_diff.T, Y=[], nperm=nperm)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    labs = spio.loadmat(
+        bfp_path +
+        '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0
+
+    corr_pval[labs == 0] = 0.5
+
+    return pval
 
 
 '''Deprecated'''

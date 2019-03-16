@@ -24,22 +24,27 @@
 
 # In[1]:
 
-import scipy.io as spio
-import scipy as sp
-import numpy as np
-from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, smooth_patch
-from dfsio import readdfs
 import os
 import sys
-sys.path.append('../BrainSync')
-from brainsync import normalizeData, brainSync
+import time
+
+import numpy as np
+import scipy as sp
+import scipy.io as spio
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import compare_sub2ctrl, read_gord_data, dist2atlas_reg, randpairsdist_reg_parallel, randpairsdist_reg
-from grayord_utils import vis_grayord_sigpval
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
-import time
+
+from brainsync import brainSync, normalizeData
+from dfsio import readdfs
+from grayord_utils import vis_grayord_sigpval
+from stats_utils import (compare_sub2ctrl, dist2atlas_reg, randpairsdist_reg,
+                         randpairsdist_reg_parallel, read_gord_data)
+from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
+                      view_patch_vtk)
+
+sys.path.append('../BrainSync')
 # In[2]:
 
 BFPPATH = '/big_disk/ajoshi/coding_ground/bfp'

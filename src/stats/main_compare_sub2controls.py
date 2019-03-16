@@ -41,15 +41,15 @@ from tqdm import tqdm
 import time
 # In[2]:
 
-BFPPATH = '/home/ajoshi/coding_ground/bfp'
+BFPPATH = '/big_disk/ajoshi/coding_ground/bfp'
 
 # study directory where all the grayordinate files lie
 CTRL_DIR = '/big_disk/ajoshi/CN_new_gord'
 
 SUB_DATA = '/big_disk/ajoshi/for_cleveland/bfpout/study13072/func/study13072_rest_bold.32k.GOrd.filt.mat'
 
-LEN_TIME = 235  # length of the time series
-NUM_CTRL = 100  # Number of control subjects for the study
+LEN_TIME = 100  # length of the time series
+NUM_CTRL = 10  # Number of control subjects for the study
 
 
 def main():
@@ -61,15 +61,15 @@ def main():
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
-    pval = compare_sub2ctrl(
+    pval_fdr, pval = compare_sub2ctrl(
         bfp_path=BFPPATH,
         sub_file=SUB_DATA,
         ctrl_files=ctrl_files,
         num_pairs=2000,
         nperm=1000,
         len_time=LEN_TIME,
-        num_proc=4,
-        fdr_test=False)
+        num_proc=1,
+        fdr_test=True)
     t1 = time.time()
 
     print(t1 - t0)
@@ -78,7 +78,7 @@ def main():
         bfp_path=BFPPATH,
         out_dir='.',
         pval_map=pval,
-        surf_name='rand_dist_corr_par')
+        surf_name='sub2ctrl_diff')
 
     print('Results saved')
 

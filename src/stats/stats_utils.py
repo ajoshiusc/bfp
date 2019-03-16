@@ -154,7 +154,7 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
     fmri_diff = sp.zeros((num_vert, len(ctrl_files)))
 
     for ind, fname in enumerate(tqdm(ctrl_files)):
-        ctrl_data = spio.loadmat(fname)['dtfiles'].T
+        ctrl_data = spio.loadmat(fname)['dtseries'].T
         ctrl_data, _, _ = normalizeData(ctrl_data[:len_time, :])
         ctrl_data, _ = brainSync(X=sub_data, Y=ctrl_data)
         fmri_diff[:, ind] = sp.sum((sub_data - ctrl_data)**2, axis=0)
@@ -174,8 +174,9 @@ def pair_dist(rand_pair, sub_files, reg_var=[], len_time=235):
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
     if len(reg_var) > 0:
         regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
-
-    return fmri_diff, regvar_diff
+        return fmri_diff, regvar_diff
+    else:
+        return fmri_diff
 
 
 def pairsdist_regression(bfp_path,
@@ -330,6 +331,28 @@ def randpairsdist_reg_parallel(bfp_path,
     return corr_pval
 
 
+def group_diff_fdr(grp1, grp2, alt_hypo='less'):
+    '''Input grp1 = numvert x (numsamples grp1), grp2 = numvert x (numsamples grp2)
+    alt_hypo: 'less', 'more' or 'two-sided'''
+
+    print('Performing Mann Whitney test, checking grp1<grp2')
+    pval = sp.zeros(grp1.shape[0])
+
+    for vind in tqdm(range(grp1.shape[0])):
+
+        _, pval[vind] = sp.stats.ranksums(grp1[vind, :], grp2[vind, :])
+
+
+#        _, pval[vind] = sp.stats.mannwhitneyu(
+#            grp1[vind, :],
+#            grp2[vind, :],
+#            use_continuity=True,
+#            alternative=alt_hypo)
+
+    _, pval_fdr = fdrcorrection(pval)
+    return pval_fdr, pval
+
+
 def compare_sub2ctrl(bfp_path,
                      sub_file,
                      ctrl_files,
@@ -337,7 +360,7 @@ def compare_sub2ctrl(bfp_path,
                      nperm=1000,
                      len_time=235,
                      num_proc=4,
-                     fdr_test=False):
+                     fdr_test=True):
 
     # Get the number of vertices from a file
     num_vert = spio.loadmat(ctrl_files[0])['dtseries'].shape[0]
@@ -355,33 +378,32 @@ def compare_sub2ctrl(bfp_path,
 
     fmri_diff_null = sp.zeros((num_vert, num_pairs))
 
-    results = multiprocessing.Pool(num_proc).imap(
-        partial(pair_dist, sub_files=ctrl_files, len_time=len_time), pairs)
+    if num_proc == 1:
+        for ind in tqdm(range(len(pairs))):
+            fmri_diff_null[:, ind] = pair_dist(
+                sub_files=ctrl_files, len_time=len_time, rand_pair=pairs[ind])
 
-    ind = 0
-    for res in results:
-        fmri_diff_null[:, ind] = res[0]
-        ind += 1
+    else:
+        results = multiprocessing.Pool(num_proc).imap(
+            partial(pair_dist, sub_files=ctrl_files, len_time=len_time), pairs)
+
+        ind = 0
+        for res in results:
+            fmri_diff_null[:, ind] = res[0]
+            ind += 1
 
     sub2ctrl_diff = sub2ctrl_dist(
         sub_file=sub_file, ctrl_files=ctrl_files, len_time=len_time)
+
     if not fdr_test:
         print('Performing Permutation test with MAX statistic')
-        corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
+        #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval = corr_pearson_fdr(X=fmri_diff.T, Y=[], nperm=nperm)
+        pval_fdr, pval = group_diff_fdr(
+            grp1=fmri_diff_null, grp2=sub2ctrl_diff, alt_hypo='less')
 
-    corr_pval[sp.isnan(corr_pval)] = .5
-
-    labs = spio.loadmat(
-        bfp_path +
-        '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
-
-    corr_pval[labs == 0] = 0.5
-
-    return pval
+    return pval_fdr, pval
 
 
 '''Deprecated'''

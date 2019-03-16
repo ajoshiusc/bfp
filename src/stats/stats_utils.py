@@ -118,6 +118,15 @@ def load_bfp_data(sub_fname, LenTime):
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
 
+def sync2atlas(atlas, sub_data):
+    print('Syncing to atlas, assume that the data is normalized')
+
+    # Assume that the sub_data is already normalized
+    syn_data = sp.zeros(sub_data.shape)
+    for ind in tqdm(range(sub_data.shape[2])):
+        syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
+
+    return syn_data
 
 def dist2atlas(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
@@ -511,6 +520,38 @@ def LinReg_resid(x, y):
 
     return resid
 
+def multiLinReg_resid(x,y):
+    regr = sklearn.linear_model.LinearRegression()
+    regr.fit(x,y)
+    resid = y - regr.predict(x)
+    return resid
+
+def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
+    subTest_varc12 = sp.zeros((subTest_varc1.shape[0],2))
+    for i in range(subTest_varc1.shape[0]):
+        subTest_varc12[i,0] = subTest_varc1[i]
+        subTest_varc12[i,1] = subTest_varc2[i]
+    print('regressing out 2 covariates')
+    diff_resid1 = sp.zeros(subTest_diff.shape)
+    numV = subTest_diff.shape[0]
+    for nv in tqdm(range(numV)):
+        diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12, subTest_diff[nv, :])
+        
+    print('computing correlation against main variable')
+    rval = sp.zeros(numV)
+    pval = sp.zeros(numV)
+    for nv in tqdm(range(numV)):
+        rval[nv], pval[nv] = sp.stats.pearsonr(
+            subTest_varmain, diff_resid1[nv, :])
+
+    a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
+    labs = a['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0
+    pval_fdr = sp.zeros(numV)
+    _, pv = fdrcorrection(pval[labs > 0])
+    pval_fdr[labs > 0] = pv
+
+    return rval, pval, pval_fdr
 
 def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
     print('regressing out 1st covariate')
@@ -539,168 +580,3 @@ def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
     pval_fdr[labs > 0] = pv
 
     return rval, pval, pval_fdr
-
-
-def lin_reg(bfp_path,
-            ref_atlas,
-            sub_files,
-            reg_var,
-            Vndim=235,
-            Sndim=20,
-            len_time=235):
-    """ Perform regression stats based on distance to atlas """
-
-    num_vert = ref_atlas.shape[1]
-    num_sub = len(sub_files)
-    a = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
-    labs = a['labels'].squeeze()
-
-    labs[sp.isnan(labs)] = 0
-    print('Computing PCA basis function from the atlas')
-    pca = PCA(n_components=Vndim)
-    pca.fit(ref_atlas.T)
-
-    reduced_data = sp.zeros((Vndim, num_vert, num_sub))
-    for ind in tqdm(range(num_sub)):
-
-        sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
-        sub_data, _, _ = normalizeData(sub_data[:len_time, :])
-        Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
-
-        if Vndim == len_time:
-            reduced_data[:, :, ind] = sub_data
-        else:
-            reduced_data[:, :, ind] = pca.transform(Y2.T).T
-
-    pval_linreg = sp.zeros(num_vert)
-
-    pca = PCA(n_components=Sndim)
-
-    for vrt in tqdm(range(num_vert)):
-        X = reduced_data[:, vrt, :]
-        if Sndim != num_sub:
-            pca.fit(X.T)
-            X = pca.transform(X.T).T
-        X = sm.add_constant(X.T)
-        est = sm.OLS(reg_var, X)
-        pval_linreg[vrt] = est.fit().f_pvalue
-
-    print('Regression is done')
-
-    pval_linreg[sp.isnan(pval_linreg)] = .5
-
-    pval_linreg_fdr = sp.zeros(num_vert)
-    _, pv = fdrcorrection(pval_linreg[labs > 0])
-    pval_linreg_fdr[labs > 0] = pv
-
-    return pval_linreg, pval_linreg_fdr
-
-
-def vis_save_pval(bfp_path, pval_map, surf_name, out_dir, smooth_iter=1500):
-    lsurf = readdfs(bfp_path + '/supp_data/bci32kleft.dfs')
-    rsurf = readdfs(bfp_path + '/supp_data/bci32kright.dfs')
-
-    lsurf.attributes = sp.zeros((lsurf.vertices.shape[0]))
-    rsurf.attributes = sp.zeros((rsurf.vertices.shape[0]))
-    lsurf = smooth_patch(lsurf, iterations=smooth_iter)
-    rsurf = smooth_patch(rsurf, iterations=smooth_iter)
-
-    num_vert = lsurf.vertices.shape[0]
-
-    lsurf.attributes = 0.05 - pval_map.squeeze()
-    lsurf.attributes = lsurf.attributes[:num_vert]
-    rsurf.attributes = 0.05 - pval_map.squeeze()
-    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
-
-    lsurf = patch_color_attrib(lsurf, clim=[0, .05])
-    rsurf = patch_color_attrib(rsurf, clim=[0, .05])
-
-    # If p value above .05 then make the surface grey
-    lsurf.vColor[lsurf.attributes < 0, :] = .5
-    rsurf.vColor[rsurf.attributes < 0, :] = .5
-
-    # Visualize left hemisphere
-    view_patch_vtk(
-        lsurf,
-        azimuth=100,
-        elevation=180,
-        roll=90,
-        outfile=out_dir + '/left_' + surf_name + '_pval.png',
-        show=0)
-    view_patch_vtk(
-        lsurf,
-        azimuth=-100,
-        elevation=180,
-        roll=-90,
-        outfile=out_dir + '/left_' + surf_name + '_2pval.png',
-        show=0)
-    # Visualize right hemisphere
-    view_patch_vtk(
-        rsurf,
-        azimuth=-100,
-        elevation=180,
-        roll=-90,
-        outfile=out_dir + '/right_' + surf_name + '_pval.png',
-        show=0)
-    view_patch_vtk(
-        rsurf,
-        azimuth=100,
-        elevation=180,
-        roll=90,
-        outfile=out_dir + '/right_' + surf_name + '_2pval.png',
-        show=0)
-
-    writedfs(out_dir + '/right_' + surf_name + '_sigpval.dfs', rsurf)
-    writedfs(out_dir + '/left_' + surf_name + '_sigpval.dfs', lsurf)
-
-
-def read_fcon1000_data(csv_fname,
-                       data_dir,
-                       reg_var_name='Verbal IQ',
-                       num_sub=5,
-                       reg_var_positive=1):
-    """ reads fcon1000 csv and data"""
-
-    count1 = 0
-    sub_ids = []
-    reg_var = []
-    pbar = tqdm(total=num_sub)
-
-    with open(csv_fname, newline='') as csvfile:
-        creader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
-        for row in creader:
-
-            # read the regression variable
-            rvar = row[reg_var_name]
-
-            # Read the filtered data by default
-            fname = os.path.join(
-                data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.filt.mat')
-
-            # If the data does not exist for this subject then skip it
-            if not os.path.isfile(fname) or int(row['QC_Rest_1']) != 1:
-                continue
-
-            if reg_var_positive == 1 and sp.float64(rvar) < 0:
-                continue
-
-            if count1 == 0:
-                sub_data_files = []
-
-            # Truncate the data at a given number of time samples This is needed because
-            # BrainSync needs same number of time sampples
-            sub_data_files.append(fname)
-            sub_ids.append(row['ScanDir ID'])
-            reg_var.append(float(rvar))
-
-            count1 += 1
-            pbar.update(1)  # update the progress bar
-            #print('%d,' % count1, end='')
-            if count1 == num_sub:
-                break
-
-    pbar.close()
-    print('CSV file and the data has been read\nThere are %d subjects' %
-          (len(sub_ids)))
-
-    return sub_ids, sp.array(reg_var), sub_data_files

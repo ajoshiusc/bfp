@@ -16,12 +16,12 @@ from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
-from brainsync import brainSync, normalizeData
 from dfsio import readdfs, writedfs
 from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
                       view_patch_vtk)
 
 sys.path.append('../BrainSync')
+from brainsync import brainSync, normalizeData
 
 
 def read_gord_data(data_dir, num_sub=1e6):

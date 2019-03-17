@@ -35,8 +35,6 @@ from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
 # ### Set the directories for the data and BFP software
 from tqdm import tqdm
-
-from brainsync import brainSync, normalizeData
 from dfsio import readdfs
 from grayord_utils import vis_grayord_sigpval
 from stats_utils import (compare_sub2ctrl, dist2atlas_reg, randpairsdist_reg,
@@ -45,16 +43,20 @@ from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
                       view_patch_vtk)
 
 sys.path.append('../BrainSync')
+from brainsync import brainSync, normalizeData
+
+
+
 # In[2]:
 
 BFPPATH = '/big_disk/ajoshi/coding_ground/bfp'
 
 # study directory where all the grayordinate files lie
-CTRL_DIR = '/big_disk/ajoshi/ADHD_Peking_gord'
+CTRL_DIR = '/big_disk/ajoshi/CN_new_gord' #/big_disk/ajoshi/ADHD_Peking_gord' #/big_disk/ajoshi/ADHD_Peking_gord'
 
 SUB_DATA = '/big_disk/ajoshi/for_cleveland/bfpout/study13072/func/study13072_rest_bold.32k.GOrd.filt.mat'
 
-LEN_TIME = 235  # length of the time series
+LEN_TIME = 100  # length of the time series
 NUM_CTRL = 200  # Number of control subjects for the study
 
 
@@ -79,6 +81,8 @@ def main():
     t1 = time.time()
 
     print(t1 - t0)
+
+    sp.savez('pval_out.npz', pval=pval, pval_fdr=pval_fdr)
 
     vis_grayord_sigpval(
         bfp_path=BFPPATH,

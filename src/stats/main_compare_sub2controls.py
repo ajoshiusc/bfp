@@ -82,7 +82,7 @@ def main():
 
     print(t1 - t0)
 
-    sp.savez('pval_out.npz', pval=pval, pval_fdr=pval_fdr)
+    sp.savez('pval_out200.npz', pval=pval, pval_fdr=pval_fdr)
 
     vis_grayord_sigpval(
         bfp_path=BFPPATH,

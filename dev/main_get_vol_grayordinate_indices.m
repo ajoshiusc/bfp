@@ -10,21 +10,22 @@ addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
 addpath(genpath('/big_disk/ajoshi/freesurfer/matlab'));
 addpath(genpath('/home/ajoshi/coding_ground/bfp/dev/Washington-University-cifti-matlab-27383b8'));
 v=ft_read_cifti('/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii');
-bci=load_nii_BIG_Lab('/home/ajoshi/BrainSuite17a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz');
+bci=load_nii_BIG_Lab('/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz');
 SZ=size(bci.img);
 
 voxc=((v.transform)\([v.pos,ones(length(v.pos),1)]'))'; % This is in voxel coordinates
-
+voxc=voxc(:,1:3);
+save('../supp_data/MNI2mm_gord_vol_coord.mat','voxc')
 voxc = (voxc)*2; % this is because the grayordinate voxel space was for 2mm res
 voxc=voxc-1;
-map=load_nii_BIG_Lab('/home/ajoshi/Desktop/BrainSuiteAtlas1/mri.svreg.map.nii.gz');
+map=load_nii_BIG_Lab('/big_disk/ajoshi/bst1_processed/BrainSuiteAtlas1/mri.svreg.map.nii.gz');
 mapx=map.img(:,:,:,1);
 mapy=map.img(:,:,:,2);
 mapz=map.img(:,:,:,3);
 ind=~isnan(voxc(:,1));
 
 % Mask of Grayordinates in BrainSuiteAtlas1 coordinates (MNI space)
-v1=load_nii_BIG_Lab('/home/ajoshi/Desktop/BrainSuiteAtlas1/mri.bfc.nii.gz');
+v1=load_nii_BIG_Lab('/big_disk/ajoshi/bst1_processed/BrainSuiteAtlas1/mri.bfc.nii.gz');
 id1=sub2ind(size(mapx),voxc(ind,1),voxc(ind,2),voxc(ind,3));
 v1.hdr.dime.datatype=2;v1.img=0*v1.img;
 v1.img(id1)=255;

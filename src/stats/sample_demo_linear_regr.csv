@@ -1,0 +1,16 @@
+SubjectID,age,Sex,HGB,Reference,Exclude
+subject1,22.6,1,14.1,1,0
+subject2,20.3,1,11.7,0,0
+subject3,17.9,2,12.9,1,0
+subject4,17.7,1,11.9,0,0
+subject5,16.1,2,12.3,1,0
+subject6,23.5,2,15.2,1,0
+subject7,30.8,1,13.1,1,0
+subject8,12,1,15.3,1,0
+subject9,22.3,1,13.5,1,0
+subject10,16.8,1,12,1,0
+subject11,18.4,2,9.3,0,1
+subject12,13.1,2,12.2,0,0
+subject13,34.1,1,11.1,0,0
+subject14,17.5,1,8.2,0,0
+subject15,21.6,2,9.6,0,0

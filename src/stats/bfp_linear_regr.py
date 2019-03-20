@@ -15,18 +15,19 @@ config.read(config_file)
 section = config.sections()
 bfp_path = config.get('inputs','bfp_path')
 sys.path.append(os.path.join(bfp_path, 'src/stats/') )
+sys.path.append(os.path.join(str(bfp_path), 'src/BrainSync/')) 
+os.chdir(bfp_path)
 from dev_config import readConfig
 cf = readConfig(config_file)
 
 ### Import BrainSync libraries
-sys.path.append(os.path.join(str(cf.bfp_path), 'src/BrainSync/')) 
+
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 sys.path.append(cf.bfp_path + "/src/stats/") 
 from stats_utils import dist2atlas, sync2atlas, multiLinReg_corr
 from grayord_utils import vis_grayord_sigcorr
 from read_data_utils import load_bfp_data, read_demoCSV
 #%% 
-os.chdir(bfp_path)
 print(cf.out_dir + ": writing output directory")
 if not os.path.isdir(cf.out_dir):
     os.makedirs(cf.out_dir)

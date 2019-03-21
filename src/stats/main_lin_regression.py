@@ -30,7 +30,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 20  # Number of subjects for the study
+NUM_SUB = 10  # Number of subjects for the study
 
 
 def main():
@@ -52,7 +52,7 @@ def main():
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
-    corr_pval = randpairsdist_reg_parallel(
+    corr_pval_max, corr_pval_fdr = randpairsdist_reg_parallel(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
@@ -60,14 +60,26 @@ def main():
         nperm=1000,
         len_time=LEN_TIME,
         num_proc=4,
-        fdr_test=False)
+        pearson_fdr_test=False)
     t1 = time.time()
 
     print(t1 - t0)
 
     visdata_grayord(
-        corr_pval,
-        surf_name='rand_dist_corr_vol',
+        corr_pval_max,
+        surf_name='rand_dist_corr_max',
+        out_dir='.',
+        smooth_iter=1000,
+        colorbar_lim=[0, 1],
+        colormap='jet_r',
+        save_dfs=True,
+        save_png=True,
+        bfp_path=BFPPATH,
+        fsl_path=FSL_PATH)
+
+    visdata_grayord(
+        corr_pval_fdr,
+        surf_name='rand_dist_corr_fdr',
         out_dir='.',
         smooth_iter=1000,
         colorbar_lim=[0, 1],

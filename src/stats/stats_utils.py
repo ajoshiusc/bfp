@@ -41,6 +41,7 @@ def read_gord_data(data_dir, num_sub=1e6):
 
     return sub_data_files
 
+
 def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
 
@@ -50,6 +51,7 @@ def sync2atlas(atlas, sub_data):
         syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
 
     return syn_data
+
 
 def dist2atlas(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
@@ -193,17 +195,24 @@ def corr_perm_test(X, Y, nperm=1000):
     Y, _, _ = normalizeData(Y)
 
     nsub = X.shape[0]
-    rho_vert = np.sum(X * Y[:, None], axis=0)
+    rho_orig = np.sum(X * Y[:, None], axis=0)
     max_null = np.zeros(nperm)
+    n_count = np.zeros(X.shape[1])
 
     print('Permutation testing')
     for ind in tqdm(range(nperm)):
         perm1 = np.random.permutation(nsub)
-        max_null[ind] = np.amax(np.sum(X * Y[perm1, None], axis=0))
+        rho_perm = np.sum(X * Y[perm1, None], axis=0)
+        max_null[ind] = np.amax(rho_perm)
+        n_count += np.float32(rho_perm > rho_orig)
 
-    pval = np.sum(rho_vert[:, None] < max_null[None, :], axis=1) / nperm
+    pval_max = np.sum(rho_orig[:, None] < max_null[None, :], axis=1) / nperm
 
-    return pval
+    pval_perm = n_count / nperm
+
+    _, pval_perm_fdr = fdrcorrection(pval_perm)
+
+    return pval_max, pval_perm_fdr, pval_perm
 
 
 def randpairsdist_reg_parallel(bfp_path,
@@ -213,7 +222,7 @@ def randpairsdist_reg_parallel(bfp_path,
                                nperm=1000,
                                len_time=235,
                                num_proc=4,
-                               fdr_test=False):
+                               pearson_fdr_test=False):
     """ Perform regression stats based on square distance between random pairs """
 
     # Get the number of vertices from a file
@@ -233,20 +242,34 @@ def randpairsdist_reg_parallel(bfp_path,
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
 
-    results = multiprocessing.Pool(num_proc).imap(
-        partial(
-            pair_dist, sub_files=sub_files, reg_var=reg_var,
-            len_time=len_time), pairs)
+    if num_proc > 1:
+        results = multiprocessing.Pool(num_proc).imap(
+            partial(
+                pair_dist,
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time), pairs)
 
-    ind = 0
-    for res in results:
-        fmri_diff[:, ind] = res[0]
-        regvar_diff[ind] = res[1]
-        ind += 1
+        ind = 0
+        for res in results:
+            fmri_diff[:, ind] = res[0]
+            regvar_diff[ind] = res[1]
+            ind += 1
 
-    if not fdr_test:
+    else:
+        for ind in tqdm(range(len(pairs))):
+
+            fmri_diff[:, ind], regvar_diff[ind] = pair_dist(
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time,
+                rand_pair=pairs[ind])
+
+    corr_pval2 = 0
+    if not pearson_fdr_test:
         print('Performing Permutation test with MAX statistic')
-        corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+        corr_pval, corr_pval2, _ = corr_perm_test(
+            X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
         corr_pval = corr_pearson_fdr(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
@@ -260,7 +283,7 @@ def randpairsdist_reg_parallel(bfp_path,
 
     corr_pval[labs == 0] = 0.5
 
-    return corr_pval
+    return corr_pval, corr_pval2
 
 
 def group_diff_fdr(grp1, grp2, alt_hypo='less'):
@@ -443,32 +466,36 @@ def LinReg_resid(x, y):
 
     return resid
 
-def multiLinReg_resid(x,y):
+
+def multiLinReg_resid(x, y):
     regr = sklearn.linear_model.LinearRegression()
-    regr.fit(x,y)
+    regr.fit(x, y)
     resid = y - regr.predict(x)
     return resid
 
-def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
-    subTest_varc12 = sp.zeros((subTest_varc1.shape[0],2))
+
+def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
+                     subTest_varc2):
+    subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
     for i in range(subTest_varc1.shape[0]):
-        subTest_varc12[i,0] = subTest_varc1[i]
-        subTest_varc12[i,1] = subTest_varc2[i]
+        subTest_varc12[i, 0] = subTest_varc1[i]
+        subTest_varc12[i, 1] = subTest_varc2[i]
     print('regressing out 2 covariates')
     diff_resid1 = sp.zeros(subTest_diff.shape)
     numV = subTest_diff.shape[0]
     for nv in tqdm(range(numV)):
-        diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12, subTest_diff[nv, :])
-        
+        diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12,
+                                               subTest_diff[nv, :])
+
     print('computing correlation against main variable')
     rval = sp.zeros(numV)
     pval = sp.zeros(numV)
     for nv in tqdm(range(numV)):
-        rval[nv], pval[nv] = sp.stats.pearsonr(
-            subTest_varmain, diff_resid1[nv, :])
+        rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain,
+                                               diff_resid1[nv, :])
     p = sp.zeros(len(pval))
-    p[pval < 0.05] =1
-    print(str(np.sum(p)) + ' significant voxels found.')    
+    p[pval < 0.05] = 1
+    print(str(np.sum(p)) + ' significant voxels found.')
 
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
@@ -476,15 +503,14 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2
     pval_fdr = sp.zeros(numV)
     _, pv = fdrcorrection(pval[labs > 0])
     pval_fdr[labs > 0] = pv
-    
+
     pf = sp.zeros(len(pval))
-    pf[pval_fdr < 0.05] =1
-    pf[labs == 0]=0
-    print(str(np.sum(pf)) + ' significant voxels found after FDR correction.')  
-    
- 
+    pf[pval_fdr < 0.05] = 1
+    pf[labs == 0] = 0
+    print(str(np.sum(pf)) + ' significant voxels found after FDR correction.')
 
     return rval, pval, pval_fdr
+
 
 def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
     print('regressing out 1st covariate')

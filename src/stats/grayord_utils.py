@@ -10,27 +10,40 @@ from dfsio import readdfs, writedfs
 from os.path import join
 from nilearn.image import load_img, new_img_like
 from scipy.io import loadmat
-import numpy as np
-bfp_path = '.'
 
-def visdata_grayord(data, surf_name, out_dir, smooth_iter, colorbar_lim, colormap, save_dfs, save_png):
-    lsurf, rsurf = label_surf(data, colorbar_lim, smooth_iter, colormap)
-    save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path, save_dfs, save_png)
+FSL_PATH = '/usr/share/fsl/5.0'
+
+
+def visdata_grayord(data,
+                    surf_name,
+                    out_dir,
+                    smooth_iter,
+                    colorbar_lim,
+                    colormap,
+                    save_dfs,
+                    save_png,
+                    bfp_path='.',
+                    fsl_path=FSL_PATH):
+    lsurf, rsurf = label_surf(data, colorbar_lim, smooth_iter, colormap,bfp_path=bfp_path)
+    save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path, save_dfs,
+                  save_png)
     save2volgord(data, out_dir, surf_name, bfp_path)
-   
-def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs, save_png, save_vol):
-    
-    if save_vol=='True':
+
+
+def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
+                        save_png, save_vol,bfp_path):
+
+    if save_vol == 'True':
         save2volgord(pval, out_dir, surf_name + '_pval', bfp_path)
         save2volgord(rval, out_dir, surf_name + '_rval', bfp_path)
-    
-    
+
     print('outputs will be written to directory: ' + out_dir)
     plsurf, prsurf = label_surf(pval, [0, 0.05], smooth_iter, 'jet_r')
     # If p value above .05 then make the surface grey
     plsurf.vColor[plsurf.attributes >= 0.05, :] = .5
     prsurf.vColor[prsurf.attributes >= 0.05, :] = .5
-    save2surfgord(plsurf, prsurf, out_dir, surf_name + '_pval_sig', bfp_path, save_dfs, save_png)
+    save2surfgord(plsurf, prsurf, out_dir, surf_name + '_pval_sig', bfp_path,
+                  save_dfs, save_png)
     print('output pvalues on surface')
     print('colorbar limits are 0 to 0.05; colorbar class is jet reverse')
 
@@ -38,22 +51,25 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs, s
     # If p value above .05 then make the surface grey
     lsurf.vColor[plsurf.attributes >= 0.05, :] = .5
     rsurf.vColor[prsurf.attributes >= 0.05, :] = .5
-    save2surfgord(lsurf, rsurf, out_dir, surf_name + '_rval_sig', bfp_path, save_dfs, save_png)
+    save2surfgord(lsurf, rsurf, out_dir, surf_name + '_rval_sig', bfp_path,
+                  save_dfs, save_png)
     print('output pvalues on surface')
     print('colorbar limits are -0.5 to +0.5; colorbar class is jet')
 
 
-def vis_grayord_sigpval(pval, surf_name, out_dir, smooth_iter, bfp_path, save_vol):
-    if save_vol=='True':
+def vis_grayord_sigpval(pval, surf_name, out_dir, smooth_iter, bfp_path,
+                        save_vol):
+    if save_vol == 'True':
         save2volgord(pval, out_dir, surf_name + '_pval', bfp_path)
-        
+
     plsurf, prsurf = label_surf(
-        pval, [0, 0.05], smooth_iter, 'jet_r', bfp_path='.')
+        pval, [0, 0.05], smooth_iter, 'jet_r', bfp_path=bfp_path)
     # If p value above .05 then make the surface grey
     plsurf.vColor[plsurf.attributes >= 0.05, :] = .5
     prsurf.vColor[prsurf.attributes >= 0.05, :] = .5
     save2surfgord(
         plsurf, prsurf, out_dir, surf_name + 'pval_sig', bfp_path='.')
+
 
 def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
     lsurf = readdfs(os.path.join(bfp_path, 'supp_data/bci32kleft.dfs'))
@@ -77,22 +93,31 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
 
     return lsurf, rsurf
 
-def save2volgord(data, out_dir, vol_name, bfp_path='.'):
 
-    mni2mm = load_img(join(bfp_path, 'supp_data', 'MNI152_T1_2mm.nii.gz'))
+def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH):
+
+    mni2mm = load_img(join(fsl_path, 'data/standard', 'MNI152_T1_2mm.nii.gz'))
     a = loadmat(join(bfp_path, 'supp_data', 'MNI2mm_gord_vol_coord.mat'))
-    
+
     ind = ~np.isnan(a['voxc']).any(axis=1)
-    voxc = np.int16(a['voxc'] - 1)  # subtract 1 to convert from MATLAB to Python indexing
+    voxc = np.int16(
+        a['voxc'] - 1)  # subtract 1 to convert from MATLAB to Python indexing
     gordvol = np.zeros(mni2mm.shape)
-    
+
     gordvol[voxc[ind, 0], voxc[ind, 1], voxc[ind, 2]] = data[ind]
     grod = new_img_like(mni2mm, gordvol)
     grod.set_data_dtype(np.float64)
     outfile = join(out_dir, vol_name + '_MNI2mm.nii.gz')
     grod.to_filename(outfile)
-    
-def save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path='.', save_dfs='True', save_png = 'True'):
+
+
+def save2surfgord(lsurf,
+                  rsurf,
+                  out_dir,
+                  surf_name,
+                  bfp_path='.',
+                  save_dfs=True,
+                  save_png=True):
     # if label is zero, black out surface, attribute should be nan
     num_vert = lsurf.vertices.shape[0]
     lab = spio.loadmat(
@@ -103,8 +128,8 @@ def save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path='.', save_dfs='True
     rsurf.attributes[labs[num_vert:2 * num_vert] == 0] = sp.nan
     lsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
     rsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
-    
-    if save_png=='True':
+
+    if save_png == True:
         # Visualize left hemisphere
         view_patch_vtk(
             lsurf,
@@ -135,6 +160,6 @@ def save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path='.', save_dfs='True
             roll=90,
             outfile=out_dir + '/RightMedial_' + surf_name + '.png',
             show=0)
-    if save_dfs=='True':
+    if save_dfs == True:
         writedfs(out_dir + '/Right_' + surf_name + '.dfs', rsurf)
         writedfs(out_dir + '/Left_' + surf_name + '.dfs', lsurf)

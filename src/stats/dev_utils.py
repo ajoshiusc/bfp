@@ -21,6 +21,8 @@ import multiprocessing
 from functools import partial
 from brainsync import normalizeData, brainSync
 
+
+
 def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
     """ Pair distance """
     sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
@@ -34,6 +36,7 @@ def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
     regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
 
     return fmri_diff, regvar_diff
+
 
 def randpairsdist_reg_parallel(bfp_path,
                                sub_files,
@@ -142,6 +145,7 @@ def randpairsdist_reg(bfp_path,
 
     return corr_pval, corr_pval_fdr
 
+
 def pairsdist_regression(bfp_path,
                          sub_files,
                          reg_var,
@@ -235,6 +239,7 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
 
     return corr_pval, corr_pval_fdr
 
+
 def lin_reg(bfp_path,
             ref_atlas,
             sub_files,
@@ -288,6 +293,7 @@ def lin_reg(bfp_path,
     pval_linreg_fdr[labs > 0] = pv
 
     return pval_linreg, pval_linreg_fdr
+
 
 def read_fcon1000_data(csv_fname,
                        data_dir,

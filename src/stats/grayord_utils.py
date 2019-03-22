@@ -24,14 +24,15 @@ def visdata_grayord(data,
                     save_png,
                     bfp_path='.',
                     fsl_path=FSL_PATH):
-    lsurf, rsurf = label_surf(data, colorbar_lim, smooth_iter, colormap,bfp_path=bfp_path)
+    lsurf, rsurf = label_surf(
+        data, colorbar_lim, smooth_iter, colormap, bfp_path=bfp_path)
     save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path, save_dfs,
                   save_png)
     save2volgord(data, out_dir, surf_name, bfp_path)
 
 
 def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
-                        save_png, save_vol,bfp_path):
+                        save_png, save_vol, bfp_path):
 
     if save_vol == 'True':
         save2volgord(pval, out_dir, surf_name + '_pval', bfp_path)
@@ -57,10 +58,21 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
     print('colorbar limits are -0.5 to +0.5; colorbar class is jet')
 
 
-def vis_grayord_sigpval(pval, surf_name, out_dir, smooth_iter, bfp_path,
-                        save_vol):
-    if save_vol == 'True':
-        save2volgord(pval, out_dir, surf_name + '_pval', bfp_path)
+def vis_grayord_sigpval(pval,
+                        surf_name,
+                        out_dir,
+                        smooth_iter,
+                        bfp_path,
+                        fsl_path=FSL_PATH,
+                        save_vol=True,
+                        save_png=True):
+    if save_vol == True:
+        save2volgord(
+            pval,
+            out_dir,
+            surf_name + '_pval_sig',
+            bfp_path,
+            fsl_path=fsl_path)
 
     plsurf, prsurf = label_surf(
         pval, [0, 0.05], smooth_iter, 'jet_r', bfp_path=bfp_path)
@@ -68,7 +80,12 @@ def vis_grayord_sigpval(pval, surf_name, out_dir, smooth_iter, bfp_path,
     plsurf.vColor[plsurf.attributes >= 0.05, :] = .5
     prsurf.vColor[prsurf.attributes >= 0.05, :] = .5
     save2surfgord(
-        plsurf, prsurf, out_dir, surf_name + 'pval_sig', bfp_path='.')
+        plsurf,
+        prsurf,
+        out_dir,
+        surf_name + 'pval_sig',
+        bfp_path=bfp_path,
+        save_png=save_png)
 
 
 def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):

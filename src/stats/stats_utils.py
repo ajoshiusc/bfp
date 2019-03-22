@@ -206,7 +206,7 @@ def corr_perm_test(X, Y, nperm=1000):
         max_null[ind] = np.amax(rho_perm)
         n_count += np.float32(rho_perm > rho_orig)
 
-    pval_max = np.sum(rho_orig[:, None] < max_null[None, :], axis=1) / nperm
+    pval_max = np.sum(rho_orig[:, None] <= max_null[None, :], axis=1) / nperm
 
     pval_perm = n_count / nperm
 

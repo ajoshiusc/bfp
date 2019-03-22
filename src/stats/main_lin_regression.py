@@ -11,7 +11,7 @@ from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
 from stats_utils import dist2atlas_reg, randpairsdist_reg_parallel, randpairsdist_reg
 from dev_utils import read_fcon1000_data
-from grayord_utils import visdata_grayord
+from grayord_utils import visdata_grayord, vis_grayord_sigpval
 # ### Set the directorie
 # s for the data and BFP software
 from tqdm import tqdm
@@ -30,7 +30,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 150  # Number of subjects for the study
+NUM_SUB = 50  # Number of subjects for the study
 
 
 def main():
@@ -44,10 +44,10 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    # reg_var = sp.random.permutation(reg_var)
+    reg_var = sp.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
-    #    reg_var = reg_var[100:200]
-    #    sub_files = [sub_files[i] for i in range(100, 200)]
+    #reg_var = reg_var
+    #sub_files = [sub_files[i] for i in range(len(reg_var))]
 
     t0 = time.time()
     print('performing stats based on random pairwise distances')
@@ -57,35 +57,30 @@ def main():
         sub_files=sub_files,
         reg_var=reg_var,
         num_pairs=5000,
-        nperm=1000,
+        nperm=2000,
         len_time=LEN_TIME,
         num_proc=4,
         pearson_fdr_test=False)
     t1 = time.time()
 
     print(t1 - t0)
+    sp.savez(
+        'pval_num_pairs5000_nsub5_nperm5.npz',
+        corr_pval_max=corr_pval_max,
+        corr_pval_fdr=corr_pval_fdr)
 
-    visdata_grayord(
+    vis_grayord_sigpval(
         corr_pval_max,
-        surf_name='rand_dist_corr_max',
+        surf_name='rand_dist_corr_perm_max_2_5',
         out_dir='.',
         smooth_iter=1000,
-        colorbar_lim=[0, 1],
-        colormap='jet_r',
-        save_dfs=True,
-        save_png=True,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH)
-
-    visdata_grayord(
+    vis_grayord_sigpval(
         corr_pval_fdr,
-        surf_name='rand_dist_corr_fdr',
+        surf_name='rand_dist_corr_perm_fdr_2_5',
         out_dir='.',
         smooth_iter=1000,
-        colorbar_lim=[0, 1],
-        colormap='jet_r',
-        save_dfs=True,
-        save_png=True,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH)
 

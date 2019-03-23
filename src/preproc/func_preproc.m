@@ -35,65 +35,89 @@ cd(func_dir);
 
 
 
-% ## 1. Dropping first # TRS
-disp('Dropping first TRs');
-unix(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'_dr.nii.gz']);
-%
+% ## 1. Dropping first # TRS 
 % ##2. Deoblique
+disp('Dropping first TRs')
 disp('Deobliquing');
-unix(['3drefit -deoblique ',fmri,'_dr.nii.gz']);
+if ~exist([fmri,'_dr.nii.gz'],'file')
+    unix(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'_dr.nii.gz']);
+    unix(['3drefit -deoblique ',fmri,'_dr.nii.gz']);
+else
+    disp('file found. skipping step')
+end
 %
 % ##3. Reorient into fsl friendly space (what AFNI calls RPI)
 disp('Reorienting');
-unix(['3dresample -orient RPI -inset ',fmri,'_dr.nii.gz -prefix ',fmri,'_ro.nii.gz']);
+if ~exist([fmri,'_ro.nii.gz'],'file')
+    unix(['3dresample -orient RPI -inset ',fmri,'_dr.nii.gz -prefix ',fmri,'_ro.nii.gz']);
+else
+    disp('file found. skipping step')
+end   
 %
 % ##4. Motion correct to average of timeseries
 disp('Motion correcting');
-unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
-unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
+if ~exist([fmri,'_ro.nii.gz'],'file')
+    unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
+    unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
+else
+    disp('file found. skipping step')
+end
 %
 % ##6. Get eighth image for use in registration
-unix(['3dcalc -a ',fmri,'_mc.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
-
+disp('Getting eighth image for image registration')
+if ~exist([example,'_func.nii.gz'],'file')
+    unix(['3dcalc -a ',fmri,'_mc.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
+else
+    disp('file found. skipping step')
+end
 % ## 12.FUNC->T1
 % ## You may want to change some of the options
-if FSLRigidReg > 0
-    disp('Using FSL rigid registration');
-    unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 6 -interp trilinear']);
-    %     # Create mat file for conversion from subject's anatomical to functional
-    unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
-else
-    disp('Using USC rigid registration');
-    moving_filename = [example,'_func.nii.gz'];
-    static_filename = [t1,'.bfc.nii.gz'];
-    output_filename = [example,'_func2t1.nii.gz'];
-    if isdeployed
-        cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
-        unix(cmd);
-    else
-        usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
-    end
-end
-% ##5. Remove skull/edge detect
-disp('Skull stripping');
-if str2double(config.T1mask) > 0
+disp('Performing registration to T1')
+if ~exist([example,'_func2t1.nii.gz'],'file')
     if FSLRigidReg > 0
-        unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'_mask.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
+        disp('Using FSL rigid registration');
+        unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2t1.nii.gz -omat ',example,'_func2t1.mat -cost corratio -dof 6 -interp trilinear']);
+        %     # Create mat file for conversion from subject's anatomical to functional
+        unix(['convert_xfm -inverse -omat t12',example,'_func.mat ',example,'_func2t1.mat']);
     else
+        disp('Using USC rigid registration');
+        moving_filename = [example,'_func.nii.gz'];
+        static_filename = [t1,'.bfc.nii.gz'];
+        output_filename = [example,'_func2t1.nii.gz'];
         if isdeployed
-            cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.mask.nii.gz'], 's', [fmri,'_mask.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+            cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
             unix(cmd);
         else
-            transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'_mask.temp.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
-            unix(['3dcalc -a ',fmri,'_mask.temp.nii.gz -expr ''a/255'' -prefix ',fmri,'_mask.nii.gz']);
-            unix(['rm ',fmri,'_mask.temp.nii.gz'])
+            usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
         end
     end
 else
-    unix(['3dAutomask -prefix ',fmri,'_mask.nii.gz -dilate 1 ',example,'_func.nii.gz']);
+    disp('file found. skipping step')
 end
-unix(['3dcalc -a ',fmri,'_mc.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',fmri,'_ss.nii.gz']);
-
+% ##5. Remove skull/edge detect
+disp('Skull stripping');
+if ~exist([fmri,'_ss.nii.gz'],'file')
+    if str2double(config.T1mask) > 0
+        if FSLRigidReg > 0
+            unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'_mask.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
+        else
+            if isdeployed
+                cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.mask.nii.gz'], 's', [fmri,'_mask.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+                unix(cmd);
+            else
+                transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'_mask.temp.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+                unix(['3dcalc -a ',fmri,'_mask.temp.nii.gz -expr ''a/255'' -prefix ',fmri,'_mask.nii.gz']);
+                unix(['rm ',fmri,'_mask.temp.nii.gz'])
+            end
+        end
+    else
+        unix(['3dAutomask -prefix ',fmri,'_mask.nii.gz -dilate 1 ',example,'_func.nii.gz']);
+    end
+    unix(['3dcalc -a ',fmri,'_mc.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',fmri,'_ss.nii.gz']);
+else
+    disp('file found. skipping step')
+end
+    
 %
 % ##6. Get eighth image for use in registration
 disp( 'Getting example_func for registration')
@@ -103,27 +127,42 @@ unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.
 %
 % ##7. Spatial smoothing
 disp('Spatial Smoothing');
-unix(['fslmaths ',fmri,'_ss.nii.gz -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'_mask.nii.gz ',fmri,'_sm.nii.gz']);
+if ~exist([fmri,'_sm.nii.gz'],'file')
+    unix(['fslmaths ',fmri,'_ss.nii.gz -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'_mask.nii.gz ',fmri,'_sm.nii.gz']);
+else
+    disp('file found. skipping step')
+end
 %
 % ##8. Grandmean scaling
 disp('Grand-mean scaling');
-unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
+if ~exist([fmri,'_gms.nii.gz'],'file')
+    unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
+else
+    disp('file found. skipping step')
+end
 %
 
 % ##9. Temporal filtering
 disp('Band-pass filtering');
 gmsfile = [fmri,'_gms.nii.gz'];
-unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',fmri,'_filt.nii.gz ',gmsfile]);
+if ~exist([fmri,'_filt.nii.gz'],'file')
+    unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',fmri,'_filt.nii.gz ',gmsfile]);
+else
+    disp('file found. skipping step')
+end
 %
-
+% ##10.Detrending
 if str2double(config.RunDetrend) > 0
-    % ##10.Detrending
     disp('Removing linear and quadratic trends');
-    unix(['3dTstat -mean -prefix ',fmri,'_filt_mean.nii.gz ',fmri,'_filt.nii.gz']);
-    unix(['3dDetrend -polort 2 -prefix ',fmri,'_dt.nii.gz ',fmri,'_filt.nii.gz']);
     detrendfile = [fmri,'_pp.nii.gz'];
-    unix(['3dcalc -a ',fmri,'_filt_mean.nii.gz -b ',fmri,'_dt.nii.gz -expr ''a+b'' -prefix ',detrendfile]);
     maskstep_infile = detrendfile;
+    if ~exist(detrendfile,'file')
+        unix(['3dTstat -mean -prefix ',fmri,'_filt_mean.nii.gz ',fmri,'_filt.nii.gz']);
+        unix(['3dDetrend -polort 2 -prefix ',fmri,'_dt.nii.gz ',fmri,'_filt.nii.gz']);
+        unix(['3dcalc -a ',fmri,'_filt_mean.nii.gz -b ',fmri,'_dt.nii.gz -expr ''a+b'' -prefix ',detrendfile]);
+    else
+        disp('file found. skipping step')
+    end
 else
     maskstep_infile = gmsfile;
 end
@@ -135,21 +174,26 @@ unix(['fslmaths ',maskstep_infile,' -Tmin -bin ',fmri,'_pp_mask.nii.gz -odt char
 
 % ## 12.FUNC->standard (3mm)
 % ## You may want to change some of the options
-if FSLRigidReg > 0
-    unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 6 -interp trilinear']);
-    % # Create mat file for conversion from subject's anatomical to functional
-    unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
-else
-    disp('Using USC rigid registration');
-    moving_filename = [example,'_func.nii.gz'];%fullfile(funcDir,sprintf('%s_%s_bold_example_func.nii.gz',subid,sessionid{ind}));
-    static_filename = 'standard.nii.gz';
-    output_filename = [example,'_func2standard.nii.gz'];
-    if isdeployed
-        cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
-        unix(cmd);
+disp('Performing registration to standard space')
+if ~exist([example,'_func2standard.nii.gz'],'file')
+    if FSLRigidReg > 0
+        unix(['flirt -ref standard.nii.gz -in ',example,'_func.nii.gz -out ',example,'_func2standard.nii.gz -omat ',example,'_func2standard.mat -cost corratio -dof 6 -interp trilinear']);
+        % # Create mat file for conversion from subject's anatomical to functional
+        unix(['convert_xfm -inverse -omat standard2',example,'_func.mat ',example,'_func2standard.mat']);
     else
-        usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
+        disp('Using USC rigid registration');
+        moving_filename = [example,'_func.nii.gz'];%fullfile(funcDir,sprintf('%s_%s_bold_example_func.nii.gz',subid,sessionid{ind}));
+        static_filename = 'standard.nii.gz';
+        output_filename = [example,'_func2standard.nii.gz'];
+        if isdeployed
+            cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
+            unix(cmd);
+        else
+            usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
+        end
     end
+else
+    disp('file found. skipping step')
 end
 
 if str2double(config.RunNSR) > 0
@@ -176,7 +220,7 @@ if str2double(config.RunNSR) > 0
     %
     % # Extract signal for global, csf, and wm
     % ## 16. Global
-    disp(['Extracting global signal for subject']);
+    disp('Extracting global signal for subject');
     unix(['3dmaskave -mask ',fmri,'_pp_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
     %
     % ## 17. csf

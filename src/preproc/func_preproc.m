@@ -145,7 +145,7 @@ end
 % ##9. Temporal filtering
 disp('Band-pass filtering');
 gmsfile = [fmri,'_gms.nii.gz'];
-if ~exist(gmsfile,'file')
+if ~exist([fmri,'_filt.nii.gz'],'file')
     unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',fmri,'_filt.nii.gz ',gmsfile]);
 else
     disp('file found. skipping step')

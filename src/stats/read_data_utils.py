@@ -100,3 +100,15 @@ def load_bfp_data(sub_fname, LenTime):
 
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
+
+def write_text_timestamp(fname, msg):
+    if os.path.isfile(fname):
+        file = open(fname,"a") 
+        file.write("\n")
+    else:
+        file = open(fname,"w")
+    import datetime
+    dt = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
+    file.write(dt + "\n") 
+    file.write(msg + "\n")
+    file.close() 

@@ -4,6 +4,7 @@
 *.tar.gz
 *.gif
 *.png
+*.vscode*
 # 
 #
 #

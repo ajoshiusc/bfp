@@ -5,8 +5,8 @@ config = configparser.ConfigParser()
 import csv
 import os
 import sys
-import scipy as sp
 import scipy.io as spio
+import scipy as sp
 from tqdm import tqdm
 sys.path.append('../BrainSync')
 from brainsync import normalizeData
@@ -17,11 +17,17 @@ def readConfig(fname):
     section = config.sections()
     class cf:
         pass
+    #class demo:
+        #pass
     for ii in range(len(section)):
         v = config.options(section[ii])       
         for i in range(len(v)):
-            print(str(section[ii]) + ': '+ str(v[i])) 
+            #print(str(section[ii]) + ': '+ str(v[i])) 
             setattr(cf, v[i], config.get(section[ii],v[i]))
+            
+            #if section[ii] == 'demographics':
+             #   setattr(demo, v[i], config.get(section[ii],v[i]))
+                
     return cf
 
 def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
@@ -69,6 +75,19 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
 
     return sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2
 
+def read_demoCSV_list(csv_fname):
+    with open(csv_fname, 'r') as infile:
+        # read the file as a dictionary for each row ({header : value})
+        reader = csv.DictReader(infile)
+        data = {}
+        for row in reader:
+            for header, value in row.items():
+                try:
+                    data[header].append(value)
+                except KeyError:
+                    data[header] = [value]
+    return data
+
 
 def load_bfp_data(sub_fname, LenTime):
     ''' sub_fname: list of filenames of .mat files that contains Time x Vertex matrix of subjects' preprocessed fMRI data '''
@@ -100,3 +119,16 @@ def load_bfp_data(sub_fname, LenTime):
 
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
+
+def write_text_timestamp(fname, msg):
+    if os.path.isfile(fname):
+        file = open(fname,"a") 
+        file.write("\n")
+    else:
+        file = open(fname,"w")
+    import datetime
+    dt = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
+    file.write(dt + "\n") 
+    file.write(msg + "\n")
+    file.close() 
+    print(msg)

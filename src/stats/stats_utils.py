@@ -495,7 +495,6 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
                                                diff_resid1[nv, :])
     p = sp.zeros(len(pval))
     p[pval < 0.05] = 1
-    print(str(np.sum(p)) + ' significant voxels found.')
 
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
@@ -507,9 +506,11 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pf = sp.zeros(len(pval))
     pf[pval_fdr < 0.05] = 1
     pf[labs == 0] = 0
-    print(str(np.sum(pf)) + ' significant voxels found after FDR correction.')
 
-    return rval, pval, pval_fdr
+    msg = str(np.sum(p)) + ' significant voxels found. ' + str(np.sum(pf)) + ' significant voxels found after FDR correction.'
+    print(msg)
+
+    return rval, pval, pval_fdr, msg
 
 
 def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):

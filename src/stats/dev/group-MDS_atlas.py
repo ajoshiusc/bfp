@@ -10,17 +10,17 @@ import os
 import sys
 import scipy.io as spio
 import numpy as np
-
+from tqdm import tqdm
 bfp_path = '/home/sychoi/Documents/MATLAB/bfp/'
-sys.path.append(os.path.join(bfp_path, 'src/stats/') )
-from read_data_utils import load_bfp_data, write_text_timestamp
 sys.path.append(os.path.join(str(bfp_path), 'src/BrainSync/')) 
 from brainsync import IDrefsub_BrainSync, groupBrainSync, brainSync
+sys.path.append(os.path.join(bfp_path, 'src/stats/') )
+from read_data_utils import load_bfp_data, write_text_timestamp
 #%%
 dirname = "/NCAdisk/SCD_structural_analysis/BOLD_study/SCD_BOLDdata/"
-out_dir = '/NCAdisk/SCD_structural_analysis/BOLD_study/BOLD_Analysis/032519/hyperoxia/'
-ext = '_hyperoxia_bold.32k.GOrd.filt.mat'
-LenTime = 150
+out_dir = '/NCAdisk/SCD_structural_analysis/BOLD_study/BOLD_Analysis/032519/rest/'
+ext = '_rest_bold.32k.GOrd.filt.mat'
+LenTime = 240
 #%% checks and loads data
 if not os.path.isdir(out_dir):
     os.makedirs(out_dir)
@@ -33,6 +33,7 @@ sub_fname = []
 sub_ID = []
 n=0
 
+pbar = tqdm(total=len(subj))
 for i in range(len(subj)):
     print(str(n))
     n=n+1
@@ -43,6 +44,7 @@ for i in range(len(subj)):
         if int(data.shape[0]) == LenTime:
             sub_ID.append(subj[i])
             sub_fname.append(fname)
+    pbar.update(1)
 np.savetxt(out_dir + "/subjects.csv", sub_ID, delimiter=",", fmt='%s')
 write_text_timestamp(flog, 'data for ' + str(len(sub_ID)) + ' subjects will be used for atlas creation')
 sub_data = load_bfp_data(sub_fname, LenTime)

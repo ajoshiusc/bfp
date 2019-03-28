@@ -32,17 +32,17 @@ def visdata_grayord(data,
 
 
 def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
-                        save_png, save_vol, bfp_path):
+                        save_png, save_vol, bfp_path, fsl_path):
 
     if save_vol == 'True':
-        save2volgord(pval, out_dir, surf_name + '_pval', bfp_path)
-        save2volgord(rval, out_dir, surf_name + '_rval', bfp_path)
+        save2volgord(pval, out_dir, surf_name + '_pval', bfp_path, fsl_path)
+        save2volgord(rval, out_dir, surf_name + '_rval', bfp_path, fsl_path)
 
     print('outputs will be written to directory: ' + out_dir)
     plsurf, prsurf = label_surf(pval, [0, 0.05], smooth_iter, 'jet_r')
     # If p value above .05 then make the surface grey
-    plsurf.vColor[plsurf.attributes >= 0.05, :] = .5
-    prsurf.vColor[prsurf.attributes >= 0.05, :] = .5
+    plsurf.vColor[plsurf.attributes > 0.05, :] = .5
+    prsurf.vColor[prsurf.attributes > 0.05, :] = .5
     save2surfgord(plsurf, prsurf, out_dir, surf_name + '_pval_sig', bfp_path,
                   save_dfs, save_png)
     print('output pvalues on surface')
@@ -50,8 +50,8 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
 
     lsurf, rsurf = label_surf(rval, [-1, 1], smooth_iter, 'jet')
     # If p value above .05 then make the surface grey
-    lsurf.vColor[plsurf.attributes >= 0.05, :] = .5
-    rsurf.vColor[prsurf.attributes >= 0.05, :] = .5
+    lsurf.vColor[plsurf.attributes > 0.05, :] = .5
+    rsurf.vColor[prsurf.attributes > 0.05, :] = .5
     save2surfgord(lsurf, rsurf, out_dir, surf_name + '_rval_sig', bfp_path,
                   save_dfs, save_png)
     print('output pvalues on surface')

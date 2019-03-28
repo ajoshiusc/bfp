@@ -272,7 +272,8 @@ def randpairsdist_reg_parallel(bfp_path,
             X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval, corr_pval2 = corr_pearson_fdr(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+        corr_pval, corr_pval2 = corr_pearson_fdr(
+            X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -412,17 +413,6 @@ def randpairsdist_reg(bfp_path,
     return corr_pval, corr_pval_fdr
 
 
-def sync2atlas(atlas, sub_data):
-    print('Syncing to atlas, assume that the data is normalized')
-
-    # Assume that the sub_data is already normalized
-    syn_data = sp.zeros(sub_data.shape)
-    for ind in tqdm(range(sub_data.shape[2])):
-        syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
-
-    return syn_data
-
-
 def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
     """ Perform regression stats based on square distance to atlas """
     print('dist2atlas_reg, assume that the data is normalized')
@@ -507,7 +497,8 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pf[pval_fdr < 0.05] = 1
     pf[labs == 0] = 0
 
-    msg = str(np.sum(p)) + ' significant voxels found. ' + str(np.sum(pf)) + ' significant voxels found after FDR correction.'
+    msg = str(np.sum(p)) + ' significant voxels found. ' + str(
+        np.sum(pf)) + ' significant voxels found after FDR correction.'
     print(msg)
 
     return rval, pval, pval_fdr, msg

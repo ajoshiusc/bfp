@@ -184,7 +184,7 @@ def corr_pearson_fdr(X, Y, nperm=1000):
 
     _, corr_pval_fdr = fdrcorrection(corr_pval)
 
-    return corr_pval_fdr
+    return corr_pval_fdr, corr_pval
 
 
 def corr_perm_test(X, Y, nperm=1000):
@@ -272,7 +272,7 @@ def randpairsdist_reg_parallel(bfp_path,
             X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval = corr_pearson_fdr(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+        corr_pval, corr_pval2 = corr_pearson_fdr(X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 

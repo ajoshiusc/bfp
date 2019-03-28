@@ -6,6 +6,9 @@ temp_code*
 __pycache__/
 *.py[cod]
 *$py.class
+*.dfs
+*.nii.*
+*.m
 
 # C extensions
 *.so

@@ -88,7 +88,6 @@ def read_demoCSV_list(csv_fname):
                     data[header] = [value]
     return data
 
-
 def load_bfp_data(sub_fname, LenTime):
     ''' sub_fname: list of filenames of .mat files that contains Time x Vertex matrix of subjects' preprocessed fMRI data '''
     ''' LenTime: number of timepoints in data. this should be the same in all subjects '''

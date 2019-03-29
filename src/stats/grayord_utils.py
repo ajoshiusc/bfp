@@ -39,7 +39,7 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
         save2volgord(rval, out_dir, surf_name + '_rval', bfp_path, fsl_path)
 
     print('outputs will be written to directory: ' + out_dir)
-    plsurf, prsurf = label_surf(pval, [0, 0.05], smooth_iter, 'jet_r')
+    plsurf, prsurf = label_surf(pval, [0, 0.05], smooth_iter, 'jet_r', bfp_path)
     # If p value above .05 then make the surface grey
     plsurf.vColor[plsurf.attributes > 0.05, :] = .5
     prsurf.vColor[prsurf.attributes > 0.05, :] = .5
@@ -48,7 +48,7 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
     print('output pvalues on surface')
     print('colorbar limits are 0 to 0.05; colorbar class is jet reverse')
 
-    lsurf, rsurf = label_surf(rval, [-1, 1], smooth_iter, 'jet')
+    lsurf, rsurf = label_surf(rval, [-.5, .5], smooth_iter, 'jet', bfp_path)
     # If p value above .05 then make the surface grey
     lsurf.vColor[plsurf.attributes > 0.05, :] = .5
     rsurf.vColor[prsurf.attributes > 0.05, :] = .5
@@ -146,7 +146,7 @@ def save2surfgord(lsurf,
     lsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
     rsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
 
-    if save_png == True:
+    if save_png == 'True':
         # Visualize left hemisphere
         view_patch_vtk(
             lsurf,
@@ -177,6 +177,6 @@ def save2surfgord(lsurf,
             roll=90,
             outfile=out_dir + '/RightMedial_' + surf_name + '.png',
             show=0)
-    if save_dfs == True:
+    if save_dfs == 'True':
         writedfs(out_dir + '/Right_' + surf_name + '.dfs', rsurf)
         writedfs(out_dir + '/Left_' + surf_name + '.dfs', lsurf)

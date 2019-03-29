@@ -116,5 +116,5 @@ rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subT
 write_text_timestamp(log_fname, 'Done runnning linear regression. ' + msg)
 #%%
 vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True', cf.bfp_path, cf.fsl_path)
-vis_grayord_sigcorr(pval, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True', cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval_fdr, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True', cf.bfp_path, cf.fsl_path)
 write_text_timestamp(log_fname, 'BFP regression analysis complete')

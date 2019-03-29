@@ -56,7 +56,7 @@ end
 %
 % ##4. Motion correct to average of timeseries
 disp('Motion correcting');
-if ~exist([fmri,'_ro.nii.gz'],'file')
+if ~exist([fmri,'_mc.nii.gz'],'file')
     unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
     unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
 else

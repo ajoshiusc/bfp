@@ -171,7 +171,7 @@ def pairsdist_regression(bfp_path,
     return corr_pval, corr_pval_fdr
 
 
-def corr_pearson_fdr(X, Y, nperm=1000):
+def corr_pearson_fdr(X_pairs, reg_var, num_sub, nperm=1000):
     #X: nsub x vertices
     #Y: cognitive scores nsub X 1
     num_vert = X.shape[1]
@@ -187,22 +187,26 @@ def corr_pearson_fdr(X, Y, nperm=1000):
     return corr_pval_fdr, corr_pval
 
 
-def corr_perm_test(X, Y, nperm=1000):
+def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     #X: nsub x vertices
     #Y: cognitive scores nsub X 1
 
-    X, _, _ = normalizeData(X)
-    Y, _, _ = normalizeData(Y)
+    X, _, _ = normalizeData(X_pairs)
 
-    nsub = X.shape[0]
-    rho_orig = np.sum(X * Y[:, None], axis=0)
+    num_pairs = X.shape[0]
+    Y_pairs, _, _ = normalizeData(Y_pairs)
+    rho_orig = np.sum(X * Y_pairs[:, None], axis=0)
     max_null = np.zeros(nperm)
     n_count = np.zeros(X.shape[1])
 
     print('Permutation testing')
     for ind in tqdm(range(nperm)):
-        perm1 = np.random.permutation(nsub)
-        rho_perm = np.sum(X * Y[perm1, None], axis=0)
+        pairs, num_pairs = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
+        pairs = np.array(pairs)
+        Y = reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]]
+        Y, _, _ = normalizeData(Y)
+
+        rho_perm = np.sum(X * Y[:, None], axis=0)
         max_null[ind] = np.amax(rho_perm)
         n_count += np.float32(rho_perm > rho_orig)
 
@@ -215,21 +219,9 @@ def corr_perm_test(X, Y, nperm=1000):
     return pval_max, pval_perm_fdr, pval_perm
 
 
-def randpairsdist_reg_parallel(bfp_path,
-                               sub_files,
-                               reg_var,
-                               num_pairs=2000,
-                               nperm=1000,
-                               len_time=235,
-                               num_proc=4,
-                               pearson_fdr_test=False):
-    """ Perform regression stats based on square distance between random pairs """
-
-    # Get the number of vertices from a file
-    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
-
+def gen_rand_pairs(num_sub, num_pairs):
     # Generate pairs
-    pairs = list(itertools.combinations(range(len(sub_files)), r=2))
+    pairs = list(itertools.combinations(range(num_sub), r=2))
 
     if num_pairs > 0:
         rn = np.random.permutation(len(pairs))
@@ -238,6 +230,25 @@ def randpairsdist_reg_parallel(bfp_path,
             pairs = pairs[:num_pairs]
         else:
             num_pairs = len(pairs)
+
+    return pairs, num_pairs
+
+
+def randpairs_regression(bfp_path,
+                         sub_files,
+                         reg_var,
+                         num_pairs=2000,
+                         nperm=1000,
+                         len_time=235,
+                         num_proc=4,
+                         pearson_fdr_test=False):
+    """ Perform regression stats based on square distance between random pairs """
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+
+    pairs, num_pairs = gen_rand_pairs(
+        num_sub=len(sub_files), num_pairs=num_pairs)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
@@ -269,11 +280,15 @@ def randpairsdist_reg_parallel(bfp_path,
     if not pearson_fdr_test:
         print('Performing Permutation test with MAX statistic')
         corr_pval, corr_pval2, _ = corr_perm_test(
-            X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+            X_pairs=fmri_diff.T,
+            Y_pairs=regvar_diff,
+            reg_var=reg_var,
+            num_sub=len(sub_files),
+            nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
         corr_pval, corr_pval2 = corr_pearson_fdr(
-            X=fmri_diff.T, Y=regvar_diff, nperm=nperm)
+            X_pairs=fmri_diff.T, reg_var=reg_var, nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -363,54 +378,6 @@ def compare_sub2ctrl(bfp_path,
 
 
 '''Deprecated'''
-
-
-def randpairsdist_reg(bfp_path,
-                      sub_files,
-                      reg_var,
-                      num_pairs=1000,
-                      len_time=235):
-    """ Perform regression stats based on square distance between random pairs """
-    print('dist2atlas_reg, assume that the data is normalized')
-    print('This function is deprecated!!!!!!!!!!')
-
-    # Get the number of vertices from a file
-    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
-
-    #Generate random pairs
-    rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2), replace=True)
-
-    fmri_diff = sp.zeros((num_vert, num_pairs))
-    regvar_diff = sp.zeros(num_pairs)
-
-    print('Reading subjects')
-
-    # Compute distance to atlas
-    for ind in tqdm(range(num_pairs)):
-        sub1_data = spio.loadmat(sub_files[rand_pairs[ind, 0]])['dtseries'].T
-        sub2_data = spio.loadmat(sub_files[rand_pairs[ind, 1]])['dtseries'].T
-
-        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
-
-        sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
-        fmri_diff[:, ind] = sp.sum((sub2_data - sub1_data)**2, axis=0)
-        regvar_diff[ind] = sp.square(reg_var[rand_pairs[ind, 0]] -
-                                     reg_var[rand_pairs[ind, 1]])
-
-    corr_pval = sp.zeros(num_vert)
-    for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
-
-    corr_pval[sp.isnan(corr_pval)] = .5
-
-    labs = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat'
-                        )['labels'].squeeze()
-
-    corr_pval_fdr = sp.zeros(num_vert)
-    _, corr_pval_fdr[labs > 0] = fdrcorrection(corr_pval[labs > 0])
-
-    return corr_pval, corr_pval_fdr
 
 
 def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):

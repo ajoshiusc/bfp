@@ -9,7 +9,7 @@ sys.path.append('../BrainSync')
 from brainsync import normalizeData, brainSync
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
-from stats_utils import dist2atlas_reg, randpairsdist_reg_parallel, randpairsdist_reg
+from stats_utils import randpairs_regression
 from dev_utils import read_fcon1000_data
 from grayord_utils import visdata_grayord, vis_grayord_sigpval
 # ### Set the directorie
@@ -30,7 +30,7 @@ CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 50 #200  # Number of subjects for the study
+NUM_SUB = 50  #200  # Number of subjects for the study
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    #reg_var = sp.random.permutation(reg_var)
+    reg_var = sp.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
@@ -52,33 +52,33 @@ def main():
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
-    corr_pval_max, corr_pval_fdr = randpairsdist_reg_parallel(
+    corr_pval_max, corr_pval_fdr = randpairs_regression(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
         num_pairs=5000,  # 19900,
         nperm=2000,
         len_time=LEN_TIME,
-        num_proc=1,
-        pearson_fdr_test=True)
+        num_proc=6,
+        pearson_fdr_test=False)
     t1 = time.time()
 
     print(t1 - t0)
     sp.savez(
-        'pval_num_pairs5000_nsub200_nperm5000.npz',
+        'pval_num_pairs5000_nsub50_nperm5000_shuffle.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
 
     vis_grayord_sigpval(
         corr_pval_max,
-        surf_name='rand_dist_corr_perm_max',
+        surf_name='rand_dist_corr_perm_max_shuffle',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH)
     vis_grayord_sigpval(
         corr_pval_fdr,
-        surf_name='rand_dist_corr_perm_fdr',
+        surf_name='rand_dist_corr_perm_fdr_shuffle',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,

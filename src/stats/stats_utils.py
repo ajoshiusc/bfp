@@ -203,7 +203,7 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     for ind in tqdm(range(nperm)):
         pairs, _ = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
         pairs = np.array(pairs)
-        Y = sp.sum((reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])**2, axis=0)
+        Y = sp.square(reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])
  
         Y, _, _ = normalizeData(Y)
 

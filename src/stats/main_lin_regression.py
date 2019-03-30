@@ -44,7 +44,7 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    reg_var = sp.random.permutation(reg_var)
+    #reg_var = sp.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]

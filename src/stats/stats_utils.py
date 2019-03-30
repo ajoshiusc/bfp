@@ -201,14 +201,15 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
 
     print('Permutation testing')
     for ind in tqdm(range(nperm)):
-        pairs, num_pairs = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
+        pairs, _ = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
         pairs = np.array(pairs)
-        Y = reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]]
+        Y = sp.sum((reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])**2, axis=0)
+ 
         Y, _, _ = normalizeData(Y)
 
         rho_perm = np.sum(X * Y[:, None], axis=0)
         max_null[ind] = np.amax(rho_perm)
-        n_count += np.float32(rho_perm > rho_orig)
+        n_count += np.float32(rho_perm >= rho_orig)
 
     pval_max = np.sum(rho_orig[:, None] <= max_null[None, :], axis=1) / nperm
 

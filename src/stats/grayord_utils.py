@@ -146,7 +146,7 @@ def save2surfgord(lsurf,
     lsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
     rsurf.vColor[sp.isnan(lsurf.attributes), :] = 0
 
-    if save_png == 'True':
+    if save_png == True:
         # Visualize left hemisphere
         view_patch_vtk(
             lsurf,
@@ -177,6 +177,6 @@ def save2surfgord(lsurf,
             roll=90,
             outfile=out_dir + '/RightMedial_' + surf_name + '.png',
             show=0)
-    if save_dfs == 'True':
+    if save_dfs == True:
         writedfs(out_dir + '/Right_' + surf_name + '.dfs', rsurf)
         writedfs(out_dir + '/Left_' + surf_name + '.dfs', lsurf)

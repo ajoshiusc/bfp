@@ -68,7 +68,8 @@ def main():
         'pval_num_pairs5000_nsub50_nperm5000_shuffle.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
-
+    # corr_pval_max=a['corr_pval_max']
+    # corr_pval_fdr=a['corr_pval_fdr']
     vis_grayord_sigpval(
         corr_pval_max,
         surf_name='rand_dist_corr_perm_max_shuffle',

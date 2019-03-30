@@ -461,7 +461,7 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pval_fdr[labs > 0] = pv
 
     pf = sp.zeros(len(pval))
-    pf[pval_fdr < 0.05] = 1
+    pf[pval_fdr <= 0.05] = 1
     pf[labs == 0] = 0
 
     msg = str(np.sum(p)) + ' significant voxels found. ' + str(

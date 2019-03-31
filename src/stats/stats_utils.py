@@ -194,8 +194,8 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     X, _, _ = normalizeData(X_pairs)
 
     num_pairs = X.shape[0]
-    Y_pairs, _, _ = normalizeData(Y_pairs)
-    rho_orig = np.sum(X * Y_pairs[:, None], axis=0)
+    Y_pairs, _, _ = normalizeData(Y_pairs[:, None])
+    rho_orig = np.sum(X * Y_pairs, axis=0)
     max_null = np.zeros(nperm)
     n_count = np.zeros(X.shape[1])
 
@@ -205,9 +205,9 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
         pairs = np.array(pairs)
         Y = sp.square(reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])
  
-        Y, _, _ = normalizeData(Y)
+        Y, _, _ = normalizeData(Y[:, None])
 
-        rho_perm = np.sum(X * Y[:, None], axis=0)
+        rho_perm = np.sum(X * Y, axis=0)
         max_null[ind] = np.amax(rho_perm)
         n_count += np.float32(rho_perm >= rho_orig)
 

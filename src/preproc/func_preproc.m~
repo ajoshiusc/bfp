@@ -185,12 +185,11 @@ else
     disp('file found. skipping step')
 end
 %% skull strip image used for registration
-disp( 'Getting example_func for registration')
-unix(['cp ',example,'_func.nii.gz ',example,'tmp_func.nii.gz'])
-unix(['rm ',example,'_func.nii.gz'])
-% unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
-unix(['3dcalc -a ',example,'tmp_func.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',example,'_func.nii.gz']);
-unix(['rm ',example,'tmp_func.nii.gz'])
+disp( 'Skull stripping reference image')
+orig = load_untouch_nii_gz([example,'_func.nii.gz']);
+msk = load_untouch_nii_gz([fmri,'_mask.nii.gz']);
+orig.img(msk.img==0)=0;
+save_untouch_nii_gz(orig,'[fmri
 %% Spatial smoothing
 disp('Spatial Smoothing');
 if ~exist([fmri,'_sm.nii.gz'],'file')

@@ -111,7 +111,7 @@ if ~exist([fmri,'_mc.nii.gz'],'file')
     p = figure;
     if size(s,2)==2
         plot(s(:,1)); hold; plot(s(:,2));
-        line([k k], [0 1],'Color','red','LineStyle','--'); 
+        line([k k], [0 1],'Color','black','LineStyle','--'); 
         legend({'motion corrected','original','refence volume'},'Location','southeast');
     else
         plot(s(:,1));
@@ -173,7 +173,10 @@ if ~exist([fmri,'_ss.nii.gz'],'file')
                 unix(cmd);
             else
                 transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'_mask.temp.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
-                unix(['3dcalc -a ',fmri,'_mask.temp.nii.gz -expr ''a/255'' -prefix ',fmri,'_mask.nii.gz']);
+%                 unix(['3dcalc -a ',fmri,'_mask.temp.nii.gz -expr ''a/255'' -prefix ',fmri,'_mask.nii.gz']);
+                msk = load_untouch_nii_gz([fmri,'_mask.temp.nii.gz']);
+                msk.img(msk.img==255)=1;
+                save_untouch_nii_gz(msk,[fmri,'_mask.nii.gz']);
                 unix(['rm ',fmri,'_mask.temp.nii.gz'])
             end
         end
@@ -185,12 +188,11 @@ else
     disp('file found. skipping step')
 end
 %% skull strip image used for registration
-disp( 'Getting example_func for registration')
-unix(['cp ',example,'_func.nii.gz ',example,'tmp_func.nii.gz'])
-unix(['rm ',example,'_func.nii.gz'])
-% unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
-unix(['3dcalc -a ',example,'tmp_func.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',example,'_func.nii.gz']);
-unix(['rm ',example,'tmp_func.nii.gz'])
+disp( 'Skull stripping reference image')
+orig = load_untouch_nii_gz([example,'_func.nii.gz']);
+msk = load_untouch_nii_gz([fmri,'_mask.nii.gz']);
+orig.img(msk.img==0)=0;
+save_untouch_nii_gz(orig,[example,'_func.nii.gz']);
 %% Spatial smoothing
 disp('Spatial Smoothing');
 if ~exist([fmri,'_sm.nii.gz'],'file')

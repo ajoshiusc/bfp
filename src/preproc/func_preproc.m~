@@ -67,27 +67,27 @@ end
 disp('Getting image for motion correction')
 if ~exist([fmri,'_ro_mean.nii.gz'],'file')
     if SimRef
+        disp('Using SimRef...')
         orig = load_untouch_nii_gz([fmri,'_ro.nii.gz']);
         [x,y,z,nvol] = size(orig.img);
         k = round(nvol/2);
-        s= zeros(nvol,3);
+        s= zeros(nvol,2);
         disp('Calculating similarity measures...')
         for i = 1:nvol
             data1 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),k);
             data2 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),i);
-            s(i,1) = ssim(data1,data2);
-            fprintf('%s',num2str(s(i,1)))
+            s(i,2) = ssim(data1,data2);
         end
         %
-        data = orig.img(:,:,:,s(:,1)>0.9);
+        data = orig.img(:,:,:,s(:,2)>0.9);
         mdata = mean(data,4);
-        %     view_vol(mdata,[x,y,z],1,'1');
         new = orig;
         new.img = mdata;
         new.hdr.dime.dim(1)=3;
         new.hdr.dime.dim(5)=1;
         save_untouch_nii_gz(new,[fmri,'_ro_mean.nii.gz']);
-        disp('Reference volume computed using similar images to middle volume')
+        disp(['Reference volume computed using ',num2str(sum(s(:,1)>0.9)),' volumes'])
+        clear new orig data mdata data1 data2 x y z nvol
     else
         unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
         disp('Reference volume computed by averaging all volumes.')
@@ -98,14 +98,43 @@ end
 %% Motion correct to average of timeseries
 disp('Motion correcting');
 if ~exist([fmri,'_mc.nii.gz'],'file')
-    unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
+    unix(['3dvolreg -verbose -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
+    orig = load_untouch_nii_gz([fmri,'_mc.nii.gz']);
+    [x,y,z,nvol] = size(orig.img);
+    k = round(nvol/2);
+    disp('Calculating similarity measures to evaluate motion correction...')
+    for i = 1:nvol
+        data1 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),k);
+        data2 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),i);
+        s(i,1) = ssim(data1,data2);
+    end
+    p = figure;
+    if size(s,2)==2
+        plot(s(:,1)); hold; plot(s(:,2));
+        line([k k], [0 1],'Color','black','LineStyle','--'); 
+        legend({'motion corrected','original','refence volume'},'Location','southeast');
+    else
+        plot(s(:,1));
+        line([k k], [0 1],'Color','red','LineStyle','--'); 
+        legend({'motion corrected','refence volume'},'Location','southeast');
+    end
+    ylim([0,1.1]);
+    ylabel('SSIM');xlabel('vol no.');
+    saveas(p,[fmri,'_mc_ssim.png']);
+    close all
 else
     disp('file found. skipping step')
 end
-%% Get eighth image for use in registration
-disp('Getting eighth image for image registration')
+%% Get image for use in registration
+disp('Getting image for coregistration...')
 if ~exist([example,'_func.nii.gz'],'file')
-    unix(['3dcalc -a ',fmri,'_mc.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
+    if SimRef
+        disp('Using SimRef...')
+        unix(['cp ',fmri,'_ro_mean.nii.gz ',example,'_func.nii.gz'])
+    else
+        disp('Using eigth image')
+        unix(['3dcalc -a ',fmri,'_mc.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
+    end
 else
     disp('file found. skipping step')
 end
@@ -155,11 +184,13 @@ if ~exist([fmri,'_ss.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Get eighth image for use in registration
+%% skull strip image used for registration
 disp( 'Getting example_func for registration')
+unix(['cp ',example,'_func.nii.gz ',example,'tmp_func.nii.gz'])
 unix(['rm ',example,'_func.nii.gz'])
-unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
-
+% unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
+unix(['3dcalc -a ',example,'tmp_func.nii.gz -b ',fmri,'_mask.nii.gz -expr ''a*b'' -prefix ',example,'_func.nii.gz']);
+unix(['rm ',example,'tmp_func.nii.gz'])
 %% Spatial smoothing
 disp('Spatial Smoothing');
 if ~exist([fmri,'_sm.nii.gz'],'file')

@@ -44,7 +44,7 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
     plsurf.vColor[plsurf.attributes > 0.05, :] = .5
     prsurf.vColor[prsurf.attributes > 0.05, :] = .5
     save2surfgord(plsurf, prsurf, out_dir, surf_name + '_pval_sig', bfp_path,
-                  save_dfs, save_png)
+                  bool(save_dfs), bool(save_png))
     print('output pvalues on surface')
     print('colorbar limits are 0 to 0.05; colorbar class is jet reverse')
 
@@ -53,7 +53,7 @@ def vis_grayord_sigcorr(pval, rval, surf_name, out_dir, smooth_iter, save_dfs,
     lsurf.vColor[plsurf.attributes > 0.05, :] = .5
     rsurf.vColor[prsurf.attributes > 0.05, :] = .5
     save2surfgord(lsurf, rsurf, out_dir, surf_name + '_rval_sig', bfp_path,
-                  save_dfs, save_png)
+                  bool(save_dfs), bool(save_png))
     print('output pvalues on surface')
     print('colorbar limits are -0.5 to +0.5; colorbar class is jet')
 
@@ -119,7 +119,7 @@ def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH):
     ind = ~np.isnan(a['voxc']).any(axis=1)
     voxc = np.int16(
         a['voxc'] - 1)  # subtract 1 to convert from MATLAB to Python indexing
-    gordvol = np.zeros(mni2mm.shape)
+    gordvol = np.ones(mni2mm.shape)
 
     gordvol[voxc[ind, 0], voxc[ind, 1], voxc[ind, 2]] = data[ind]
     grod = new_img_like(mni2mm, gordvol)

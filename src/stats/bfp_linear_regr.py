@@ -1,5 +1,5 @@
 #%%
-config_file = '/NCAdisk/SCD_structural_analysis/BOLD_study/BOLD_Analysis/032519/rest/correlation/corr_config_stats.ini'
+config_file = '/home/ajoshi/coding_ground/bfp/src/stats/sample_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -115,6 +115,6 @@ del subTest_data, subTest_syndata
 rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
 write_text_timestamp(log_fname, 'Done runnning linear regression. ' + msg)
 #%%
-vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True', cf.bfp_path, cf.fsl_path)
-vis_grayord_sigcorr(pval_fdr, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True', cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter), bool(cf.save_surfaces), bool(cf.save_figures), bool('True'), cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval_fdr, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), bool(cf.save_surfaces), bool(cf.save_figures), bool('True'), cf.bfp_path, cf.fsl_path)
 write_text_timestamp(log_fname, 'BFP regression analysis complete')

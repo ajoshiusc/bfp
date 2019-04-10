@@ -6,10 +6,29 @@ function BFP_outfile = func_preproc(BFPPATH,t1,fmri,func_dir,TR,config)
 % for more information go to http://brainsuite.org/bfp/
 %     this script has been modified from www.nitrc.org/projects/fcon_1000
 %% set up parameters and directories
+% default parameters
+v = {'SimRef',1;...
+    'FSLRigid',1;...
+    'FWHM',6;...
+    'HIGHPASS',0.005;...
+    'LOWPASS',0.1;...    
+    };
+for i = 1:size(v,1)
+if isfield(config, v{i,1})
+%     config.(v{i,1})=str2double(config.(v{i,1}));
+    if isnan(config.(v{i,1}))
+        config.(v{i,1}) = v{i,2};
+    end
+else
+    config.(v{i,1})=v{i,2};
+end
+end
+
+FSLRigidReg = config.FSLRigid;
 FWHM = config.FWHM;
-hp = config.HIFHPASS;
+hp = config.HIGHPASS;
 lp = config.LOWPASS;
-FSLRigidReg = config.FSLRigidReg;
+SimRef = config.SimRef;
 
 nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
 [~,n_vols]=unix(['3dinfo -nv ',fmri,'.nii.gz']); n_vols=str2double(n_vols);
@@ -43,12 +62,43 @@ if ~exist([fmri,'_ro.nii.gz'],'file')
     unix(['3dresample -orient RPI -inset ',fmri,'_dr.nii.gz -prefix ',fmri,'_ro.nii.gz']);
 else
     disp('file found. skipping step')
-end   
+end
+%% Get reference image used for motion correction and registration
+disp('Getting image for motion correction')
+if ~exist([fmri,'_ro_mean.nii.gz'],'file')
+    if SimRef
+        orig = load_untouch_nii_gz([fmri,'_ro.nii.gz']);
+        [x,y,z,nvol] = size(orig.img);
+        k = round(nvol/2);
+        s= zeros(nvol,3);
+        disp('Calculating similarity measures...')
+        for i = 1:nvol
+            data1 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),k);
+            data2 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),i);
+            s(i,1) = ssim(data1,data2);
+        end
+        %
+        disp(['Averaging ',num2str(sum(s(:,1)>0.9)),' volumes']);
+        data = orig.img(:,:,:,s(:,1)>0.9);
+        mdata = mean(data,4);
+        %     view_vol(mdata,[x,y,z],1,'1');
+        new = orig;
+        new.img = mdata;
+        new.hdr.dime.dim(1)=3;
+        new.hdr.dime.dim(5)=1;
+        save_untouch_nii_gz(new,[fmri,'_ro_mean.nii.gz']);
+        disp('Reference volume computed using similar images to middle volume')
+    else
+        unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
+        disp('Reference volume computed by averaging all volumes.')
+    end
+else
+    disp('file found. skipping step')
+end
 %% Motion correct to average of timeseries
 disp('Motion correcting');
 if ~exist([fmri,'_mc.nii.gz'],'file')
-    unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
-    unix(['3dvolreg -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
+    unix(['3dvolreg -verbose -Fourier -twopass -base ',fmri,'_ro_mean.nii.gz -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
 else
     disp('file found. skipping step')
 end

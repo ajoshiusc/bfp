@@ -404,7 +404,7 @@ for ind=1:length(fmri)
         BFP_outfile = [fmribasename,'_gms2standard.nii.gz'];
     end
     if ~exist(BFP_outfile,'file')
-        BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config.FSLRigid,config);
+        BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config);
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
     end

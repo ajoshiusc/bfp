@@ -114,11 +114,7 @@ BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain
 ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.nii.gz');
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 GOrdVolIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_vol_ind.mat');
-nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
 %func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
-fwhm=config.FWHM;
-hp=config.HIGHPASS;
-lp=config.LOWPASS;
 continueRun=str2double(config.CONTINUERUN);
 %FSLRigid=1; %PUT THIS IN CONFIG FILE Overriding config file here since USCRigid registration is not tested.
 
@@ -205,8 +201,11 @@ fprintf('Creating Dir:%s\n',anatDir);
 % BFP log file in subject dir
 logfname=fullfile(studydir,subid,'BFP_log.txt');
 fp=fopen(logfname,'a+');
+t = now;
+d = datetime(t,'ConvertFrom','datenum');
+fprintf(fp,'%s\n',d);
 fprintf(fp, 'BFP version: %s\n', ver);
-fprintf(fp,'bfp %s %s %s %s %s %s %s\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
+fprintf(fp,'bfp %s %s %s %s %s %s %s\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
 
 fclose(fp);
 
@@ -405,7 +404,7 @@ for ind=1:length(fmri)
         BFP_outfile = [fmribasename,'_gms2standard.nii.gz'];
     end
     if ~exist(BFP_outfile,'file')
-        BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),nuisance_template,fwhm,hp,lp,config.FSLRigid,config);
+        BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config.FSLRigid,config);
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
     end

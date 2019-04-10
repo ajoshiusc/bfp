@@ -28,7 +28,9 @@ disp('---------------------------------------');
 
 cwd = pwd;
 cd(func_dir);
-%% Dropping first # TRS & Deoblique
+%%
+% ## 1. Dropping first # TRS 
+% ##2. Deoblique
 disp('Dropping first TRs')
 disp('Deobliquing');
 if ~exist([fmri,'_dr.nii.gz'],'file')
@@ -37,14 +39,16 @@ if ~exist([fmri,'_dr.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Reorient into fsl friendly space (what AFNI calls RPI)
+%%
+% ##3. Reorient into fsl friendly space (what AFNI calls RPI)
 disp('Reorienting');
 if ~exist([fmri,'_ro.nii.gz'],'file')
     unix(['3dresample -orient RPI -inset ',fmri,'_dr.nii.gz -prefix ',fmri,'_ro.nii.gz']);
 else
     disp('file found. skipping step')
 end   
-%% Motion correct to average of timeseries
+%%
+% ##4. Motion correct to average of timeseries
 disp('Motion correcting');
 if ~exist([fmri,'_mc.nii.gz'],'file')
     unix(['3dTstat -mean -prefix ',fmri,'_ro_mean.nii.gz ',fmri,'_ro.nii.gz']);
@@ -52,14 +56,15 @@ if ~exist([fmri,'_mc.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Get eighth image for use in registration
+%%
+% ##6. Get eighth image for use in registration
 disp('Getting eighth image for image registration')
 if ~exist([example,'_func.nii.gz'],'file')
     unix(['3dcalc -a ',fmri,'_mc.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
 else
     disp('file found. skipping step')
 end
-%% FUNC->T1
+%% 12.FUNC->T1
 disp('Performing registration to T1')
 if ~exist([example,'_func2t1.nii.gz'],'file')
     if FSLRigidReg > 0
@@ -82,7 +87,7 @@ if ~exist([example,'_func2t1.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Remove skull/edge detect
+%% ##5. Remove skull/edge detect
 disp('Skull stripping');
 if ~exist([fmri,'_ss.nii.gz'],'file')
     if str2double(config.T1mask) > 0
@@ -105,26 +110,26 @@ if ~exist([fmri,'_ss.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Get eighth image for use in registration
+%% ##6. Get eighth image for use in registration
 disp( 'Getting example_func for registration')
 unix(['rm ',example,'_func.nii.gz'])
 unix(['3dcalc -a ',fmri,'_ss.nii.gz[7] -expr ''a'' -prefix ',example,'_func.nii.gz']);
 
-%% Spatial smoothing
+%% ##7. Spatial smoothing
 disp('Spatial Smoothing');
 if ~exist([fmri,'_sm.nii.gz'],'file')
     unix(['fslmaths ',fmri,'_ss.nii.gz -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'_mask.nii.gz ',fmri,'_sm.nii.gz']);
 else
     disp('file found. skipping step')
 end
-%% Grandmean scaling
+%% ##8. Grandmean scaling
 disp('Grand-mean scaling');
 if ~exist([fmri,'_gms.nii.gz'],'file')
     unix(['fslmaths ',fmri,'_sm.nii.gz -ing 10000 ',fmri,'_gms.nii.gz -odt float']);
 else
     disp('file found. skipping step')
 end
-%% Temporal filtering
+%% ##9. Temporal filtering
 disp('Band-pass filtering');
 gmsfile = [fmri,'_gms.nii.gz'];
 if ~exist([fmri,'_filt.nii.gz'],'file')
@@ -132,7 +137,7 @@ if ~exist([fmri,'_filt.nii.gz'],'file')
 else
     disp('file found. skipping step')
 end
-%% Detrending
+%% ##10.Detrending
 if str2double(config.RunDetrend) > 0
     disp('Removing linear and quadratic trends');
     detrendfile = [fmri,'_pp.nii.gz'];
@@ -271,5 +276,6 @@ else
         transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'_func.nii.gz'], 'standard.nii.gz', [fmri,'_example_func2standard.rigid_registration_result.mat'], 'linear');
     end
 end
+%
 cd(cwd);
 

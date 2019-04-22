@@ -1,4 +1,4 @@
-function [ sample_graph, sample_index ] = IPCS( full_graph, sample_rate, para_sigma, v_conn_ext_list )
+function [ sample_graph, sample_index ] = connectivity_sampling( full_graph, sample_rate, para_sigma, v_conn_ext_list )
 %TEST_MAX_SAMPLE Summary of this function goes here
 %   Detailed explanation goes here
 %%

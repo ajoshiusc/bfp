@@ -4,20 +4,19 @@ config_file = '/home/ajoshi/coding_ground/bfp/src/stats/sample_config_stats.ini'
 ### Import the required librariesimport configparser
 import sys
 import os
-from stats_utils import randpairs_regression
+from stats_utils import randpairs_regression, multiLinReg_resid
 from grayord_utils import vis_grayord_sigpval
 import scipy.io as spio
 import scipy as sp
 import numpy as np
 import configparser
+from tqdm import tqdm
 
 ### Import BrainSync libraries
 config = configparser.ConfigParser()
 config.read(config_file)
 section = config.sections()
 bfp_path = config.get('inputs', 'bfp_path')
-sys.path.append(os.path.join(bfp_path, 'src/stats/'))
-sys.path.append(os.path.join(str(bfp_path), 'src/BrainSync/'))
 from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp, readConfig
 os.chdir(bfp_path)
 cf = readConfig(config_file)
@@ -97,6 +96,7 @@ write_text_timestamp(
 write_text_timestamp(
     log_fname,
     str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
+
 #%%
 # reads reference data and creates atlas by BrainSync algorithm
 if len(cf.atlas_fname) != 0:
@@ -129,7 +129,7 @@ else:
     spio.savemat(
         os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
 
-#%% sync and calculates geodesic distances
+#%% Compute pairwise distance and perform regression
 corr_pval_max, corr_pval_fdr = randpairs_regression(
     bfp_path=cf.bfp_path,
     sub_files=subTest_fname,

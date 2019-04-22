@@ -21,7 +21,6 @@ from dfsio import readdfs, writedfs
 from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
                       view_patch_vtk)
 
-sys.path.append('../BrainSync')
 from brainsync import brainSync, normalizeData
 
 

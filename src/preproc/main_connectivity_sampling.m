@@ -1,5 +1,4 @@
-%AUM
-%Shree Ganeshaya Namaha
+
 clc;clear all;close all;
 
 load /deneb_disk/SCD_BOLDdata/atlas.mat
@@ -19,3 +18,5 @@ toc
 full_graph_subc=full_graph(2*nSurf+1:end,:);
 [ sample_graph_subc, sample_index_subc ] = connectivity_sampling( full_graph_subc, sample_rate, para_sigma );
 toc
+
+

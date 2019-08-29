@@ -294,6 +294,12 @@ bse=fullfile(BrainSuitePath,'bin','bse');
 
 if config.T1SpaceProcessing
     bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
+    if ~exist(bseout,'file')
+        bseexist=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
+        if exist(bseexist,'file')
+            copyfile(bseexist,bseout);
+        end
+    end
 else
     bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
 end

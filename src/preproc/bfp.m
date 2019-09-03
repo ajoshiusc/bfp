@@ -122,6 +122,9 @@ ver_file = fullfile(BFPPATH, 'bfp_version.txt');
 
 if ~exist(ver_file, 'file')
     ver_file = fullfile(BFPPATH, '/src/preproc', 'bfp_version.txt');
+    if ~exist(ver_file, 'file')
+        error('BFP directory: %s \n: Directory does not exist\n',BFPPATH);
+    end
 end
 
 fid = fopen(ver_file, 'r');

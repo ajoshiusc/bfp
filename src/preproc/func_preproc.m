@@ -230,9 +230,6 @@ if str2double(config.RunDetrend) > 0
 else
     maskstep_infile = gmsfile;
 end
-%% Create Mask
-disp('Generating mask of preprocessed data');
-unix(['fslmaths ',maskstep_infile,' -Tmin -bin ',fmri,'_pp_mask.nii.gz -odt char']);
 %% FUNC->standard (3mm)
 disp('Performing registration to standard space')
 if ~exist([example,'_func2standard.nii.gz'],'file')
@@ -281,7 +278,7 @@ if str2double(config.RunNSR) > 0
     % # Extract signal for global, csf, and wm
     % ## 16. Global
     disp('Extracting global signal for subject');
-    unix(['3dmaskave -mask ',fmri,'_pp_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
+    unix(['3dmaskave -mask ',fmri,'_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
     %
     % ## 17. csf
     if FSLRigidReg > 0
@@ -321,7 +318,7 @@ if str2double(config.RunNSR) > 0
     disp('Running feat model');
     unix(['feat_model ',nuisance_dir,'/nuisance']);
     %
-    [~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_pp_mask.nii.gz ',fmri,'_pp.nii.gz']);
+    [~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_mask.nii.gz ',fmri,'_pp.nii.gz']);
     %minVal=str2double(minVal);
     %
     % ## 7. Get residuals

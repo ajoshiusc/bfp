@@ -282,26 +282,31 @@ if str2double(config.RunNSR) > 0
     %
     % ## 17. csf
     if FSLRigidReg > 0
-        unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',t1,'.func.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
+        unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
     else
         
         if isdeployed
-            cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.pvc.label.nii.gz'], 's', [t1,'.func.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+            cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
             unix(cmd);
         else
-            transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [t1,'.func.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+            transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
         end
     end
     %
-    unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 5.5 -bin ',t1,'.func.csf.mask.nii.gz']);
-    unix(['fslmaths ',t1,'.func.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',t1,'.func.wm.mask.nii.gz']);
+    pvclbl = load_untouch_nii_gz([fmri,'.pvc.label.nii.gz']);
+    csfmsk = pvclbl;
+    csfmsk.img = zeros(size(pvclbl.img));
+    csfmsk.img(pvclbl.img==1 | pvclbl.img==6)=1;
+    save_untouch_nii_gz(csfmsk,[fmri,'.csf.mask.nii.gz'],2);
+%     unix(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 5.5 -bin ',fmri,'.csf.mask.nii.gz']);
+    unix(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',fmri,'.wm.mask.nii.gz -odt char']);
     %
     % echo "Extracting signal from csf"
-    unix(['3dmaskave -mask ',t1,'.func.csf.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/csf.1D'])
+    unix(['3dmaskave -mask ',fmri,'.csf.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/csf.1D'])
     %
     % ## 18. wm
     disp('Extracting signal from white matter for subject');
-    unix(['3dmaskave -mask ',t1,'.func.wm.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/wm.1D'])
+    unix(['3dmaskave -mask ',fmri,'.wm.mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/wm.1D'])
     %
     % ## 6. Generate mat file (for use later)
     % ## create fsf file
@@ -318,7 +323,13 @@ if str2double(config.RunNSR) > 0
     disp('Running feat model');
     unix(['feat_model ',nuisance_dir,'/nuisance']);
     %
-    [~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_mask.nii.gz ',fmri,'_pp.nii.gz']);
+    
+    pp = load_untouch_nii_gz([fmri,'_pp.nii.gz']);
+    msk = load_untouch_nii_gz([fmri,'_mask.nii.gz']);
+    ppimg = pp.img(logical(msk.img));
+    minVal = num2str(min(ppimg));
+    
+    %[~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'_mask.nii.gz ',fmri,'_pp.nii.gz']);
     %minVal=str2double(minVal);
     %
     % ## 7. Get residuals

@@ -264,7 +264,11 @@ if str2double(config.RunNSR) > 0
     %
     %
     % ## 14. make nuisance directory
-    unix(['mkdir -p ',nuisance_dir]);
+    %unix(['mkdir -p ',nuisance_dir]);
+    if exist(nuisance_dir,'dir')
+        rmdir(nuisance_dir,'s')
+    end
+    mkdir(nuisance_dir)
     %
     % # 15. Seperate motion parameters into seperate files
     disp('Splitting up subject motion parameters');
@@ -338,6 +342,9 @@ if str2double(config.RunNSR) > 0
     %
     % ## 8. Demeaning residuals and ADDING 100
     unix(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d_mean.nii.gz ',nuisance_dir,'/stats/res4d.nii.gz']);
+    if exist([fmri,'_res.nii.gz'],'file')
+        delete([fmri,'_res.nii.gz'])
+    end
     unix(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/res4d_mean.nii.gz -expr ''(a-b)+100'' -prefix ',fmri,'_res.nii.gz']);
     
     RS_infile = [fmri,'_res.nii.gz'];

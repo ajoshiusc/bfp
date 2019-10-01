@@ -3,8 +3,8 @@
 
 clc;clear all;close all;
 addpath(genpath('../'));
-g1=load('/home/ajoshi/Downloads/sub10186/func/sub10186_rest_bold.32k.GOrd.mat');
-g2=load('/home/ajoshi/Downloads/sub10973/func/sub10973_rest_bold.32k.GOrd.mat');
+g1=load('/NCAdisk/SCD_structural_analysis/BOLD_study/SCD_BOLDdata/ACTL004/func/ACTL004_rest_bold.32k.GOrd.filt.mat');
+g2=load('/home/sychoi/Dropbox/SCD/Analysis/BOLD/092719/atlas.mat');
 sl=readdfs('/home/ajoshi/coding_ground/bfp/supp_data/bci32kleft.dfs');
 msk=load('/big_disk/ajoshi/HCP100-fMRI-NLM/HCP100-fMRI-NLM/reference/100307.LR_mask.mat');
 

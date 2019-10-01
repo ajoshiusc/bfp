@@ -79,7 +79,8 @@ def dist2atlas(atlas, syn_data):
         if count1 == numSub:
             break
     pbar.close()
-
+    a=pearson_corr>1
+    geo_dist[a] = 0
     print('done')
     return geo_dist, pearson_corr
 

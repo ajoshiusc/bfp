@@ -83,7 +83,7 @@ del subAtlas_data
 #%% sync and calculates geodesic distances
 subTest_data = load_bfp_data(subTest_fname, int(cf.lentime))
 subTest_syndata = sync2atlas(atlas_data, subTest_data)
-subTest_diff = dist2atlas(atlas_data, subTest_syndata)
+subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)
 spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
 del subTest_data, subTest_syndata
 #%% computes correlation after controlling for two covariates

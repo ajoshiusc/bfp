@@ -12,7 +12,7 @@ Windows: May run through a virtual machine, linux subsystem or docker. We have n
  * Clone or Download BFP
 	git clone https://github.com/ajoshiusc/bfp.git
 	<required: git https://git-scm.com/>
- * Install [BrainSuite18a] or later version (http://brainsuite.org).
+ * Install [BrainSuite18a](http://forums.brainsuite.org/download/) or later version.
  * Install AFNI (Ver. Jun 12 2017 or newer) and FSL ( Ver. 5.0 or newer). We recommend using [NeuroDebian](http://neuro.debian.net) as it makes the installation process easier. BFP has been tested with this configuration, but it should work for other versions of Linux and other softwares. However we recommend and support the above mentioned versions.
 
  * Open <bfpdir>/src/preproc/sample_main.m in Matlab.
@@ -48,8 +48,10 @@ bfp.sh /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /hom
 The statistical analysis pipelines are available in src/stats directory as python scripts. All documentation is included within the sample config and python scripts.
 
 required inputs:
-* config file: input parameters and options for your statistical test. Sample config file is provided in (<bfpdir>/src/stats/sample_config_stats.ini) 
+* config file: input parameters and options for your statistical test. 
+Sample config file is provided in (<bfpdir>/src/stats/sample_config_stats.ini) 
 * demographics file: csv file with your study's demographics which will be used for identifying subjects and their respective demographic information. You can control for up to 2 variables through linear regression (such as age and sex). 
+Sample csv file is provided in (<bfpdir>/src/stats/sample_demo_linear_regr.csv)
 
 bfp_group_compare.py is the group difference pipeline.
 bfp_linear_regr.py is the regression pipeline.

@@ -151,12 +151,12 @@ if ~exist([example,'_func2t1.nii.gz'],'file')
         moving_filename = [example,'_func.nii.gz'];
         static_filename = [t1,'.bfc.nii.gz'];
         output_filename = [example,'_func2t1.nii.gz'];
-        if isdeployed
-            cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
-            unix(cmd);
-        else
+%         if isdeployed
+%             cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
+%             unix(cmd);
+%         else
             usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
-        end
+%         end
     end
 else
     disp('file found. skipping step')
@@ -168,17 +168,17 @@ if ~exist([fmri,'_ss.nii.gz'],'file')
         if FSLRigidReg > 0
             unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'_mask.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
         else
-            if isdeployed
-                cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.mask.nii.gz'], 's', [fmri,'_mask.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
-                unix(cmd);
-            else
+%             if isdeployed
+%                 cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.mask.nii.gz'], 's', [fmri,'_mask.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+%                 unix(cmd);
+%             else
                 transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'_mask.temp.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
 %                 unix(['3dcalc -a ',fmri,'_mask.temp.nii.gz -expr ''a/255'' -prefix ',fmri,'_mask.nii.gz']);
                 msk = load_untouch_nii_gz([fmri,'_mask.temp.nii.gz']);
                 msk.img(msk.img==255)=1;
                 save_untouch_nii_gz(msk,[fmri,'_mask.nii.gz']);
                 unix(['rm ',fmri,'_mask.temp.nii.gz'])
-            end
+%             end
         end
     else
         unix(['3dAutomask -prefix ',fmri,'_mask.nii.gz -dilate 1 ',example,'_func.nii.gz']);
@@ -242,12 +242,12 @@ if ~exist([example,'_func2standard.nii.gz'],'file')
         moving_filename = [example,'_func.nii.gz'];%fullfile(funcDir,sprintf('%s_%s_bold_example_func.nii.gz',subid,sessionid{ind}));
         static_filename = 'standard.nii.gz';
         output_filename = [example,'_func2standard.nii.gz'];
-        if isdeployed
-            cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
-            unix(cmd);
-        else
+%         if isdeployed
+%             cmd = sprintf('%s %s %s %s %s %s', usc_rigid_reg_bin, moving_filename, static_filename, output_filename, 'inversion');
+%             unix(cmd);
+%         else
             usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
-        end
+%         end
     end
 else
     disp('file found. skipping step')
@@ -289,12 +289,12 @@ if str2double(config.RunNSR) > 0
         unix(['flirt -ref ',example,'_func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init t12',example,'_func.mat -interp nearestneighbour']);
     else
         
-        if isdeployed
-            cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
-            unix(cmd);
-        else
+%         if isdeployed
+%             cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, [t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
+%             unix(cmd);
+%         else
             transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'_func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'_example_func2t1.rigid_registration_result.mat'], 'nearest');
-        end
+%         end
     end
     %
     pvclbl = load_untouch_nii_gz([fmri,'.pvc.label.nii.gz']);
@@ -362,12 +362,12 @@ end
 if FSLRigidReg > 0
     unix(['flirt -ref ',func_dir,'/standard -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',func_dir,'/',example,'_func2standard.mat -interp trilinear']);
 else
-    if isdeployed
-        cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, RS_infile, 'm', BFP_outfile, [example,'_func.nii.gz'], 'standard.nii.gz', [fmri,'_example_func2standard.rigid_registration_result.mat'], 'linear');
-        unix(cmd)
-    else
+%     if isdeployed
+%         cmd = sprintf('%s %s %s %s %s %s %s %s', transform_data_affine_bin, RS_infile, 'm', BFP_outfile, [example,'_func.nii.gz'], 'standard.nii.gz', [fmri,'_example_func2standard.rigid_registration_result.mat'], 'linear');
+%         unix(cmd)
+%     else
         transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'_func.nii.gz'], 'standard.nii.gz', [fmri,'_example_func2standard.rigid_registration_result.mat'], 'linear');
-    end
+%     end
 end
 cd(cwd);
 

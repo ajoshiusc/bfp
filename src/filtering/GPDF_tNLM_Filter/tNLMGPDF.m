@@ -13,18 +13,16 @@
 %     output - output structure containing intermediate results
 % 
 % Copyright:
-%     2016-2018 (c) USC Biomedical Imaging Group (BigLab)
+%     2016-2019 (c) USC Biomedical Imaging Group (BigLab)
 % Author:
-%     Jian (Andrew) Li
+%     Jian Li (Andrew)
 % Revision:
-%     9.5.0
+%     9.5.2
 % Date:
-%     2018/05/29
+%     2019/11/12
 %
 
 function [dataSm, output] = tNLMGPDF(data, option)
-% Tells the compiler that parallel processing is required
-%#function gcp
     
     if nargin == 0 % return default option
         option = struct;
@@ -34,8 +32,9 @@ function [dataSm, output] = tNLMGPDF(data, option)
         option.memoryLimit = 'auto';
         option.numCPU = 'auto';
         option.isPlot = false;
-        option.isVerbose = true;
-        option.SCBFile = fullfile(pwd, 'SCB.mat');
+        option.isVerbose = false;
+        option.SCBFile = '/home/andrew/Developer/Matlab/icMatBox/signal_processing/SCB.mat';
+%         option.SCBFile = fullfile(pwd, 'SCB.mat');
         dataSm = option;
         return;
     end
@@ -51,6 +50,9 @@ function [dataSm, output] = tNLMGPDF(data, option)
     if ~(strcmp(option.numCPU, 'auto') || (option.numCPU >= 1))
         error('option numCPU needs to be either auto or a postive integer');
     end
+    
+    % make sure data is double type
+    data = double(data);
     
     [numV, numT] = size(data);
     
@@ -235,12 +237,13 @@ function [dataSm, output] = tNLMGPDF(data, option)
         disp('GPDF filtering');
     end
     
-    % use 80% avaiable memory to avoid freezing
-    memLim = memLim * 0.8;
+    % use 90% avaiable memory to avoid freezing
+    memLim = memLim * 0.9;
     
-    % multiply by 2.1 because A, B and other data simutaneously exist below 
+    % multiply by 4 because A, B and other data simutaneously exist below
+    % especially interp1 will double the memory usage of A or B
     % for a short time
-    numBlk = ceil(memFullCorrMat / memLim * 2.1);
+    numBlk = ceil(memFullCorrMat / memLim * 4);
     if option.isVerbose
         str = ['based on the memory limitation, we will have ' num2str(numBlk)];
         if numBlk == 1
@@ -325,6 +328,7 @@ function [dataSm, output] = tNLMGPDF(data, option)
     output.h = h;
     output.w = w;
     output.B = B;
+    output.PPrior = coef;
     
     if option.isVerbose
         disp('done');

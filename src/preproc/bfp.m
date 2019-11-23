@@ -405,6 +405,18 @@ fprintf('done\n');
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
+    
+    % Check if valid Tr is input, if not try to get it from the header of
+    % the nifti fmri file
+    if (~isnumeric(TR)) || (TR<=0)
+        [~,b]=unix(['3dinfo -tr ',fmri{ind}]); % get TR
+        if str2double(b)>0
+            TR = num2str(str2double(b));
+        else
+            error('TR is not valid, exting..')
+        end
+    end
+    
     if str2double(config.RunNSR)>0
         BFP_outfile = [fmribasename,'_res2standard.nii.gz'];
     elseif str2double(config.RunDetrend) > 0

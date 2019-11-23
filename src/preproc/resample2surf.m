@@ -57,6 +57,6 @@ else
     end
 end
 
-save(fmri2surfFile,'datal_atlas','datar_atlas','datal','datar');
+save(fmri2surfFile,'datal_atlas','datar_atlas','datal','datar','-v7.3');
 
 

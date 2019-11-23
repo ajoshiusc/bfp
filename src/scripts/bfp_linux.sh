@@ -3,23 +3,23 @@
 exe_name=$0
 exe_dir=`dirname "$0"`
 
-# If MCR R2015b is installed in a non-default location, define correct path 
+# If MCR R2019b is installed in a non-default location, define correct path 
 # on next line and uncomment it (remove the leading "#")
 #BrainSuiteMCR="/path/to/your/MCR";
 
 if [ -z "$BrainSuiteMCR" ]; then
-  if [ -e /usr/local/MATLAB/MATLAB_Runtime/v90 ]; then
-    BrainSuiteMCR="/usr/local/MATLAB/MATLAB_Runtime/v90";
+  if [ -e /usr/local/MATLAB/MATLAB_Runtime/v97 ]; then
+    BrainSuiteMCR="/usr/local/MATLAB/MATLAB_Runtime/v97";
   elif [ -e /usr/local/MATLAB/R2015b/runtime ]; then
-    BrainSuiteMCR="/usr/local/MATLAB/R2015b";
+    BrainSuiteMCR="/usr/local/MATLAB/R2019b";
   else
     echo
-    echo "Could not find Matlab 2015b with Matlab Compiler or MCR 2015b (v7.17)."
-    echo "Please install the Matlab 2015b MCR from MathWorks at:"
+    echo "Could not find Matlab 2019b with Matlab Compiler or MCR 2019b (v97)."
+    echo "Please install the Matlab 2019b MCR from MathWorks at:"
     echo
     echo "http://www.mathworks.com/products/compiler/mcr/"
     echo 
-    echo "If you already have Matlab 2015b with the Matlab Compiler or MCR 2015b"
+    echo "If you already have Matlab 2019b with the Matlab Compiler or MCR 2015b"
     echo "installed, please edit ${exe_name} by uncommenting and editing the line:"
     echo "#BrainSuiteMCR=\"/path/to/your/MCR\";"
     echo "(replacing /path/to/your/MCR with the path to your Matlab or MCR installation)"
@@ -32,9 +32,10 @@ fi
 read -d '' usage <<EOF
 
   bfp : BrainSuite fMRI pipeline (bfp)
-  Authored by Anand A. Joshi, Signal and Image Processing Institute
-  Department of Electrical Engineering, Viterbi School of Engineering, USC
-  website: https://bitbucket.org/brainsuite/bfp/src/a851ada6d9006ca2b01fca38447e31caebbc1a7b/docs/?at=master
+  Authored by Anand A. Joshi, Signal and Image Processing Institute,
+              Soyoung Choi, USC
+  Department of Electrical and Computer Engineering, Viterbi School of Engineering, USC
+  website: http://brainsuite.org/bfp
   
   Usage: bfp configfile t1 fmri studydir subid sessionid TR 
 
@@ -45,6 +46,7 @@ read -d '' usage <<EOF
   sessionid: string or cell array of session id for the input fmris e.g. 'rest' for resting state
 
   e.g. bfp /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/ajoshi/sub-01_rest.nii.gz /home/ajoshi/mystudy sub-01 rest 2
+    TR is in sec. If you don't know the TR, set it to 0 and bfp will try to read it from the header of fmri nifti file
 
 EOF
 

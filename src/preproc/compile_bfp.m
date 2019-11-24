@@ -16,12 +16,7 @@ mcc -m -v bfp.m
 
 % Compile auxillary binaries
 mcc -m -v nii2int16.m
-mcc -m -v resample2surf.m
-mcc -m -v generateSurfGOrdfMRI.m
-mcc -m -v generateVolGOrdfMRI.m
 mcc -m -v tNLMPDFGOrdfMRI.m
-mcc -m -v generateGOrdSCT.m
-mcc -m -v combineSurfVolGOrdfMRI.m
 mcc -m -v transform_data_affine.m
 mcc -m -v usc_rigid_reg.m
 
@@ -32,18 +27,8 @@ movefile('bfp', bfp_bin_dir);
 % Auxillary binaries
 copyfile('../scripts/nii2int16_linux.sh', [bfp_bin_dir,'/nii2int16.sh']);
 movefile('nii2int16', bfp_bin_dir);
-copyfile('../scripts/resample2surf_linux.sh', [bfp_bin_dir,'/resample2surf.sh']);
-movefile('resample2surf', bfp_bin_dir);
-copyfile('../scripts/generateSurfGOrdfMRI_linux.sh', [bfp_bin_dir,'/generateSurfGOrdfMRI.sh']);
-movefile('generateSurfGOrdfMRI', bfp_bin_dir);
-copyfile('../scripts/generateVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/generateVolGOrdfMRI.sh']);
-movefile('generateVolGOrdfMRI', bfp_bin_dir);
 copyfile('../scripts/tNLMPDFGOrdfMRI_linux.sh', [bfp_bin_dir,'/tNLMPDFGOrdfMRI.sh']);
 movefile('tNLMPDFGOrdfMRI', bfp_bin_dir);
-copyfile('../scripts/generateGOrdSCT_linux.sh', [bfp_bin_dir,'/generateGOrdSCT.sh']);
-movefile('generateGOrdSCT', bfp_bin_dir);
-copyfile('../scripts/combineSurfVolGOrdfMRI_linux.sh', [bfp_bin_dir,'/combineSurfVolGOrdfMRI.sh']);
-movefile('combineSurfVolGOrdfMRI', bfp_bin_dir);
 copyfile('../scripts/transform_data_affine_linux.sh', [bfp_bin_dir,'/transform_data_affine.sh']);
 movefile('transform_data_affine', bfp_bin_dir);
 copyfile('../scripts/usc_rigid_reg_linux.sh', [bfp_bin_dir,'/usc_rigid_reg.sh']);

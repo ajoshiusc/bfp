@@ -37,6 +37,14 @@ bfp(configfile,t1,fmri,studydir,subid,sessionid,TR)
  e.g.
 bfp /home/ajoshi/bfp/supp_data/config.ini /home/ajoshi/sub-01_T1w.nii.gz /home/ajoshi/sub-01_rest.nii.gz /home/ajoshi/mystudy sub-01 rest 2
 
+### Compiling
+You need matlab compiler to create the binary from bfp matlab scripts.
+In matlab, change directory to src/preproc and run
+compile_bfp versionnumber
+where versionnumber can be a string like ver2p23
+compile_bfp ver2p23
+
+
 
 ### Binary
 You can run BFP from the bash shell using the command mentioned below.

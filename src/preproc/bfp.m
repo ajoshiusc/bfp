@@ -279,7 +279,7 @@ end
 
 if ~exist(t1ds,'file')
     unix(cmd);
-    if isdeployed
+    if 0 %isdeployed
         cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
         unix(cmd);
     else
@@ -328,7 +328,7 @@ end
 if ~exist(bsenew,'file')
     unix(cmd);
     
-    if isdeployed
+    if 0 %isdeployed
         cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
         unix(cmd);
     else
@@ -343,7 +343,7 @@ if ~exist(bsenew2,'file')
     if config.T1SpaceProcessing
         copyfile(bseout,bsenew2);
         %
-        if isdeployed
+        if 0% isdeployed
             cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
             unix(cmd);
         else
@@ -447,7 +447,7 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        if isdeployed
+        if 0% isdeployed
             cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);
             unix(cmd);
         else
@@ -461,7 +461,7 @@ for ind = 1:length(fmri)
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         %
-        if isdeployed
+        if 0 %isdeployed
             cmd = sprintf('%s %s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
             unix(cmd);
         else
@@ -478,7 +478,7 @@ for ind = 1:length(fmri)
     if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
         
         %
-        if isdeployed
+        if 0 %isdeployed
             cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
             unix(cmd);
         else
@@ -492,7 +492,7 @@ for ind = 1:length(fmri)
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
         %   combine surface and volume grayordinates
-        if isdeployed
+        if 0 %isdeployed
             cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
             unix(cmd);
         else
@@ -522,7 +522,7 @@ if config.EnabletNLMPdfFiltering>0
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
             %
-            if isdeployed
+            if 0% isdeployed
                 cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
                 unix(cmd);
             else
@@ -551,7 +551,7 @@ if config.EnableShapeMeasures>0
     if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
         %
         
-        if isdeployed
+        if 0 %isdeployed
             cmd = sprintf('%s %s %s', generateGOrdSCT_bin, subbasename, GOrdSurfIndFile);
             unix(cmd);
         else

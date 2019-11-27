@@ -220,6 +220,7 @@ end
 t1hires=fullfile(anatDir,sprintf('%s.orig.hires.nii.gz',subid));
 t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid));
 
+
 if config.T1SpaceProcessing
     ATLAS=t1hires;
 end
@@ -228,6 +229,19 @@ end
 if ~exist(t1hires,'file')
     copyfile(t1,t1hires);
 end
+
+if contains(t1,'.bse.nii.gz')
+
+    t1hires_bse=fullfile(anatDir,sprintf('%s.orig.hires.bse.nii.gz',subid));
+    copyfile(t1,t1hires_bse);
+
+    if config.T1SpaceProcessing    
+        t1_bse=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));    
+        copyfile(t1,t1_bse);
+    end
+    
+end    
+
 
 fprintf('Creating Dir:%s\n',funcDir);
 if ~exist(funcDir,'dir')
@@ -297,6 +311,7 @@ bse=fullfile(BrainSuitePath,'bin','bse');
 
 if config.T1SpaceProcessing
     bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
+    
     if ~exist(bseout,'file')
         bseexist=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
         if exist(bseexist,'file')

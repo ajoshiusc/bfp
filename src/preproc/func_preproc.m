@@ -108,20 +108,20 @@ if ~exist([fmri,'_mc.nii.gz'],'file')
         data2 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),i);
         s(i,1) = ssim(data1,data2);
     end
-    p = figure;
-    if size(s,2)==2
-        plot(s(:,1)); hold; plot(s(:,2));
-        line([k k], [0 1],'Color','black','LineStyle','--'); 
-        legend({'motion corrected','original','refence volume'},'Location','southeast');
-    else
-        plot(s(:,1));
-        line([k k], [0 1],'Color','red','LineStyle','--'); 
-        legend({'motion corrected','refence volume'},'Location','southeast');
-    end
-    ylim([0,1.1]);
-    ylabel('SSIM');xlabel('vol no.');
-    saveas(p,[fmri,'_mc_ssim.png']);
-    close all
+%     p = figure;
+%     if size(s,2)==2
+%         plot(s(:,1)); hold; plot(s(:,2));
+%         line([k k], [0 1],'Color','black','LineStyle','--'); 
+%         legend({'motion corrected','original','refence volume'},'Location','southeast');
+%     else
+%         plot(s(:,1));
+%         line([k k], [0 1],'Color','red','LineStyle','--'); 
+%         legend({'motion corrected','refence volume'},'Location','southeast');
+%     end
+%     ylim([0,1.1]);
+%     ylabel('SSIM');xlabel('vol no.');
+%     saveas(p,[fmri,'_mc_ssim.png']);
+%     close all
 else
     disp('file found. skipping step')
 end

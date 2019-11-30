@@ -556,7 +556,7 @@ for ind = 1:length(fmri)
         else
             generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
 
-            if ~exist(generateVolGOrdfMRI,'file')
+            if ~exist(GOrdVolFile,'file')
                 fprintf('generateVolGOrdfMRI failed, exiting.')
             end
                     
@@ -620,7 +620,7 @@ if config.EnabletNLMPdfFiltering>0
         end
         fprintf('done\n');
     end
-    fprintf('The tNLMPDF filtered fMRI grayordinates files are ready!');
+    fprintf('The tNLMPDF filtered fMRI grayordinates files are ready!\n');
 end
 
 if config.EnableShapeMeasures>0

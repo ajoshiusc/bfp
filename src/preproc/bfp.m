@@ -275,6 +275,10 @@ end
 %why is this created?
 if ~exist(ATLAS_DS,'file')
     unix(cmd);
+    if ~exist(ATLAS_DS,'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end
+    
 else
     fprintf('Already ');
 end
@@ -299,6 +303,11 @@ if ~exist(t1ds,'file')
     else
         nii2int16(t1ds,t1ds);
     end
+
+    if ~exist(t1ds, 'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end
+    
 else
     fprintf('Already ');
 end
@@ -325,10 +334,16 @@ end
 cmd=sprintf('%s --auto --trim -i %s -o %s',bse,t1ds,bseout);
 if ~exist(bseout,'file')
     unix(cmd);
+
+    if ~exist(bseout, 'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end    
+    
 else
     fprintf('Already ');
 end
 fprintf('done\n');
+
 %% Coregister t1 to BCI-DNI Space
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
@@ -342,6 +357,10 @@ end
 
 if ~exist(bsenew,'file')
     unix(cmd);
+    
+    if ~exist(bsenew, 'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end
     
     if 0 %isdeployed
         cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
@@ -378,6 +397,11 @@ if ~exist(bsemask,'file')
     unix(cmd);
 end
 
+if ~exist(bsemask, 'file')
+    error(['Command: ', cmd, 'failed, existing.'])
+end
+
+
 %% Run BrainSuite and SVReg
 %%
 fprintf('## Running BrainSuite CSE\n');
@@ -385,6 +409,11 @@ cmd=sprintf('%s %s',bst_exe,subbasename);
 if ~exist([subbasename,'.right.pial.cortex.dfs'],'file')
     unix(cmd);
 end
+
+if ~exist([subbasename,'.right.pial.cortex.dfs'], 'file')
+    error(['Command: ', cmd, 'failed, existing.'])
+end
+
 fprintf('Running SVReg');
 if (config.MultiThreading == 1)
     cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
@@ -394,6 +423,11 @@ end
 
 if ~exist([subbasename,'.svreg.label.nii.gz'],'file')
     unix(cmd);
+
+    if ~exist([subbasename,'.svreg.label.nii.gz'], 'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end
+
 else
     fprintf('Already ');
 end
@@ -410,10 +444,17 @@ cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(f
 fprintf('Creating 3mm isotropic standard brain\n');
 if ~exist(fullfile(funcDir,'standard.nii.gz'),'file')
     unix(cmd);
+
+    if ~exist(fullfile(funcDir,'standard.nii.gz'), 'file')
+        error(['Command: ', cmd, 'failed, existing.'])
+    end
+
 else
     fprintf('Already ');
 end
 fprintf('done\n');
+
+
 
 %% Run Batch_Process Pipeline for fMRI
 %%
@@ -441,6 +482,11 @@ for ind=1:length(fmri)
     end
     if ~exist(BFP_outfile,'file')
         BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config);
+
+        if ~exist(BFP_outfile, 'file')
+            error('Command: func_preproc failed, existing.')
+        end
+    
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
     end
@@ -467,6 +513,12 @@ for ind = 1:length(fmri)
             unix(cmd);
         else
             resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
+
+            if ~exist(fmri2surfFile,'file')
+                fprintf('resample2surf failed, exiting.')
+            end
+
+            
         end
     else
         fprintf('Already ');
@@ -481,6 +533,11 @@ for ind = 1:length(fmri)
             unix(cmd);
         else
             generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
+            
+            if ~exist(GOrdSurfFile,'file')
+                fprintf('generateSurfGOrdfMRI failed, exiting.')
+            end
+            
         end
         
         % The surf file is very large, deleting to save space
@@ -498,6 +555,11 @@ for ind = 1:length(fmri)
             unix(cmd);
         else
             generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
+
+            if ~exist(generateVolGOrdfMRI,'file')
+                fprintf('generateVolGOrdfMRI failed, exiting.')
+            end
+                    
         end
         
     else
@@ -512,6 +574,11 @@ for ind = 1:length(fmri)
             unix(cmd);
         else
             combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
+
+            if ~exist(GOrdFile,'file')
+                fprintf('combineSurfVolGOrdfMRI failed, exiting.')
+            end
+        
         end
         
         delete(GOrdSurfFile);
@@ -543,6 +610,10 @@ if config.EnabletNLMPdfFiltering>0
             else
                 tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
             end
+
+            if ~exist(GOrdFiltFile,'file')
+                fprintf('tNLMPDFGOrdfMRI failed, exiting.')
+            end
             
         else
             fprintf('Already ');
@@ -559,6 +630,11 @@ if config.EnableShapeMeasures>0
     subdir = fileparts(subbasename);
     if ~exist(fullfile(subdir, 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'),'file')
         unix(cmd);
+
+        if ~exist(GOrdFiltFile,'file')
+            fprintf(['command ', cmd, ' failed, exiting.'])
+        end        
+        
     else
         fprintf('Already computed thicknessPVC');
     end
@@ -572,6 +648,11 @@ if config.EnableShapeMeasures>0
         else
             generateGOrdSCT(subbasename, GOrdSurfIndFile);
         end
+        
+        if ~exist([subbasename,'.SCT.GOrd.mat'],'file')
+            exit('generateGOrdSCT failed, exiting')
+        end
+
         
     else
         fprintf('Already done SCT');

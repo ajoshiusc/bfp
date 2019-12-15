@@ -115,7 +115,7 @@ ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.n
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 GOrdVolIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_vol_ind.mat');
 %func_prepro_script=fullfile(BFPPATH,'supp_data','func_preproc.sh');
-continueRun=str2double(config.CONTINUERUN);
+% continueRun=str2double(config.CONTINUERUN);
 %FSLRigid=1; %PUT THIS IN CONFIG FILE Overriding config file here since USCRigid registration is not tested.
 
 ver_file = fullfile(BFPPATH, 'bfp_version.txt');
@@ -192,8 +192,9 @@ tNLMPDFGOrdfMRI_bin = fullfile(BFPPATH,'tNLMPDFGOrdfMRI.sh');
 % This directory structure is in BIDS format
 %%
 fprintf('## Creating Directory Structure\n');
-if exist(subdir,'dir') && continueRun==0
-    error('The subject directory (%s) exists!\n Please check that directory for previous runs and delete it if necessary\n',subdir);
+if exist(subdir,'dir') %&& continueRun==0
+    fprintf('The subject directory (%s) exists!\n Please check that directory for previous runs and delete it if necessary\n',subdir);
+    disp('Warning: BFP sometimes looks for existing files and skips steps if output files from previous runs exist.');
 end
 
 if ~exist(subdir,'dir')

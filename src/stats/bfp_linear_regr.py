@@ -1,5 +1,5 @@
 #%%
-config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
+config_file = '/home/sychoi/Dropbox/BrainSuite/BFP/linreg_syc/stat_config_lin.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -22,7 +22,6 @@ cf = readConfig(config_file)
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 from stats_utils import dist2atlas, sync2atlas, multiLinReg_corr
 from grayord_utils import vis_grayord_sigcorr
-
 #%% 
 log_fname = os.path.join(cf.out_dir, 'bfp_linregr_stat_log.txt')
 write_text_timestamp(log_fname, 'Config file used: ' + config_file)

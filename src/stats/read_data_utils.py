@@ -52,7 +52,8 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
     pbar = tqdm(total=subN)
     lst = os.listdir(data_dir)
     with open(csvfname, newline='') as csvfile:
-        creader = csv.DictReader(csvfile, delimiter=',', quotechar='"')
+        dialect = csv.Sniffer().sniff(next(open(csvfname)))
+        creader = csv.DictReader(csvfile, delimiter=dialect.delimiter, quotechar='"')
         for row in creader:
             sub = row[colsubj]
             fname = os.path.join(data_dir, sub + "/func/" + sub + file_ext)

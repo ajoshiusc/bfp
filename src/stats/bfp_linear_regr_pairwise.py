@@ -11,6 +11,7 @@ import scipy as sp
 import numpy as np
 import configparser
 from tqdm import tqdm
+from sklearn.linear_model import LinearRegression
 
 ### Import BrainSync libraries
 config = configparser.ConfigParser()
@@ -87,12 +88,25 @@ write_text_timestamp(
     log_fname,
     str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 
+#%% Do Linear regression on the covariates
+write_text_timestamp(
+    log_fname,
+    'Doing linear regression on the covariates from the main variable.')
+
+subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
+subTest_varc12[:, 0] = subTest_varc1
+subTest_varc12[:, 1] = subTest_varc2
+print('regressing out 2 covariates')
+regr = LinearRegression()
+regr.fit(subTest_varc12, subTest_varmain)
+subTest_varmain = subTest_varmain - regr.predict(subTest_varc12)
+
 #%% Compute pairwise distance and perform regression
 corr_pval_max, corr_pval_fdr = randpairs_regression(
     bfp_path=cf.bfp_path,
     sub_files=subTest_fname,
     reg_var=subTest_varmain,
-    num_pairs=500,  # 19900,
+    num_pairs=2000,  # 19900,
     nperm=2000,
     len_time=int(cf.lentime),
     num_proc=6,

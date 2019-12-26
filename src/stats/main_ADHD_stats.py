@@ -16,7 +16,7 @@ BrainSuitePath = '/home/ajoshi/BrainSuite17a/svreg'
 NDim = 31
 #%%
 
-p_dir = '/deneb_disk/grp_diff/ADHD_Peking_bfp'
+p_dir = '/deneb_disk/ADHD_Peking_gord'
 lst = os.listdir(p_dir)
 count1 = 0
 nsub = 0

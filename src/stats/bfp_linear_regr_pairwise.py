@@ -96,10 +96,13 @@ write_text_timestamp(
 subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
 subTest_varc12[:, 0] = subTest_varc1
 subTest_varc12[:, 1] = subTest_varc2
-print('regressing out 2 covariates')
-regr = LinearRegression()
-regr.fit(subTest_varc12, subTest_varmain)
-subTest_varmain = subTest_varmain - regr.predict(subTest_varc12)
+regr = LinearRegression().fit(subTest_varc12, subTest_varmain)
+#print(regr.coef_)
+pre = regr.predict(subTest_varc12)
+subTest_varmain = subTest_varmain - pre
+del regr
+
+print('done')
 
 #%% Compute pairwise distance and perform regression
 corr_pval_max, corr_pval_fdr = randpairs_regression(
@@ -109,22 +112,10 @@ corr_pval_max, corr_pval_fdr = randpairs_regression(
     num_pairs=2000,  # 19900,
     nperm=2000,
     len_time=int(cf.lentime),
-    num_proc=6,
+    num_proc=1,
     pearson_fdr_test=False)
 
-# subTest_data = load_bfp_data(subTest_fname, int(cf.lentime))
-# subTest_syndata = sync2atlas(atlas_data, subTest_data)
-# subTest_diff = dist2atlas(atlas_data, subTest_syndata)
-# spio.savemat(
-#     os.path.join(cf.out_dir + '/dist2atlas.mat'),
-#     {'subTest_diff': subTest_diff})
-# del subTest_data, subTest_syndata
-#%% computes correlation after controlling for two covariates
-""" rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain,
-                                             subTest_varc1, subTest_varc2)
-write_text_timestamp(log_fname, 'Done runnning linear regression. ' + msg)
- """#%%
-
+#%% Visualization of the results
 vis_grayord_sigpval(corr_pval_max,
                     surf_name=cf.outname + '_max',
                     out_dir=cf.out_dir,

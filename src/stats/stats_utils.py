@@ -23,6 +23,8 @@ from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
 
 from brainsync import brainSync, normalizeData
 
+from multiprocessing import Pool
+
 
 def read_gord_data(data_dir, num_sub=1e6):
 
@@ -79,7 +81,7 @@ def dist2atlas(atlas, syn_data):
         if count1 == numSub:
             break
     pbar.close()
-    a=pearson_corr>1
+    a = pearson_corr > 1
     geo_dist[a] = 0
     print('done')
     return geo_dist, pearson_corr
@@ -211,7 +213,7 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
         pairs, _ = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
         pairs = np.array(pairs)
         Y = sp.square(reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])
- 
+
         Y, _, _ = normalizeData(Y[:, None])
 
         rho_perm = np.sum(X * Y, axis=0)
@@ -255,19 +257,20 @@ def randpairs_regression(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    pairs, num_pairs = gen_rand_pairs(
-        num_sub=len(sub_files), num_pairs=num_pairs)
+    pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
+                                      num_pairs=num_pairs)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
 
     if num_proc > 1:
-        results = multiprocessing.Pool(num_proc).imap(
-            partial(
-                pair_dist,
-                sub_files=sub_files,
-                reg_var=reg_var,
-                len_time=len_time), pairs)
+        pool = Pool(num_proc)
+
+        results = pool.imap(
+            partial(pair_dist,
+                    sub_files=sub_files,
+                    reg_var=reg_var,
+                    len_time=len_time), pairs)
 
         ind = 0
         for res in results:
@@ -287,16 +290,16 @@ def randpairs_regression(bfp_path,
     corr_pval2 = 0
     if not pearson_fdr_test:
         print('Performing Permutation test with MAX statistic')
-        corr_pval, corr_pval2, _ = corr_perm_test(
-            X_pairs=fmri_diff.T,
-            Y_pairs=regvar_diff,
-            reg_var=reg_var,
-            num_sub=len(sub_files),
-            nperm=nperm)
+        corr_pval, corr_pval2, _ = corr_perm_test(X_pairs=fmri_diff.T,
+                                                  Y_pairs=regvar_diff,
+                                                  reg_var=reg_var,
+                                                  num_sub=len(sub_files),
+                                                  nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval, corr_pval2 = corr_pearson_fdr(
-            X_pairs=fmri_diff.T, reg_var=reg_var, nperm=nperm)
+        corr_pval, corr_pval2 = corr_pearson_fdr(X_pairs=fmri_diff.T,
+                                                 reg_var=reg_var,
+                                                 nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -359,8 +362,9 @@ def compare_sub2ctrl(bfp_path,
 
     if num_proc == 1:
         for ind in tqdm(range(len(pairs))):
-            fmri_diff_null[:, ind] = pair_dist(
-                sub_files=ctrl_files, len_time=len_time, rand_pair=pairs[ind])
+            fmri_diff_null[:, ind] = pair_dist(sub_files=ctrl_files,
+                                               len_time=len_time,
+                                               rand_pair=pairs[ind])
 
     else:
         results = multiprocessing.Pool(num_proc).imap(
@@ -371,16 +375,18 @@ def compare_sub2ctrl(bfp_path,
             fmri_diff_null[:, ind] = res[0]
             ind += 1
 
-    sub2ctrl_diff = sub2ctrl_dist(
-        sub_file=sub_file, ctrl_files=ctrl_files, len_time=len_time)
+    sub2ctrl_diff = sub2ctrl_dist(sub_file=sub_file,
+                                  ctrl_files=ctrl_files,
+                                  len_time=len_time)
 
     if not fdr_test:
         print('Performing Permutation test with MAX statistic')
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = group_diff_fdr(
-            grp1=fmri_diff_null, grp2=sub2ctrl_diff, alt_hypo='less')
+        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
+                                        grp2=sub2ctrl_diff,
+                                        alt_hypo='less')
 
     return pval_fdr, pval
 

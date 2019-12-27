@@ -4,7 +4,7 @@ config_file = '/home/ajoshi/coding_ground/bfp/src/stats/sample_config_stats_ADHD
 ### Import the required librariesimport configparser
 import sys
 import os
-from stats_utils import randpairs_regression, multiLinReg_resid
+from stats_utils import randpairs_regression, multiLinReg_resid, LinReg_resid
 from grayord_utils import vis_grayord_sigpval
 import scipy.io as spio
 import scipy as sp
@@ -96,19 +96,17 @@ write_text_timestamp(
 subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
 subTest_varc12[:, 0] = subTest_varc1
 subTest_varc12[:, 1] = subTest_varc2
-regr = LinearRegression().fit(subTest_varc12, subTest_varmain)
+regr = LinearRegression()
+regr.fit(subTest_varc12, subTest_varmain)
 #print(regr.coef_)
 pre = regr.predict(subTest_varc12)
-subTest_varmain = subTest_varmain - pre
-del regr
-
-print('done')
+subTest_varmain2 = subTest_varmain - pre
 
 #%% Compute pairwise distance and perform regression
 corr_pval_max, corr_pval_fdr = randpairs_regression(
     bfp_path=cf.bfp_path,
     sub_files=subTest_fname,
-    reg_var=subTest_varmain,
+    reg_var=subTest_varmain2,
     num_pairs=2000,  # 19900,
     nperm=2000,
     len_time=int(cf.lentime),

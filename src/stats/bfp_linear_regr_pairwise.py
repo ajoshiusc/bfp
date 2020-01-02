@@ -98,7 +98,6 @@ subTest_varc12[:, 0] = subTest_varc1
 subTest_varc12[:, 1] = subTest_varc2
 regr = LinearRegression()
 regr.fit(subTest_varc12, subTest_varmain)
-#print(regr.coef_)
 pre = regr.predict(subTest_varc12)
 subTest_varmain2 = subTest_varmain - pre
 

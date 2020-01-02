@@ -17,6 +17,7 @@ import sklearn
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
+from itertools import product
 from dfsio import readdfs, writedfs
 from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
                       view_patch_vtk)
@@ -101,6 +102,23 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
         ctrl_data, _, _ = normalizeData(ctrl_data[:len_time, :])
         ctrl_data, _ = brainSync(X=sub_data, Y=ctrl_data)
         fmri_diff[:, ind] = sp.sum((sub_data - ctrl_data)**2, axis=0)
+
+    return fmri_diff
+
+
+def pair_dist_two_groups(rand_pair,
+                         sub_grp1_files,
+                         sub_grp2_files,
+                         len_time=235):
+    """ Pair distance for two groups of subjects """
+    sub1_data = spio.loadmat(sub_grp1_files[rand_pair[0]])['dtseries'].T
+    sub2_data = spio.loadmat(sub_grp2_files[rand_pair[1]])['dtseries'].T
+
+    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+
+    sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
+    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
 
     return fmri_diff
 
@@ -229,6 +247,20 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     return pval_max, pval_perm_fdr, pval_perm
 
 
+'''
+#
+def rand_pair_dist(sub_files=sub_fname, num_pairs=num_pairs):
+
+    print('hi')
+
+    num_sub = len(sub_fname)
+    pairs = gen_rand_pairs(num_sub, num_pairs)
+
+    return pairs, pair_dist
+
+'''
+
+
 def gen_rand_pairs(num_sub, num_pairs):
     # Generate pairs
     pairs = list(itertools.combinations(range(num_sub), r=2))
@@ -242,6 +274,59 @@ def gen_rand_pairs(num_sub, num_pairs):
             num_pairs = len(pairs)
 
     return pairs, num_pairs
+
+
+def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
+                       len_time=255):
+
+    print('Grp diff')
+
+    num_vert = spio.loadmat(sub_grp1_files[0])['dtseries'].shape[0]
+
+    print('Generating random pairs from group 1')
+    pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
+
+    print('Compute differences in fMRI of random pairs from group 1')
+    for i, rand_pair in enumerate(tqdm(pairs_grp1)):
+        fmri_diff1[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp1_files,
+                                     len_time=len_time)
+
+    print('Generating random pairs from group 2')
+    pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
+
+    print('Compute differences in fMRI of random pairs from group 2')
+    for i, rand_pair in enumerate(tqdm(pairs_grp2)):
+        fmri_diff2[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp2_files,
+                                     len_time=len_time)
+
+    print('Generating random pairs from all subjects (grp1 + grp2)')
+
+    # Generating random pairs. For large group this may allocate huge amount of memory,
+    # use the following solution in that case
+    # https://stackoverflow.com/questions/36779729/shuffling-combinations-without-converting-iterable-itertools-combinations-to-l
+
+    all_pairs = np.array(list(
+        product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
+    sp.random.shuffle(all_pairs)
+    all_pairs = all_pairs[:num_pairs, :]
+    fmri_diff = sp.zeros((num_vert, all_pairs.shape[0]))
+
+    print('Compute differences in fMRI of random pairs from group1 to group 2')
+    for i, rand_pair in enumerate(tqdm(all_pairs)):
+        fmri_diff[:, i] = pair_dist_two_groups(rand_pair=rand_pair,
+                                               sub_grp1_files=sub_grp1_files,
+                                               sub_grp2_files=sub_grp2_files,
+                                               len_time=len_time)
+
+    return 0  #allpairs12
 
 
 def randpairs_regression(bfp_path,

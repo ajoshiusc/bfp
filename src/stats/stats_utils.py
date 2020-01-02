@@ -123,10 +123,14 @@ def pair_dist_two_groups(rand_pair,
     return fmri_diff
 
 
-def pair_dist(rand_pair, sub_files, reg_var=[], len_time=235):
+def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
     """ Pair distance """
-    sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
-    sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+    if sub_data.size > 0:
+        sub1_data = sub_data[:, :, rand_pair[0]]
+        sub2_data = sub_data[:, :, rand_pair[1]]
+    else:
+        sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
+        sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
 
     sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
     sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
@@ -289,10 +293,16 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
 
     fmri_diff1 = sp.zeros((num_vert, num_pairs1))
 
+    # Preload data
+    sub_data1 = np.zeros((len_time, num_vert, len(sub_grp1_files)))
+    for i, fname in enumerate(tqdm(sub_grp1_files)):
+        sub_data1[:, :, i] = spio.loadmat(fname)['dtseries'][:, :len_time].T
+
     print('Compute differences in fMRI of random pairs from group 1')
     for i, rand_pair in enumerate(tqdm(pairs_grp1)):
         fmri_diff1[:, i] = pair_dist(rand_pair=rand_pair,
                                      sub_files=sub_grp1_files,
+                                     sub_data=sub_data1,
                                      len_time=len_time)
 
     print('Generating random pairs from group 2')
@@ -301,10 +311,16 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
 
     fmri_diff2 = sp.zeros((num_vert, num_pairs2))
 
+    # Preload data
+    sub_data2 = np.zeros((len_time, num_vert, len(sub_grp2_files)))
+    for i, fname in enumerate(tqdm(sub_grp2_files)):
+        sub_data2[:, :, i] = spio.loadmat(fname)['dtseries'][:, :len_time].T
+
     print('Compute differences in fMRI of random pairs from group 2')
     for i, rand_pair in enumerate(tqdm(pairs_grp2)):
         fmri_diff2[:, i] = pair_dist(rand_pair=rand_pair,
                                      sub_files=sub_grp2_files,
+                                     sub_data=sub_data2,
                                      len_time=len_time)
 
     print('Generating random pairs from all subjects (grp1 + grp2)')
@@ -313,8 +329,8 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
     # use the following solution in that case
     # https://stackoverflow.com/questions/36779729/shuffling-combinations-without-converting-iterable-itertools-combinations-to-l
 
-    all_pairs = np.array(list(
-        product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
+    all_pairs = np.array(
+        list(product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
     sp.random.shuffle(all_pairs)
     all_pairs = all_pairs[:num_pairs, :]
     fmri_diff = sp.zeros((num_vert, all_pairs.shape[0]))

@@ -51,7 +51,7 @@ sub_fname_grp2 = sub_fname[group == 1]
 
 randpair_groupdiff(sub_fname_grp1,
                    sub_fname_grp2,
-                   num_pairs=2,
+                   num_pairs=10000,
                    len_time=235)
 #
 #pairs_grp1, pair_dist_grp1 = rand_pair_dist(sub_files=sub_fname_grp1,

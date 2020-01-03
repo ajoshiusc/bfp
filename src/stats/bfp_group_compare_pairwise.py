@@ -49,32 +49,16 @@ sub_fname_grp2 = sub_fname[group == 1]
 
 #%% makes file list for subjects
 
-randpair_groupdiff(sub_fname_grp1,
-                   sub_fname_grp2,
-                   num_pairs=10000,
-                   len_time=235)
-#
-#pairs_grp1, pair_dist_grp1 = rand_pair_dist(sub_files=sub_fname_grp1,
-#                                            num_pairs=num_pairs)
-
-write_text_timestamp(
-    log_fname,
-    str(len(sub_ID)) + ' subjects will be used for hypothesis testing.')
-#%%
-subTest_data = load_bfp_data(subTest_fname, int(cf.lentime))
-subTest_syndata = sync2atlas(atlas_data, subTest_data)
-subTest_diff, _ = dist2atlas(atlas_data, subTest_syndata)
-spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'),
-             {'subTest_diff': subTest_diff})
-del subTest_data, subTest_syndata
-
-#%% computes correlation after controlling for two covariates
-rval, pval, pval_fdr = multiLinReg_corr(subTest_diff, subTest_varmain,
-                                        subTest_varc1, subTest_varc2)
-#%%
-vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter),
+tscore, pval = randpair_groupdiff(sub_fname_grp1,
+                                  sub_fname_grp2,
+                                  num_pairs=100,
+                                  len_time=235)
+##%%
+vis_grayord_sigcorr(pval, tscore, cf.outname, cf.out_dir, int(cf.smooth_iter),
                     cf.save_surfaces, cf.save_figures, 'True')
-vis_grayord_sigcorr(pval, rval, cf.outname + '_fdr', cf.out_dir,
+vis_grayord_sigcorr(pval, tscore, cf.outname + '_fdr', cf.out_dir,
                     int(cf.smooth_iter), cf.save_surfaces, cf.save_figures,
                     'False')
-write_text_timestamp(log_fname, 'BFP regression analysis complete')
+
+write_text_timestamp(log_fname,
+                     'BFP Group difference pairwise analysis complete')

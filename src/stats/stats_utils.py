@@ -109,13 +109,24 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
 def pair_dist_two_groups(rand_pair,
                          sub_grp1_files,
                          sub_grp2_files,
+                         sub_data1=[],
+                         sub_data2=[],
                          len_time=235):
-    """ Pair distance for two groups of subjects """
-    sub1_data = spio.loadmat(sub_grp1_files[rand_pair[0]])['dtseries'].T
-    sub2_data = spio.loadmat(sub_grp2_files[rand_pair[1]])['dtseries'].T
 
-    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+    sub_data1 = np.array(sub_data1)
+    sub_data2 = np.array(sub_data2)
+    """ Pair distance for two groups of subjects """
+    if sub_data1.size > 0:
+        sub1_data = sub_data1[:, :, rand_pair[0]]
+    else:
+        sub1_data = spio.loadmat(sub_grp1_files[rand_pair[0]])['dtseries'].T
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+
+    if sub_data2.size > 0:
+        sub2_data = sub_data2[:, :, rand_pair[1]]
+    else:
+        sub2_data = spio.loadmat(sub_grp2_files[rand_pair[1]])['dtseries'].T
+        sub2_data, _, _ = normalizeData(sub1_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
@@ -125,15 +136,15 @@ def pair_dist_two_groups(rand_pair,
 
 def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
     """ Pair distance """
+    sub_data = np.array(sub_data)
     if sub_data.size > 0:
         sub1_data = sub_data[:, :, rand_pair[0]]
         sub2_data = sub_data[:, :, rand_pair[1]]
     else:
         sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
         sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
-
-    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
@@ -293,10 +304,12 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
 
     fmri_diff1 = sp.zeros((num_vert, num_pairs1))
 
-    # Preload data
+    # Preload data This only slighly faster, better is to load on the fly and multiprocess
+    print('Reading data for group 1')
     sub_data1 = np.zeros((len_time, num_vert, len(sub_grp1_files)))
     for i, fname in enumerate(tqdm(sub_grp1_files)):
-        sub_data1[:, :, i] = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub1_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data1[:, :, i], _, _ = normalizeData(sub1_data)
 
     print('Compute differences in fMRI of random pairs from group 1')
     for i, rand_pair in enumerate(tqdm(pairs_grp1)):
@@ -305,16 +318,20 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
                                      sub_data=sub_data1,
                                      len_time=len_time)
 
+    S1 = 0.5 * np.mean(fmri_diff1**2, axis=1)
+
     print('Generating random pairs from group 2')
     pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
                                             num_pairs=num_pairs)
 
     fmri_diff2 = sp.zeros((num_vert, num_pairs2))
 
-    # Preload data
+    # Preload data for group 2
+    print('Reading data for group 2')
     sub_data2 = np.zeros((len_time, num_vert, len(sub_grp2_files)))
     for i, fname in enumerate(tqdm(sub_grp2_files)):
-        sub_data2[:, :, i] = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub2_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data2[:, :, i], _, _ = normalizeData(sub2_data)
 
     print('Compute differences in fMRI of random pairs from group 2')
     for i, rand_pair in enumerate(tqdm(pairs_grp2)):
@@ -322,6 +339,8 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
                                      sub_files=sub_grp2_files,
                                      sub_data=sub_data2,
                                      len_time=len_time)
+
+    S2 = 0.5 * np.mean(fmri_diff2**2, axis=1)
 
     print('Generating random pairs from all subjects (grp1 + grp2)')
 
@@ -340,9 +359,23 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
         fmri_diff[:, i] = pair_dist_two_groups(rand_pair=rand_pair,
                                                sub_grp1_files=sub_grp1_files,
                                                sub_grp2_files=sub_grp2_files,
+                                               sub_data1=sub_data1,
+                                               sub_data2=sub_data2,
                                                len_time=len_time)
 
-    return 0  #allpairs12
+    # We will perform Welch's t test (modified in a pairwise stats)
+    # https://en.wikipedia.org/wiki/Welch%27s_t-test
+
+    n1 = sub_data1.shape[2], n2 = sub_data2.shape[2]
+
+    tscore = np.mean(fmri_diff, axis=1) / np.sqrt(S1**2 / n1 + S1**2 / n2)
+
+    dof = (S1**2 / n1 + S1**2 / n2)**2 / (S1**4 / ((n1**2) *
+                                                   (n1 - 1)) + S2**4 /
+                                          ((n2**2) * (n2 - 1)))
+    pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
+
+    return tscore, pval  
 
 
 def randpairs_regression(bfp_path,

@@ -8,6 +8,7 @@ import scipy.io as spio
 import scipy as sp
 import numpy as np
 import configparser
+from statsmodels.stats.multitest import fdrcorrection
 
 ### get BFP directory from config file
 config = configparser.ConfigParser()
@@ -41,24 +42,45 @@ subIDs = np.array(subIDs)
 sub_fname = np.array(sub_fname)
 
 print('Identifying subjects for each group...')
-subIDs_grp1 = subIDs[group == 0]
-sub_fname_grp1 = sub_fname[group == 0]
+subIDs_grp1 = subIDs[group == 1]
+sub_fname_grp1 = sub_fname[group == 1]
 
 subIDs_grp2 = subIDs[group == 1]
 sub_fname_grp2 = sub_fname[group == 1]
 
-#%% makes file list for subjects
+#%% makes file list for subcjects
 
 tscore, pval = randpair_groupdiff(sub_fname_grp1,
                                   sub_fname_grp2,
                                   num_pairs=100,
                                   len_time=235)
 ##%%
-vis_grayord_sigcorr(pval, tscore, cf.outname, cf.out_dir, int(cf.smooth_iter),
-                    cf.save_surfaces, cf.save_figures, 'True')
-vis_grayord_sigcorr(pval, tscore, cf.outname + '_fdr', cf.out_dir,
-                    int(cf.smooth_iter), cf.save_surfaces, cf.save_figures,
-                    'False')
+
+vis_grayord_sigcorr(pval,
+                    tscore,
+                    cf.outname,
+                    cf.out_dir,
+                    int(cf.smooth_iter),
+                    cf.save_surfaces,
+                    cf.save_figures,
+                    'True',
+                    bfp_path=cf.bfp_path,
+                    fsl_path=cf.fsl_path)
+
+pval[sp.isnan(pval)] = .5
+
+_, pval_fdr = fdrcorrection(pval)
+
+vis_grayord_sigcorr(pval_fdr,
+                    tscore,
+                    cf.outname + '_fdr',
+                    cf.out_dir,
+                    int(cf.smooth_iter),
+                    cf.save_surfaces,
+                    cf.save_figures,
+                    'False',
+                    bfp_path=cf.bfp_path,
+                    fsl_path=cf.fsl_path)
 
 write_text_timestamp(log_fname,
                      'BFP Group difference pairwise analysis complete')

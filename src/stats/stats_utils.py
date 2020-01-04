@@ -130,7 +130,8 @@ def pair_dist_two_groups(rand_pair,
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-
+    
+    # Returns SQUARE of the distance
     return fmri_diff
 
 
@@ -148,6 +149,8 @@ def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+    
+    # Returns SQUARE of the distance
     if len(reg_var) > 0:
         regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
         return fmri_diff, regvar_diff
@@ -366,9 +369,10 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
     # We will perform Welch's t test (modified in a pairwise stats)
     # https://en.wikipedia.org/wiki/Welch%27s_t-test
 
-    n1 = sub_data1.shape[2], n2 = sub_data2.shape[2]
+    n1 = sub_data1.shape[2]
+    n2 = sub_data2.shape[2]
 
-    tscore = np.mean(fmri_diff, axis=1) / np.sqrt(S1**2 / n1 + S1**2 / n2)
+    tscore = (np.sum(fmri_diff, axis=1) - S1*n1 - S2*n2)/((n1+n2)* np.sqrt(S1**2 / n1 + S1**2 / n2))
 
     dof = (S1**2 / n1 + S1**2 / n2)**2 / (S1**4 / ((n1**2) *
                                                    (n1 - 1)) + S2**4 /

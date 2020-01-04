@@ -42,8 +42,8 @@ subIDs = np.array(subIDs)
 sub_fname = np.array(sub_fname)
 
 print('Identifying subjects for each group...')
-subIDs_grp1 = subIDs[group == 1]
-sub_fname_grp1 = sub_fname[group == 1]
+subIDs_grp1 = subIDs[group == 0]
+sub_fname_grp1 = sub_fname[group == 0]
 
 subIDs_grp2 = subIDs[group == 1]
 sub_fname_grp2 = sub_fname[group == 1]

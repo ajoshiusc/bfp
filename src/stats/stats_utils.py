@@ -130,7 +130,7 @@ def pair_dist_two_groups(rand_pair,
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-    
+
     # Returns SQUARE of the distance
     return fmri_diff
 
@@ -149,7 +149,7 @@ def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
-    
+
     # Returns SQUARE of the distance
     if len(reg_var) > 0:
         regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
@@ -321,7 +321,7 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
                                      sub_data=sub_data1,
                                      len_time=len_time)
 
-    S1 = 0.5 * np.mean(fmri_diff1**2, axis=1)
+    S1 = 0.5 * np.mean(fmri_diff1, axis=1)
 
     print('Generating random pairs from group 2')
     pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
@@ -343,7 +343,7 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
                                      sub_data=sub_data2,
                                      len_time=len_time)
 
-    S2 = 0.5 * np.mean(fmri_diff2**2, axis=1)
+    S2 = 0.5 * np.mean(fmri_diff2, axis=1)
 
     print('Generating random pairs from all subjects (grp1 + grp2)')
 
@@ -372,14 +372,15 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
     n1 = sub_data1.shape[2]
     n2 = sub_data2.shape[2]
 
-    tscore = (np.sum(fmri_diff, axis=1) - S1*n1 - S2*n2)/((n1+n2)* np.sqrt(S1**2 / n1 + S1**2 / n2))
+    tscore = (0.5 * np.mean(fmri_diff, axis=1) - (S1 * n1 + S2 * n2) /
+              (n1 + n2)) / np.sqrt(S1**2 / n1 + S1**2 / n2)
 
-    dof = (S1**2 / n1 + S1**2 / n2)**2 / (S1**4 / ((n1**2) *
+    dof = (S1**2 / n1 + S2**2 / n2)**2 / (S1**4 / ((n1**2) *
                                                    (n1 - 1)) + S2**4 /
                                           ((n2**2) * (n2 - 1)))
     pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
 
-    return tscore, pval  
+    return tscore, pval
 
 
 def randpairs_regression(bfp_path,

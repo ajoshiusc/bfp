@@ -373,11 +373,12 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
     n2 = sub_data2.shape[2]
 
     tscore = np.sqrt((0.5 * np.mean(fmri_diff, axis=1) - (S1 * n1 + S2 * n2) /
-              (n1 + n2))) / np.sqrt(S1 / n1 + S1 / n2 + 1e-6)
+                      (n1 + n2))) / np.sqrt(S1 / n1 + S1 / n2 + 1e-6)
 
-    dof = (S1 / n1 + S2 / n2)**2 / (S1**2 / ((n1**2) *
-                                                   (n1 - 1)) + S2**2 /
-                                          ((n2**2) * (n2 - 1)))
+    tscore[np.isnan(tscore)] = 0
+
+    dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) * (n1 - 1)) + S2**2 /
+                                    ((n2**2) * (n2 - 1)) + 1e-6)
     pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
 
     return tscore, pval

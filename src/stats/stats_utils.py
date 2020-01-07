@@ -17,11 +17,14 @@ import sklearn
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
+from itertools import product
 from dfsio import readdfs, writedfs
 from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
                       view_patch_vtk)
 
 from brainsync import brainSync, normalizeData
+
+from multiprocessing import Pool
 
 
 def read_gord_data(data_dir, num_sub=1e6):
@@ -79,7 +82,7 @@ def dist2atlas(atlas, syn_data):
         if count1 == numSub:
             break
     pbar.close()
-    a=pearson_corr>1
+    a = pearson_corr > 1
     geo_dist[a] = 0
     print('done')
     return geo_dist, pearson_corr
@@ -103,16 +106,51 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
     return fmri_diff
 
 
-def pair_dist(rand_pair, sub_files, reg_var=[], len_time=235):
-    """ Pair distance """
-    sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
-    sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+def pair_dist_two_groups(rand_pair,
+                         sub_grp1_files,
+                         sub_grp2_files,
+                         sub_data1=[],
+                         sub_data2=[],
+                         len_time=235):
 
-    sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
-    sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+    sub_data1 = np.array(sub_data1)
+    sub_data2 = np.array(sub_data2)
+    """ Pair distance for two groups of subjects """
+    if sub_data1.size > 0:
+        sub1_data = sub_data1[:, :, rand_pair[0]]
+    else:
+        sub1_data = spio.loadmat(sub_grp1_files[rand_pair[0]])['dtseries'].T
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+
+    if sub_data2.size > 0:
+        sub2_data = sub_data2[:, :, rand_pair[1]]
+    else:
+        sub2_data = spio.loadmat(sub_grp2_files[rand_pair[1]])['dtseries'].T
+        sub2_data, _, _ = normalizeData(sub1_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
     fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+
+    # Returns SQUARE of the distance
+    return fmri_diff
+
+
+def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
+    """ Pair distance """
+    sub_data = np.array(sub_data)
+    if sub_data.size > 0:
+        sub1_data = sub_data[:, :, rand_pair[0]]
+        sub2_data = sub_data[:, :, rand_pair[1]]
+    else:
+        sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
+        sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+
+    sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
+    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+
+    # Returns SQUARE of the distance
     if len(reg_var) > 0:
         regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
         return fmri_diff, regvar_diff
@@ -211,7 +249,7 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
         pairs, _ = gen_rand_pairs(num_sub=num_sub, num_pairs=num_pairs)
         pairs = np.array(pairs)
         Y = sp.square(reg_var[pairs[:, 0]] - reg_var[pairs[:, 1]])
- 
+
         Y, _, _ = normalizeData(Y[:, None])
 
         rho_perm = np.sum(X * Y, axis=0)
@@ -225,6 +263,20 @@ def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     _, pval_perm_fdr = fdrcorrection(pval_perm)
 
     return pval_max, pval_perm_fdr, pval_perm
+
+
+'''
+#
+def rand_pair_dist(sub_files=sub_fname, num_pairs=num_pairs):
+
+    print('hi')
+
+    num_sub = len(sub_fname)
+    pairs = gen_rand_pairs(num_sub, num_pairs)
+
+    return pairs, pair_dist
+
+'''
 
 
 def gen_rand_pairs(num_sub, num_pairs):
@@ -242,6 +294,96 @@ def gen_rand_pairs(num_sub, num_pairs):
     return pairs, num_pairs
 
 
+def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
+                       len_time=255):
+
+    print('Grp diff')
+
+    num_vert = spio.loadmat(sub_grp1_files[0])['dtseries'].shape[0]
+
+    print('Generating random pairs from group 1')
+    pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
+
+    # Preload data This only slighly faster, better is to load on the fly and multiprocess
+    print('Reading data for group 1')
+    sub_data1 = np.zeros((len_time, num_vert, len(sub_grp1_files)))
+    for i, fname in enumerate(tqdm(sub_grp1_files)):
+        sub1_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data1[:, :, i], _, _ = normalizeData(sub1_data)
+
+    print('Compute differences in fMRI of random pairs from group 1')
+    for i, rand_pair in enumerate(tqdm(pairs_grp1)):
+        fmri_diff1[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp1_files,
+                                     sub_data=sub_data1,
+                                     len_time=len_time)
+
+    S1 = 0.5 * np.mean(fmri_diff1, axis=1)
+
+    print('Generating random pairs from group 2')
+    pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
+
+    # Preload data for group 2
+    print('Reading data for group 2')
+    sub_data2 = np.zeros((len_time, num_vert, len(sub_grp2_files)))
+    for i, fname in enumerate(tqdm(sub_grp2_files)):
+        sub2_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data2[:, :, i], _, _ = normalizeData(sub2_data)
+
+    print('Compute differences in fMRI of random pairs from group 2')
+    for i, rand_pair in enumerate(tqdm(pairs_grp2)):
+        fmri_diff2[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp2_files,
+                                     sub_data=sub_data2,
+                                     len_time=len_time)
+
+    S2 = 0.5 * np.mean(fmri_diff2, axis=1)
+
+    print('Generating random pairs from all subjects (grp1 + grp2)')
+
+    # Generating random pairs. For large group this may allocate huge amount of memory,
+    # use the following solution in that case
+    # https://stackoverflow.com/questions/36779729/shuffling-combinations-without-converting-iterable-itertools-combinations-to-l
+
+    all_pairs = np.array(
+        list(product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
+    sp.random.shuffle(all_pairs)
+    all_pairs = all_pairs[:num_pairs, :]
+    fmri_diff = sp.zeros((num_vert, all_pairs.shape[0]))
+
+    print('Compute differences in fMRI of random pairs from group1 to group 2')
+    for i, rand_pair in enumerate(tqdm(all_pairs)):
+        fmri_diff[:, i] = pair_dist_two_groups(rand_pair=rand_pair,
+                                               sub_grp1_files=sub_grp1_files,
+                                               sub_grp2_files=sub_grp2_files,
+                                               sub_data1=sub_data1,
+                                               sub_data2=sub_data2,
+                                               len_time=len_time)
+
+    # We will perform Welch's t test (modified in a pairwise stats)
+    # https://en.wikipedia.org/wiki/Welch%27s_t-test
+
+    n1 = sub_data1.shape[2]
+    n2 = sub_data2.shape[2]
+
+    tscore = np.sqrt((0.5 * np.mean(fmri_diff, axis=1) - (S1 * n1 + S2 * n2) /
+                      (n1 + n2))) / np.sqrt(S1 / n1 + S1 / n2 + 1e-6)
+
+    tscore[np.isnan(tscore)] = 0
+
+    dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) * (n1 - 1)) + S2**2 /
+                                    ((n2**2) * (n2 - 1)) + 1e-6)
+    pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
+
+    return tscore, pval
+
+
 def randpairs_regression(bfp_path,
                          sub_files,
                          reg_var,
@@ -255,19 +397,20 @@ def randpairs_regression(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    pairs, num_pairs = gen_rand_pairs(
-        num_sub=len(sub_files), num_pairs=num_pairs)
+    pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
+                                      num_pairs=num_pairs)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
     regvar_diff = sp.zeros(num_pairs)
 
     if num_proc > 1:
-        results = multiprocessing.Pool(num_proc).imap(
-            partial(
-                pair_dist,
-                sub_files=sub_files,
-                reg_var=reg_var,
-                len_time=len_time), pairs)
+        pool = Pool(num_proc)
+
+        results = pool.imap(
+            partial(pair_dist,
+                    sub_files=sub_files,
+                    reg_var=reg_var,
+                    len_time=len_time), pairs)
 
         ind = 0
         for res in results:
@@ -287,16 +430,16 @@ def randpairs_regression(bfp_path,
     corr_pval2 = 0
     if not pearson_fdr_test:
         print('Performing Permutation test with MAX statistic')
-        corr_pval, corr_pval2, _ = corr_perm_test(
-            X_pairs=fmri_diff.T,
-            Y_pairs=regvar_diff,
-            reg_var=reg_var,
-            num_sub=len(sub_files),
-            nperm=nperm)
+        corr_pval, corr_pval2, _ = corr_perm_test(X_pairs=fmri_diff.T,
+                                                  Y_pairs=regvar_diff,
+                                                  reg_var=reg_var,
+                                                  num_sub=len(sub_files),
+                                                  nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        corr_pval, corr_pval2 = corr_pearson_fdr(
-            X_pairs=fmri_diff.T, reg_var=reg_var, nperm=nperm)
+        corr_pval, corr_pval2 = corr_pearson_fdr(X_pairs=fmri_diff.T,
+                                                 reg_var=reg_var,
+                                                 nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -359,8 +502,9 @@ def compare_sub2ctrl(bfp_path,
 
     if num_proc == 1:
         for ind in tqdm(range(len(pairs))):
-            fmri_diff_null[:, ind] = pair_dist(
-                sub_files=ctrl_files, len_time=len_time, rand_pair=pairs[ind])
+            fmri_diff_null[:, ind] = pair_dist(sub_files=ctrl_files,
+                                               len_time=len_time,
+                                               rand_pair=pairs[ind])
 
     else:
         results = multiprocessing.Pool(num_proc).imap(
@@ -371,16 +515,18 @@ def compare_sub2ctrl(bfp_path,
             fmri_diff_null[:, ind] = res[0]
             ind += 1
 
-    sub2ctrl_diff = sub2ctrl_dist(
-        sub_file=sub_file, ctrl_files=ctrl_files, len_time=len_time)
+    sub2ctrl_diff = sub2ctrl_dist(sub_file=sub_file,
+                                  ctrl_files=ctrl_files,
+                                  len_time=len_time)
 
     if not fdr_test:
         print('Performing Permutation test with MAX statistic')
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = group_diff_fdr(
-            grp1=fmri_diff_null, grp2=sub2ctrl_diff, alt_hypo='less')
+        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
+                                        grp2=sub2ctrl_diff,
+                                        alt_hypo='less')
 
     return pval_fdr, pval
 

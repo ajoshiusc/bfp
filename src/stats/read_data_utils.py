@@ -54,9 +54,11 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
     with open(csvfname, newline='') as csvfile:
         dialect = csv.Sniffer().sniff(next(open(csvfname)))
         creader = csv.DictReader(csvfile, delimiter=dialect.delimiter, quotechar='"')
+
         for row in creader:
             sub = row[colsubj]
             fname = os.path.join(data_dir, sub + "/func/" + sub + file_ext)
+
             if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:
                 fname = os.path.join(data_dir, sub + file_ext)
                 if not os.path.isfile(fname) or int(row[colvar_exclude]) != 0:

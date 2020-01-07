@@ -111,9 +111,12 @@ subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)
 spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
 del subTest_data, subTest_syndata
 #%% computes correlation after controlling for two covariates
-rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
+rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2, float(cf.sig_alpha), 'linear')
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_rval.mat'), {'rval': rval})
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval.mat'), {'pval': pval})
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval_fdr.mat'), {'pval_fdr': pval_fdr})
 write_text_timestamp(log_fname, 'Done runnning linear regression. ' + msg)
 #%%
-vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter), bool(cf.save_surfaces), bool(cf.save_figures), bool('True'), cf.bfp_path, cf.fsl_path)
-vis_grayord_sigcorr(pval_fdr, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), bool(cf.save_surfaces), bool(cf.save_figures), bool('True'), cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval, rval, float(cf.sig_alpha), cf.outname, cf.out_dir, int(cf.smooth_iter), cf.save_figures, cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval_fdr, rval, float(cf.sig_alpha), cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), bool(cf.save_figures), cf.bfp_path, cf.fsl_path)
 write_text_timestamp(log_fname, 'BFP regression analysis complete')

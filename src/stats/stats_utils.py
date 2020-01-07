@@ -440,7 +440,7 @@ def multiLinReg_resid(x, y):
 
 
 def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
-                     subTest_varc2):
+                     subTest_varc2, sig_alpha, ttype):
     subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
     for i in range(subTest_varc1.shape[0]):
         subTest_varc12[i, 0] = subTest_varc1[i]
@@ -456,10 +456,15 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     rval = sp.zeros(numV)
     pval = sp.zeros(numV)
     for nv in tqdm(range(numV)):
-        rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain,
-                                               diff_resid1[nv, :])
+        if ttype == 'linear':
+            rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain, diff_resid1[nv, :])
+        if ttype == 'group':
+            rval[nv], pval[nv] = sp.stats.ttest_ind(subTest_varmain, diff_resid1[nv, :])
+            #g = set(subTest_varmain)
+            #for gnum in len(g):
+
     p = sp.zeros(len(pval))
-    p[pval < 0.05] = 1
+    p[pval < sig_alpha] = 1
 
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
@@ -469,7 +474,7 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pval_fdr[labs > 0] = pv
 
     pf = sp.zeros(len(pval))
-    pf[pval_fdr <= 0.05] = 1
+    pf[pval_fdr <= sig_alpha] = 1
     pf[labs == 0] = 0
 
     msg = str(np.sum(p)) + ' significant voxels found. ' + str(

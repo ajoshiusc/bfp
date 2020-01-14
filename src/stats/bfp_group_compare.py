@@ -47,7 +47,6 @@ sub_ID = data[cf.colsubj]
 reg_var = np.array(data[cf.colvar_main]).astype(np.float)
 var_group = data[cf.colvar_group]
 
-
 #%% makes file list for subjects
 print('Identifying subjects for each group testing...')
 count1=0
@@ -87,8 +86,12 @@ subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)
 spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
 del subTest_data, subTest_syndata
 #%% computes correlation after controlling for two covariates
-rval, pval, pval_fdr = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2 )
+rval, pval, pval_fdr = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2, cf.sig_alpha, 'group')
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_rval.mat'), {'rval': rval})
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval.mat'), {'pval': pval})
+spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval_fdr.mat'), {'pval_fdr': pval_fdr})
+write_text_timestamp(log_fname, 'Done runnning group comparison. ' + msg)
 #%%
-vis_grayord_sigcorr(pval, rval, cf.outname, cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'True')
-vis_grayord_sigcorr(pval, rval, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), cf.save_surfaces, cf.save_figures, 'False')
+vis_grayord_sigcorr(pval, rval, cf.sig_alpha, cf.outname, cf.out_dir, int(cf.smooth_iter), bool(cf.save_figures), cf.bfp_path, cf.fsl_path)
+vis_grayord_sigcorr(pval_fdr, rval, cf.sig_alpha, cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), bool(cf.save_figures), cf.bfp_path, cf.fsl_path)
 write_text_timestamp(log_fname, 'BFP regression analysis complete')

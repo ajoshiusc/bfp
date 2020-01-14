@@ -1,8 +1,5 @@
 #%%
-
-#config_file = '/home/sychoi/Dropbox/BrainSuite/BFP/linreg_syc/stat_config_lin.ini'
-config_file = '/home/ajoshi/coding_ground/bfp/src/stats/sample_config_stats_ADHD.ini'
-
+config_file = '/home/sychoi/Dropbox/BrainSuite/BFP/linreg_syc/stat_config_lin.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -88,7 +85,7 @@ write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used
 write_text_timestamp(log_fname, str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 #%%
 # reads reference data and creates atlas by BrainSync algorithm
-if len(cf.atlas_fname) !=0 and os.path.isfile(cf.atlas_fname):
+if len(cf.atlas_fname) !=0:
     write_text_timestamp(log_fname, 'User Option: User defined atlas will be used ' + cf.atlas_fname)
     df = spio.loadmat(cf.atlas_fname)
     atlas_data = df['atlas_data']

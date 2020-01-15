@@ -483,13 +483,19 @@ for ind=1:length(fmri)
     end
     if ~exist(BFP_outfile,'file')
         BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config);
-
         if ~exist(BFP_outfile, 'file')
             error('Command: func_preproc failed, existing.')
         end
-    
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
+        logfname=[fmribasename,'_log.txt'];
+        fp=fopen(logfname,'a+');
+        t = now;
+        d = datetime(t,'ConvertFrom','datenum');
+        fprintf(fp,'\n%s\n',d);
+        fprintf(fp, 'func_preproc BFP version: %s\n', ver);
+        fprintf(fp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
+        fprintf(fp, '--Preprocess fMRI files found. skipping pipeline. \n');
     end
 end
 fprintf('done\n');
@@ -509,83 +515,84 @@ for ind = 1:length(fmri)
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        if 0% isdeployed
+        if 0
             cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);
             unix(cmd);
+            fprintf(fp, '--Resample fMRI to surface\n');
         else
             resample2surf(subbasename,fmri2standard,fmri2surfFile,config.MultiThreading);
-
+            fprintf(fp, '--Resample fMRI to surface\n');
             if ~exist(fmri2surfFile,'file')
                 fprintf('resample2surf failed, exiting.')
+                fprintf(fp, 'Resample fMRI to surface failed! exiting.\n');
             end
-
-            
         end
     else
         fprintf('Already ');
+        fprintf(fp, 'Resample fMRI to surface file found. skipping step. \n');
     end
     
     fprintf('done\n');
     fprintf('Generating Surface Grayordinates\n');
     if ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
-        %
-        if 0 %isdeployed
+        if 0 
             cmd = sprintf('%s %s %s %s', generateSurfGOrdfMRI_bin, GOrdSurfIndFile, fmri2surfFile, GOrdSurfFile);
             unix(cmd);
+            fprintf(fp, '--Generating Surface Grayordinates\n');
         else
             generateSurfGOrdfMRI(GOrdSurfIndFile,fmri2surfFile,GOrdSurfFile);
-            
+            fprintf(fp, '--Generating Surface Grayordinates\n');
             if ~exist(GOrdSurfFile,'file')
-                fprintf('generateSurfGOrdfMRI failed, exiting.')
+                fprintf('Generating Surface Grayordinates failed, exiting.')
+                fprintf(fp, 'Generating Surface Grayordinates failed! exiting. \n');
             end
-            
         end
-        
         % The surf file is very large, deleting to save space
         delete(fmri2surfFile);
     else
         fprintf('Already ');
+        fprintf(fp, 'Generating Surface Grayordinates files found. skipping step.\n');
     end
     fprintf('done\n');
     fprintf('Generating Volume Grayordinates\n');
     if ~exist(GOrdVolFile,'file') && ~exist(GOrdFile,'file')
-        
-        %
         if 0 %isdeployed
             cmd = sprintf('%s %s %s %s %s', generateVolGOrdfMRI_bin, GOrdVolIndFile, subbasename, fmri2standard, GOrdVolFile);
             unix(cmd);
+            fprintf(fp,'--Generating Volume Grayordinates\n');
         else
             generateVolGOrdfMRI(GOrdVolIndFile,subbasename,fmri2standard,GOrdVolFile);
-
+            fprintf(fp,'--Generating Volume Grayordinates\n');
             if ~exist(GOrdVolFile,'file')
                 fprintf('generateVolGOrdfMRI failed, exiting.')
+                fprintf(fp, 'Generating Volume Grayordinates failed! exiting. \n');
             end
-                    
-        end
-        
+        end        
     else
         fprintf('Already ');
+        fprintf(fp, 'Generating Volume Grayordinates files found. skipping step.\n');
     end
     fprintf('done\n');
     fprintf('Combining Surface and Volume Grayordinates\n');
     if ~exist(GOrdFile,'file')
         %   combine surface and volume grayordinates
-        if 0 %isdeployed
+        if 0
             cmd = sprintf('%s %s %s %s', combineSurfVolGOrdfMRI_bin, GOrdSurfFile, GOrdVolFile, GOrdFile);
             unix(cmd);
+            fprintf(fp,'--Combining Surface and Volume Grayordinates\n');
         else
             combineSurfVolGOrdfMRI(GOrdSurfFile,GOrdVolFile,GOrdFile);
-
+            fprintf(fp,'--Combining Surface and Volume Grayordinates\n');
             if ~exist(GOrdFile,'file')
                 fprintf('combineSurfVolGOrdfMRI failed, exiting.')
+                fprintf(fp, 'Combining Surface and Volume Grayordinates failed! exiting. \n');
             end
-        
         end
-        
         delete(GOrdSurfFile);
         delete(GOrdVolFile);
     else
         fprintf('Already ');
+        fprintf(fp, 'Combining Surface and Volume Grayordinates files found. skipping step.\n');
     end
     fprintf('done\n');
 end
@@ -604,20 +611,23 @@ if config.EnabletNLMPdfFiltering>0
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
-            %
-            if 0% isdeployed
+            if 0
                 cmd = sprintf('%s %s %s %s %s %d %s', tNLMPDFGOrdfMRI_bin, GOrdFile, GOrdFiltFile, config.fpr, config.memory, config.MultiThreading, config.scbPath);
                 unix(cmd);
+                fprintf(fp,'--tNLMPDF Filter\n');
             else
                 tNLMPDFGOrdfMRI(GOrdFile,GOrdFiltFile,config.fpr,config.memory,config.MultiThreading,config.scbPath);
+                fprintf(fp,'--tNLMPDF Filter\n');
             end
 
             if ~exist(GOrdFiltFile,'file')
                 fprintf('tNLMPDFGOrdfMRI failed, exiting.')
+                fprintf(fp,'--tNLMPDF Filter failed! exiting.\n');
             end
             
         else
             fprintf('Already ');
+            fprintf(fp,'--tNLMPDF Filter files found. skipping step.\n');
         end
         fprintf('done\n');
     end

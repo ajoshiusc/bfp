@@ -215,13 +215,13 @@ if str2double(config.MotionScrub) > 0
         fclose(fmco);
         vo.hdr.dime.dim(5) = size(vo.img,4);
         save_untouch_nii_gz(vo,outfile);
-        fprintf(fp, '--Option Outlier removal: Yes\n');
+        fprintf(fp, '--Option Outlier removal: new fMRI data has %s volumes \n',num2str(size(vo.img,4)));
     else
         disp('file found. skipping step')
         fprintf(fp, 'Outlier removal file found. skipping step.\n');
     end
 else
-    fprintf(fp, '--Option Outlier removal: No\n');
+    fprintf(fp, 'Option Outlier removal: No\n');
 end
 %% Spatial smoothing
 disp('Spatial Smoothing');
@@ -250,9 +250,17 @@ disp('Band-pass filtering');
 gmsfile = [fmri,'_gms.nii.gz']; %%%%remove
 infile = outfile; clear outfile %_gms
 outfile = [fmri,'_filt.nii.gz'];
+[~,n_vols]=unix(['3dinfo -nv ',infile]); n_vols=str2double(n_vols);
 if ~exist(outfile,'file')
-    unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile]);
-    fprintf(fp, '--Temporal Filter\n');
+    %check if have min number of volumes for high pass filter
+    minvol = 1/(str2double(TR)*str2double(hp));
+    if minvol <= n_vols
+        unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile]);
+        fprintf(fp, '--Temporal Filter\n');
+    else
+        unix(['3dFourier -lowpass ',num2str(lp),' -retrend -prefix ',outfile,' ',infile]);
+        fprintf(fp, '--Temporal Filter: too few volumes. Only lowpass filter was run.\n');
+    end
 else
     disp('file found. skipping step')
     fprintf(fp, 'Temporal Filter file found. skipping step.\n');
@@ -293,7 +301,7 @@ if ~exist([example,'_func2standard.nii.gz'],'file')
     end
 else
     disp('file found. skipping step')
-    fprintf(fp, '--Registration to Standard file found. skipping step\n');
+    fprintf(fp, 'Registration to Standard file found. skipping step\n');
 end
 %% Nuisance Signal Regression
 if str2double(config.RunNSR) > 0
@@ -331,7 +339,7 @@ if str2double(config.RunNSR) > 0
     % # Extract signal for global, csf, and wm
     % ## 16. Global
     disp('Extracting global signal for subject');
-    unix(['3dmaskave -mask ',fmri,'_mask.nii.gz -quiet ',fmri,'_pp.nii.gz > ',nuisance_dir,'/global.1D'])
+    unix(['3dmaskave -mask ',fmri,'_mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/global.1D'])
     %
     % ## 17. csf
     if FSLRigidReg > 0

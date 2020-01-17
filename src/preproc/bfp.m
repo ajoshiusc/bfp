@@ -488,7 +488,6 @@ for ind=1:length(fmri)
         end
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
-        logfname=[fmribasename,'_log.txt'];
         fp=fopen(logfname,'a+');
         t = now;
         d = datetime(t,'ConvertFrom','datenum');
@@ -507,6 +506,8 @@ fprintf('done\n');
 % The filename of grayordinate data is fmri_bold.32k.GOrd.nii.gz
 %%
 fprintf('## Transferring data from subject to atlas...\n');
+logfname=[fmribasename,'_log.txt'];
+fp=fopen(logfname,'a+');
 for ind = 1:length(fmri)
     fmri2surfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf.mat',subid,sessionid{ind}));
     GOrdSurfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf_GOrd.mat',subid,sessionid{ind}));

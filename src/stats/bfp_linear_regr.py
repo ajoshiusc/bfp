@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/BrainSuite/BFP/linreg_syc/stat_config_lin.ini'
+config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -16,7 +16,7 @@ section = config.sections()
 bfp_path = config.get('inputs','bfp_path')
 sys.path.append(os.path.join(bfp_path, 'src/stats/') )
 sys.path.append(os.path.join(str(bfp_path), 'src/BrainSync/')) 
-from read_data_utils import load_bfp_data, read_demoCSV, write_text_timestamp,readConfig
+from read_data_utils import load_bfp_dataT, read_demoCSV, write_text_timestamp,readConfig
 os.chdir(bfp_path)
 cf = readConfig(config_file)
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
@@ -76,13 +76,15 @@ for ind in range(len(sub_ID)):
     subTest_varc2[count1] = varc2
 
 del sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2, fname, sub, count1, ind, numT
-    
-import csv
-with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
-    csv.writer(csvfile).writerows(zip(subTest_IDs, subTest_varmain, subTest_varc1, subTest_varc2))
 np.savetxt(cf.out_dir + "/subjects_atlas.csv", subAtlas_IDs, delimiter=",", fmt='%s')
 write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.')
 write_text_timestamp(log_fname, str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
+#%%
+# load data
+subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),cf.matcht)
+import csv
+with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
+    csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
 #%%
 # reads reference data and creates atlas by BrainSync algorithm
 if len(cf.atlas_fname) !=0:
@@ -105,7 +107,6 @@ else:
     spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
 
 #%% sync and calculates geodesic distances
-subTest_data = load_bfp_data(subTest_fname, int(cf.lentime))
 subTest_syndata = sync2atlas(atlas_data, subTest_data)
 subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)
 spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})

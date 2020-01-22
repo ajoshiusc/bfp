@@ -93,7 +93,7 @@ if len(cf.atlas_fname) !=0:
     atlas_data = df['atlas_data']
     del df
 else:
-    subAtlas_data = load_bfp_data(subAtlas_fname, int(cf.lentime))
+    subAtlas_data, _ = load_bfp_dataT(subAtlas_fname, int(cf.lentime),cf.matcht)
     if cf.atlas_groupsync == 'True':
         write_text_timestamp(log_fname, 'User Option: Group BrainSync algorithm will be used for atlas creation')
         atlas_data, _, _, _ = groupBrainSync(subAtlas_data)

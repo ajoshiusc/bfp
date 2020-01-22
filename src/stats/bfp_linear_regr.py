@@ -23,10 +23,10 @@ from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
 from stats_utils import dist2atlas, sync2atlas, multiLinReg_corr
 from grayord_utils import vis_grayord_sigcorr
 #%% 
-log_fname = os.path.join(cf.out_dir, 'bfp_linregr_stat_log.txt')
-write_text_timestamp(log_fname, 'Config file used: ' + config_file)
 if not os.path.isdir(cf.out_dir):
     os.makedirs(cf.out_dir)
+log_fname = os.path.join(cf.out_dir, 'bfp_linregr_stat_log.txt')
+write_text_timestamp(log_fname, 'Config file used: ' + config_file)
 write_text_timestamp(log_fname, "All outputs will be written in: " + cf.out_dir )
 # read demographic csv file
 sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(cf.csv_fname,

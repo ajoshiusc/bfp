@@ -592,15 +592,15 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
         subTest_varc12[i, 0] = subTest_varc1[i]
         subTest_varc12[i, 1] = subTest_varc2[i]
     print('regressing out 2 covariates')
-    diff_resid1 = sp.zeros(subTest_diff.shape)
+    diff_resid1 = np.zeros(subTest_diff.shape)
     numV = subTest_diff.shape[0]
     for nv in tqdm(range(numV)):
         diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12,
                                                subTest_diff[nv, :])
 
     print('computing correlation against main variable')
-    rval = sp.zeros(numV)
-    pval = sp.zeros(numV)
+    rval = np.zeros(numV)
+    pval = np.zeros(numV)
     for nv in tqdm(range(numV)):
         if ttype == 'linear':
             rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain, diff_resid1[nv, :])
@@ -609,19 +609,23 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
             #g = set(subTest_varmain)
             #for gnum in len(g):
 
-    p = sp.zeros(len(pval))
-    p[pval < sig_alpha] = 1
+    p = np.zeros(len(pval))
+    p[pval <= sig_alpha] = 1
+    p[np.isnan(pval)] = 0
 
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
+    labs[np.isnan(labs)] = 0
+    labs[np.isnan(pval)] = 0
     pval_fdr = sp.zeros(numV)
-    _, pv = fdrcorrection(pval[labs > 0])
+    _, pv = fdrcorrection(pval[labs > 0],alpha=sig_alpha)
     pval_fdr[labs > 0] = pv
 
-    pf = sp.zeros(len(pval))
+    pf = np.zeros(len(pval))
     pf[pval_fdr <= sig_alpha] = 1
     pf[labs == 0] = 0
+    
+    pval_fdr[labs == 0] = float("NAN")
 
     msg = str(np.sum(p)) + ' significant voxels found. ' + str(
         np.sum(pf)) + ' significant voxels found after FDR correction.'

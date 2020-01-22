@@ -123,7 +123,7 @@ def load_bfp_data(sub_fname, LenTime):
         d, _, _ = normalizeData(data)
 
         if count1 == 0:
-            sub_data = sp.zeros((LenTime, d.shape[1], subN))
+            sub_data = np.zeros((LenTime, d.shape[1], subN))
 
         sub_data[:, :, count1] = d[:LenTime, ]
         count1 += 1

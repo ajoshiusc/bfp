@@ -40,7 +40,7 @@ def vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
     prsurf.vColor[prsurf.attributes > sig_alpha, :] = .5
     save2surfgord(plsurf, prsurf, out_dir, surf_name + '_pval_sig', bfp_path, bool(save_png))
     print('output pvalues on surface')
-    print('colorbar limits are 0 to ' + sig_alpha + '; colorbar class is jet reverse')
+    print('colorbar limits are 0 to ' + str(sig_alpha) + '; colorbar class is jet reverse')
 
     lsurf, rsurf = label_surf(rval, [-.5, .5], smooth_iter, 'jet', bfp_path)
     # If p value above .05 then make the surface grey

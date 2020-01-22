@@ -61,7 +61,7 @@ else:
     write_text_timestamp(log_fname, "User Option: All subjects will be used for hypothesis testing")
 
 count1=-1
-subTest_varmain = sp.zeros(numT); subTest_varc1 = sp.zeros(numT); subTest_varc2 = sp.zeros(numT)
+subTest_varmain = np.zeros(numT); subTest_varc1 = np.zeros(numT); subTest_varc2 = np.zeros(numT)
 for ind in range(len(sub_ID)):
     varmain = reg_var[ind]
     varc1 = reg_cvar1[ind]

@@ -1,5 +1,5 @@
 #%%
-config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
+config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/012220/Detrend_Test/hyperoxia/sample_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -80,12 +80,6 @@ np.savetxt(cf.out_dir + "/subjects_atlas.csv", subAtlas_IDs, delimiter=",", fmt=
 write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.')
 write_text_timestamp(log_fname, str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 #%%
-# load data
-subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),cf.matcht)
-import csv
-with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
-    csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
-#%%
 # reads reference data and creates atlas by BrainSync algorithm
 if len(cf.atlas_fname) !=0:
     write_text_timestamp(log_fname, 'User Option: User defined atlas will be used ' + cf.atlas_fname)
@@ -105,7 +99,12 @@ else:
         atlas_data = generate_avgAtlas(subRef_data, subAtlas_data)
     del subAtlas_data
     spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
-
+#%%
+# load data
+subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),cf.matcht)
+import csv
+with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
+    csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
 #%% sync and calculates geodesic distances
 subTest_syndata = sync2atlas(atlas_data, subTest_data)
 subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)

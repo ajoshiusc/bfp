@@ -1,5 +1,12 @@
 """ This module contains helpful utility function for running statistics using BFP """
 
+#try:
+#    import vtk
+#    VTK_INSTALLED = 1
+#except ImportError as e:
+#    VTK_INSTALLED = 0
+#VTK_INSTALLED = 0
+
 import csv
 import glob
 import itertools
@@ -19,8 +26,11 @@ from tqdm import tqdm
 
 from itertools import product
 from dfsio import readdfs, writedfs
-from surfproc import (patch_color_attrib, smooth_patch, smooth_surf_function,
-                      view_patch_vtk)
+
+#if VTK_INSTALLED:
+#    from surfproc import view_patch_vtk, smooth_patch
+
+from surfproc import patch_color_attrib, smooth_surf_function
 
 from brainsync import brainSync, normalizeData
 

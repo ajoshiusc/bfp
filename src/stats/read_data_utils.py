@@ -151,7 +151,7 @@ def load_bfp_dataT(sub_fname, LenTime, matchT):
         data = df['dtseries'].T
         numT[ind] = data.shape[0]
         if int(data.shape[0]) != LenTime:
-            if matchT:
+            if matchT=='True':
                 t = int(LenTime-numT[ind])
                 v = data.shape[1]
                 temp = np.zeros((t, v))

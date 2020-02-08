@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/012220/Detrend_Test/hyperoxia/sample_config_stats.ini'
+config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/012220/Detrend_Test/hyperoxia/ss_atlas/sample_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -8,6 +8,7 @@ import scipy.io as spio
 import scipy as sp
 import numpy as np
 import configparser
+import csv
 
 ### Import BrainSync libraries
 config = configparser.ConfigParser()
@@ -76,7 +77,6 @@ for ind in range(len(sub_ID)):
     subTest_varc2[count1] = varc2
 
 del sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2, fname, sub, count1, ind, numT
-np.savetxt(cf.out_dir + "/subjects_atlas.csv", subAtlas_IDs, delimiter=",", fmt='%s')
 write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.')
 write_text_timestamp(log_fname, str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 #%%
@@ -87,7 +87,10 @@ if len(cf.atlas_fname) !=0:
     atlas_data = df['atlas_data']
     del df
 else:
-    subAtlas_data, _ = load_bfp_dataT(subAtlas_fname, int(cf.lentime),cf.matcht)
+    subAtlas_data, subAtlas_numT = load_bfp_dataT(subAtlas_fname, int(cf.lentime),cf.matcht)
+    with open(cf.out_dir + "/subjects_atlas.csv", 'w') as csvfile:
+        csv.writer(csvfile).writerows(zip(subAtlas_IDs, subAtlas_numT))
+        del subAtlas_numT
     if cf.atlas_groupsync == 'True':
         write_text_timestamp(log_fname, 'User Option: Group BrainSync algorithm will be used for atlas creation')
         atlas_data, _, _, _ = groupBrainSync(subAtlas_data)
@@ -101,8 +104,7 @@ else:
     spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
 #%%
 # load data
-subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),cf.matcht)
-import csv
+subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),bool(cf.matcht))
 with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
     csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
 #%% sync and calculates geodesic distances

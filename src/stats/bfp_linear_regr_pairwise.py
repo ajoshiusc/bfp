@@ -1,5 +1,7 @@
 #%%
-config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
+#config_file = '/NCAdisk/SCD_structural_analysis/MotionCorrTestData/SC0919/sample_config_stats.ini'
+config_file = '/home/ajoshi/coding_ground/bfp/src/stats/sample_config_stats_ADHD.ini'
+
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

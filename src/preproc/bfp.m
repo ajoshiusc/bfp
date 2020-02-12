@@ -605,7 +605,7 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 % The output is stored in <fmri fmri>.32k.GOrd.filt.nii.gz
 %%
 if config.EnabletNLMPdfFiltering>0
-    
+    config.scbPath = fullfile(funcDir,sprintf('%s_%s_bold.SCB.mat',subid,sessionid{ind}));
     fprintf('## tNLMPDF Filtering...\n');
     for ind = 1:length(fmri)
         GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));

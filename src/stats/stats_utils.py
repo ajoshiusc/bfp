@@ -226,14 +226,19 @@ def pairsdist_regression(bfp_path,
     return corr_pval, corr_pval_fdr
 
 
-def corr_pearson_fdr(X_pairs, reg_var, num_sub, nperm=1000):
+def corr_pearson_fdr(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
     #X: nsub x vertices
     #Y: cognitive scores nsub X 1
+    X, _, _ = normalizeData(X_pairs)
+
+    Y, _, _ = normalizeData(Y_pairs[:, None])
+
+
     num_vert = X.shape[1]
 
     corr_pval = sp.zeros(num_vert)
     for ind in tqdm(range(num_vert)):
-        _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y)
+        _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y.squeeze())
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
@@ -448,7 +453,9 @@ def randpairs_regression(bfp_path,
     else:
         print('Performing Pearson correlation with FDR testing')
         corr_pval, corr_pval2 = corr_pearson_fdr(X_pairs=fmri_diff.T,
+                                                 Y_pairs=regvar_diff,
                                                  reg_var=reg_var,
+                                                 num_sub=len(sub_files),
                                                  nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5

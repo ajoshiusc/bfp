@@ -10,7 +10,7 @@ import scipy as sp
 from tqdm import tqdm
 sys.path.append('../BrainSync')
 from brainsync import normalizeData
-
+import numpy as np
 
 def readConfig(fname):
     config.read(fname)
@@ -144,6 +144,44 @@ def load_bfp_data(sub_fname, LenTime):
     print('loaded data for ' + str(subN) + ' subjects')
     return sub_data
 
+def load_bfp_dataT(sub_fname, LenTime, matchT):
+    ''' sub_fname: list of filenames of .mat files that contains Time x Vertex matrix of subjects' preprocessed fMRI data '''
+    ''' LenTime: number of timepoints in data. this should be the same in all subjects '''
+    ''' Outputs 3D matrix: Time x Vector x Subjects '''
+    count1 = 0
+    subN = len(sub_fname)
+    print('loading data for ' + str(subN) + ' subjects')
+    pbar = tqdm(total=subN)
+    numT=np.zeros(subN)
+    for ind in range(subN):
+        fname = sub_fname[ind]
+        df = spio.loadmat(fname)
+        data = df['dtseries'].T
+        numT[ind] = data.shape[0]
+        if int(data.shape[0]) != LenTime:
+            if matchT=='True':
+                t = int(LenTime-numT[ind])
+                v = data.shape[1]
+                temp = np.zeros((t, v))
+                data = np.concatenate((data,temp))
+            else:
+                print(sub_fname[ind] +
+                  ' does not have the correct number of timepoints')
+        d, _, _ = normalizeData(data)
+
+        if count1 == 0:
+            sub_data = np.zeros((LenTime, d.shape[1], subN))
+
+        sub_data[:, :, count1] = d[:LenTime, ]
+        count1 += 1
+        pbar.update(1)
+        if count1 == subN:
+            break
+
+    pbar.close()
+
+    print('loaded data for ' + str(subN) + ' subjects')
+    return sub_data, numT
 
 def write_text_timestamp(fname, msg):
     if os.path.isfile(fname):

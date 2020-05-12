@@ -16,7 +16,7 @@ NDim = 31
 #%%
 
 
-def main1(fname, labels, label_ids):
+def get_connectivity(fname, labels, label_ids):
     #%%
     df = spio.loadmat(fname)
     data = df['dtseries'].T
@@ -49,9 +49,12 @@ if __name__ == "__main__":
 
     atlas = spio.loadmat(atlas_labels)
 
-    labels = atlas['labels'].squeeze()
-    label_ids = np.unique(np.mod(labels, 1000))
+    gord_labels = atlas['labels'].squeeze()
+
+    label_ids = np.unique(gord_labels)  # unique label ids
+
+    # remove WM label from connectivity analysis
+    label_ids = np.setdiff1d(label_ids, 2000)
 
     fname = os.path.join(p_dir, sub + '_rest_bold.32k.GOrd.mat')
-    conn = main1(fname, labels, label_ids)
-
+    conn = get_connectivity(fname, gord_labels, label_ids)

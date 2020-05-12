@@ -58,3 +58,6 @@ if __name__ == "__main__":
 
     fname = os.path.join(p_dir, sub + '_rest_bold.32k.GOrd.mat')
     conn = get_connectivity(fname, gord_labels, label_ids)
+
+
+    input('press any key')

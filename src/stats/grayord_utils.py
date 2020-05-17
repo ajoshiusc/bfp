@@ -132,7 +132,7 @@ def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH):
     ind = ~np.isnan(a['voxc']).any(axis=1)
     voxc = np.int16(a['voxc'] -
                     1)  # subtract 1 to convert from MATLAB to Python indexing
-    gordvol = np.ones(mni2mm.shape)
+    gordvol = np.zeros(mni2mm.shape)
 
     gordvol[voxc[ind, 0], voxc[ind, 1], voxc[ind, 2]] = data[ind]
     grod = new_img_like(mni2mm, gordvol)

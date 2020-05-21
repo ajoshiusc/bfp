@@ -34,6 +34,8 @@ def get_connectivity(data, labels, label_ids):
 
     conn = np.corrcoef(rtseries.T)
 
+    conn[~np.isfinite(conn)] = 0
+
     return conn
 
 

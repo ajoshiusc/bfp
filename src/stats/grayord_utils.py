@@ -107,8 +107,8 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
 
     if VTK_INSTALLED:
         #smooth surfaces
-        lsurf = smooth_patch(lsurf, iterations=smooth_iter)
-        rsurf = smooth_patch(rsurf, iterations=smooth_iter)
+        lsurf = smooth_patch(lsurf, iterations=int(smooth_iter))
+        rsurf = smooth_patch(rsurf, iterations=int(smooth_iter))
     else:
         print('VTK is not installed, surface will not be smoothed')
 

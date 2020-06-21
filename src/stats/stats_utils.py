@@ -1,9 +1,9 @@
 """ This module contains helpful utility function for running statistics using BFP """
 
-#try:
+# try:
 #    import vtk
 #    VTK_INSTALLED = 1
-#except ImportError as e:
+# except ImportError as e:
 #    VTK_INSTALLED = 0
 #VTK_INSTALLED = 0
 
@@ -14,27 +14,28 @@ import multiprocessing
 import os
 import sys
 from functools import partial
+from itertools import product
+from multiprocessing import Pool
 
 import numpy as np
 import scipy as sp
 import scipy.io as spio
+import scipy.stats as ss
+import sklearn
 import statsmodels.api as sm
 from sklearn.decomposition import PCA
-import sklearn
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 
-from itertools import product
+from brainsync import brainSync, normalizeData
 from dfsio import readdfs, writedfs
-
-#if VTK_INSTALLED:
-#    from surfproc import view_patch_vtk, smooth_patch
-
 from surfproc import patch_color_attrib, smooth_surf_function
 
-from brainsync import brainSync, normalizeData
+# if VTK_INSTALLED:
+#    from surfproc import view_patch_vtk, smooth_patch
 
-from multiprocessing import Pool
+
+
 
 
 def read_gord_data(data_dir, num_sub=1e6):
@@ -183,7 +184,7 @@ def pairsdist_regression(bfp_path,
     # Allocate memory for subject data
     sub_data = np.zeros(shape=(len_time, num_vert, num_sub))
 
-    #Generate random pairs
+    # Generate random pairs
     print('Reading subjects')
     for subno, filename in enumerate(tqdm(sub_files)):
         data = spio.loadmat(filename)['dtseries'].T
@@ -227,12 +228,11 @@ def pairsdist_regression(bfp_path,
 
 
 def corr_pearson_fdr(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
-    #X: nsub x vertices
-    #Y: cognitive scores nsub X 1
+    # X: nsub x vertices
+    # Y: cognitive scores nsub X 1
     X, _, _ = normalizeData(X_pairs)
 
     Y, _, _ = normalizeData(Y_pairs[:, None])
-
 
     num_vert = X.shape[1]
 
@@ -248,8 +248,8 @@ def corr_pearson_fdr(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
 
 
 def corr_perm_test(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
-    #X: nsub x vertices
-    #Y: cognitive scores nsub X 1
+    # X: nsub x vertices
+    # Y: cognitive scores nsub X 1
 
     X, _, _ = normalizeData(X_pairs)
 
@@ -393,10 +393,74 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
     tscore[np.isnan(tscore)] = 0
 
     dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) * (n1 - 1)) + S2**2 /
-                                    ((n2**2) * (n2 - 1)) + 1e-6)
+                                           ((n2**2) * (n2 - 1)) + 1e-6)
     pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
 
     return tscore, pval
+
+
+def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
+                             len_time=255):
+
+    print('Grp diff using f-test and brainsync')
+
+    num_vert = spio.loadmat(sub_grp1_files[0])['dtseries'].shape[0]
+
+    print('Generating random pairs from group 1')
+    pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
+
+    # Preload data This only slighly faster, better is to load on the fly and multiprocess
+    print('Reading data for group 1')
+    sub_data1 = np.zeros((len_time, num_vert, len(sub_grp1_files)))
+    for i, fname in enumerate(tqdm(sub_grp1_files)):
+        sub1_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data1[:, :, i], _, _ = normalizeData(sub1_data)
+
+    print('Compute differences in fMRI of random pairs from group 1')
+    for i, rand_pair in enumerate(tqdm(pairs_grp1)):
+        fmri_diff1[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp1_files,
+                                     sub_data=sub_data1,
+                                     len_time=len_time)
+
+    S1 = 0.5 * np.mean(fmri_diff1, axis=1)
+
+    print('Generating random pairs from group 2')
+    pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
+                                            num_pairs=num_pairs)
+
+    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
+
+    # Preload data for group 2
+    print('Reading data for group 2')
+    sub_data2 = np.zeros((len_time, num_vert, len(sub_grp2_files)))
+    for i, fname in enumerate(tqdm(sub_grp2_files)):
+        sub2_data = spio.loadmat(fname)['dtseries'][:, :len_time].T
+        sub_data2[:, :, i], _, _ = normalizeData(sub2_data)
+
+    print('Compute differences in fMRI of random pairs from group 2')
+    for i, rand_pair in enumerate(tqdm(pairs_grp2)):
+        fmri_diff2[:, i] = pair_dist(rand_pair=rand_pair,
+                                     sub_files=sub_grp2_files,
+                                     sub_data=sub_data2,
+                                     len_time=len_time)
+
+    S2 = 0.5 * np.mean(fmri_diff2, axis=1)
+
+    # We will perform f-test test (modified in a pairwise stats)
+    #
+
+    n1 = sub_data1.shape[2]
+    n2 = sub_data2.shape[2]
+
+    F = S1 / (S2 + 1e-16)
+
+    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
+
+    return F, pval
 
 
 def randpairs_regression(bfp_path,
@@ -620,11 +684,13 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pval = np.zeros(numV)
     for nv in tqdm(range(numV)):
         if ttype == 'linear':
-            rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain, diff_resid1[nv, :])
+            rval[nv], pval[nv] = sp.stats.pearsonr(
+                subTest_varmain, diff_resid1[nv, :])
         if ttype == 'group':
-            rval[nv], pval[nv] = sp.stats.ttest_ind(subTest_varmain, diff_resid1[nv, :])
+            rval[nv], pval[nv] = sp.stats.ttest_ind(
+                subTest_varmain, diff_resid1[nv, :])
             #g = set(subTest_varmain)
-            #for gnum in len(g):
+            # for gnum in len(g):
 
     p = np.zeros(len(pval))
     p[pval <= sig_alpha] = 1
@@ -635,13 +701,13 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     labs[np.isnan(labs)] = 0
     labs[np.isnan(pval)] = 0
     pval_fdr = sp.zeros(numV)
-    _, pv = fdrcorrection(pval[labs > 0],alpha=sig_alpha)
+    _, pv = fdrcorrection(pval[labs > 0], alpha=sig_alpha)
     pval_fdr[labs > 0] = pv
 
     pf = np.zeros(len(pval))
     pf[pval_fdr <= sig_alpha] = 1
     pf[labs == 0] = 0
-    
+
     pval_fdr[labs == 0] = float("NAN")
 
     msg = str(np.sum(p)) + ' significant voxels found. ' + str(

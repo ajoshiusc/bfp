@@ -1,7 +1,7 @@
 """ This module contains helful utility functions for handling and visualizing gray ordinate file """
 try:
     import vtk
-    VTK_INSTALLED = 1
+    VTK_INSTALLED = 1 
 except ImportError as e:
     VTK_INSTALLED = 0
 

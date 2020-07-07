@@ -113,10 +113,10 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
         print('VTK is not installed, surface will not be smoothed')
 
     # write on surface attributes
-    lsurf.attributes = pval.squeeze()
-    lsurf.attributes = lsurf.attributes[:num_vert]
-    rsurf.attributes = pval.squeeze()
-    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
+    lsurf.attributes = pval[:num_vert] #.squeeze()
+    #   lsurf.attributes = lsurf.attributes[:num_vert]
+    rsurf.attributes = pval[num_vert:2 * num_vert] #.squeeze()
+    #    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
 
     lsurf = patch_color_attrib(lsurf, clim=colorbar_lim, cmap=colormap)
     rsurf = patch_color_attrib(rsurf, clim=colorbar_lim, cmap=colormap)

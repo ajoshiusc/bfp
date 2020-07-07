@@ -453,12 +453,12 @@ def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
     # We will perform f-test test (modified in a pairwise stats)
     #
 
-    n1 = sub_data1.shape[2]
-    n2 = sub_data2.shape[2]
+    n1 = sub_data1.shape[2]*len_time
+    n2 = sub_data2.shape[2]*len_time
 
     F = S1 / (S2 + 1e-16)
 
-    pval = 1 - ss.f.cdf(F, 37 - 1, 37 - 1)
+    pval = 1-ss.f.cdf(F, n1 - 1, n2 - 1)
 
     return F, pval
 

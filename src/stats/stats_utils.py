@@ -668,16 +668,21 @@ def multiLinReg_resid(x, y):
 
 def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
                      subTest_varc2, sig_alpha, ttype):
-    subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
-    for i in range(subTest_varc1.shape[0]):
-        subTest_varc12[i, 0] = subTest_varc1[i]
-        subTest_varc12[i, 1] = subTest_varc2[i]
-    print('regressing out 2 covariates')
-    diff_resid1 = np.zeros(subTest_diff.shape)
-    numV = subTest_diff.shape[0]
-    for nv in tqdm(range(numV)):
-        diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12,
-                                               subTest_diff[nv, :])
+    
+    if np.linalg.norm(subTest_varc1) <1e-6:
+        diff_resid1 = subTest_diff
+        numV = subTest_diff.shape[0]
+    else:
+        subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
+        for i in range(subTest_varc1.shape[0]):
+            subTest_varc12[i, 0] = subTest_varc1[i]
+            subTest_varc12[i, 1] = subTest_varc2[i]
+        print('regressing out 2 covariates')
+        diff_resid1 = np.zeros(subTest_diff.shape)
+        numV = subTest_diff.shape[0]
+        for nv in tqdm(range(numV)):
+            diff_resid1[nv, :] = multiLinReg_resid(subTest_varc12,
+                                                   subTest_diff[nv, :])
 
     print('computing correlation against main variable')
     rval = np.zeros(numV)

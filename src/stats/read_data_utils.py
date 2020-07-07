@@ -11,6 +11,7 @@ from tqdm import tqdm
 sys.path.append('../BrainSync')
 from brainsync import normalizeData
 import numpy as np
+import distutils.util
 
 def readConfig(fname):
     config.read(fname)
@@ -34,7 +35,7 @@ def readConfig(fname):
 
 
 def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
-                 colvar_atlas, colvar_main, colvar_reg1, colvar_reg2, len_time=100):
+                 colvar_atlas, colvar_main, colvar_reg1, colvar_reg2, matchT, len_time=100):
     ''' loads csv file containing subjects' demographic information
         csv file should contain the following 5 columns for: subjectID, subjects to exclude (1=exclude), main effect variable, and 2 covariates to control for.
         if less than 2 covariates, create columns where all subjects have value of 1 so regression has no effect. '''
@@ -65,19 +66,26 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
             
             df = spio.loadmat(fname)
             data = df['dtseries'].T
-            if int(data.shape[0]) < len_time:
+            if  distutils.util.strtobool(matchT)==False and int(data.shape[0]) != int(len_time):
                 continue
-
+            
+            
             rvar = row[colvar_main]
-            rcvar1 = row[colvar_reg1]
-            rcvar2 = row[colvar_reg2]
-
-            if rcvar2 == 'M' or rcvar2 == 'Male':
-                rcvar2 = 0
-            elif rcvar2 == 'F' or rcvar2 == 'Female':
-                rcvar2 = 1
-            else:
-                rcvar2 = 0.5
+            
+#if colvar_reg1 in row.keys():
+#   colvar_all = colvar_reg1.split(",")
+ #  for i in range(len(colvar_all)):
+            if colvar_reg1 in row.keys():
+                rcvar1 = row[colvar_reg1]
+                rcvar2 = row[colvar_reg2]
+                if rcvar2 == 'M' or rcvar2 == 'Male':
+                    rcvar2 = 0
+                elif rcvar2 == 'F' or rcvar2 == 'Female':
+                    rcvar2 = 1
+                else:
+                    rcvar2 = 0.5
+                reg_cvar1.append(float(rcvar1))
+                reg_cvar2.append(float(rcvar2))
 
             if colvar_atlas in row.keys():
                 subAtlas_idx.append(row[colvar_atlas])
@@ -85,8 +93,7 @@ def read_demoCSV(csvfname, data_dir, file_ext, colsubj, colvar_exclude,
             sub_fname.append(fname)
             sub_ID.append(sub)
             reg_var.append(float(rvar))
-            reg_cvar1.append(float(rcvar1))
-            reg_cvar2.append(float(rcvar2))
+
             count1 += 1
             pbar.update(1)
             if count1 == subN:

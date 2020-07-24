@@ -299,12 +299,7 @@ if str2double(config.RunNSR) > 0
     %
     % # 15. Seperate motion parameters into seperate files
     disp('Splitting up subject motion parameters');
-    if str2double(config.MotionScrub) > 0 
-        fmc = [fmri,'_mco.1D'];
-        [~,n_vols]=unix(['3dinfo -nv ',outfile]); n_vols=str2double(n_vols);
-    else
-        fmc = [fmri,'_mc.1D'];
-    end
+    fmc = [fmri,'_mc.1D'];
     unix(['awk ''{print $1}'' ',fmc,' > ',nuisance_dir,'/mc1.1D']);
     unix(['awk ''{print $2}'' ',fmc,' > ',nuisance_dir,'/mc2.1D']);
     unix(['awk ''{print $3}'' ',fmc,' > ',nuisance_dir,'/mc3.1D']);

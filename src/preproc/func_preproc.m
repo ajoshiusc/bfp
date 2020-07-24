@@ -88,27 +88,18 @@ disp('Getting image for motion correction')
 outfile = [fmri,'_ro_mean.nii.gz'];
 if ~exist(outfile,'file')
     if SimRef
-        disp('Using SimRef...')
+        disp('Using SimRef...this may take a while if data is large...')
         orig = load_untouch_nii_gz([fmri,'_ro.nii.gz']);
-        [x,y,z,nvol] = size(orig.img);
-        k = round(nvol/2);
-        s= zeros(nvol,2);
-        disp('Calculating similarity measures...')
-        for i = 1:nvol
-            data1 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),k);
-            data2 = orig.img(round(x/4):round(3*x/4),round(y/4):round(3*y/4),round(z/4):round(3*z/4),i);
-            s(i,2) = ssim(data1,data2);
-        end
-        data = orig.img(:,:,:,s(:,2)>0.9);
-        mdata = mean(data,4);
+        v_ref = fMRI_findRefv(orig,10,0);
         new = orig;
-        new.img = mdata;
+        new.img = squeeze(orig.img(:,:,:,v_ref));
         new.hdr.dime.dim(1)=3;
         new.hdr.dime.dim(5)=1;
         save_untouch_nii_gz(new,outfile);
-        disp(['Reference volume computed using ',num2str(sum(s(:,2)>0.9)),' volumes'])
-        fprintf(fp,['--Option SimRef: Reference volume computed using ',num2str(sum(s(:,2)>0.9)),' volumes\n']);
-        clear new orig data mdata data1 data2 x y z nvol
+        csvwrite([fmri,'_ssim-vref.txt'],v_ref);
+        disp(['Reference volume computed using timepoint #',num2str(v_ref)])
+        fprintf(fp,['--Option SimRef: Reference volume is timpoint #',num2str(v_ref),'\n']);
+        clear new orig
     else
         unix(['3dTstat -mean -prefix ',outfile,' ',fmri,'_ro.nii.gz']);
         disp('Reference volume computed by averaging all volumes.')
@@ -124,6 +115,22 @@ outfile = [fmri,'_mc.nii.gz'];
 if ~exist(outfile,'file')
     unix(['3dvolreg -verbose -Fourier -twopass -base ',infile,' -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
     fprintf(fp, '--Motion Correction \n');
+    
+    unix(['fsl_motion_outliers -i ',outfile,' -o ',fmri,'_mco -m ',fmri,'_mask.nii.gz -s ',fmri,'_mco.txt -p ',fmri,'_mco.png --dvars --nomoco -v']);
+    s(:,1) = motionEval(outfile, infile);
+    s(:,2) = motionEval([fmri,'_ro.nii.gz'],infile);
+    p = figure('visible','off');
+    plot(s(:,1)); hold; plot(s(:,2));
+    if exist([fmri,'_ssim-vref.txt'],'file')
+        v_ref = importdata([fmri,'_ssim-vref.txt']);
+        line([v_ref v_ref], [0 1],'Color','black','LineStyle','--');
+        legend({'motion corrected','original','refence volume'},'Location','southeast');
+    else
+        legend({'motion corrected','original'},'Location','southeast');
+    end
+    ylim([0,1.1]);
+    ylabel('SSIM');xlabel('vol no.');
+    saveas(p,[fmri,'_mc_ssim.png']);
 else
     disp('file found. skipping step')
     fprintf(fp, 'Motion Correction file found. skipping step. \n');
@@ -193,36 +200,6 @@ orig = load_untouch_nii_gz([example,'_func.nii.gz']);
 msk = load_untouch_nii_gz([fmri,'_mask.nii.gz']);
 orig.img(msk.img==0)=0;
 save_untouch_nii_gz(orig,[example,'_func.nii.gz']);
-%% Motion outlier detection and scrubbing
-if str2double(config.MotionScrub) > 0 
-    disp('Running motion outlier detection')
-    infile = outfile; clear outfile %[fmri,'_ss.nii.gz']
-    outfile = [fmri,'_mco.nii.gz'];
-    if ~exist(outfile,'file')
-        unix(['fsl_motion_outliers -i ',infile,' -o ',fmri,'_mco -m ',fmri,'_mask.nii.gz -s ',fmri,'_mco.txt -p ',fmri,'_mco.png --nomoco -v']);
-        mco = importdata([fmri,'_mco.txt']);
-        mc1D = importdata([fmri,'_mc.1D']);
-        vs = find(mco > str2num(config.ScrubThreshold));
-        orig = load_untouch_nii_gz(infile);
-        vo = orig; clear orig
-        for i = 1:length(vs)
-            ii = vs(length(vs)+1-i);
-            vo.img(:,:,:,ii) = [];
-            mc1D(ii,:) = [];
-        end
-        fmco = fopen([fmri,'_mco.1D'],'w+');
-        fprintf(fmco,'%f %f %f %f %f %f\n',mc1D);
-        fclose(fmco);
-        vo.hdr.dime.dim(5) = size(vo.img,4);
-        save_untouch_nii_gz(vo,outfile);
-        fprintf(fp, '--Option Outlier removal: new fMRI data has %s volumes \n',num2str(size(vo.img,4)));
-    else
-        disp('file found. skipping step')
-        fprintf(fp, 'Outlier removal file found. skipping step.\n');
-    end
-else
-    fprintf(fp, 'Option Outlier removal: No\n');
-end
 %% Spatial smoothing
 disp('Spatial Smoothing');
 infile = outfile; clear outfile % ss or mco 

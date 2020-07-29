@@ -115,26 +115,32 @@ outfile = [fmri,'_mc.nii.gz'];
 if ~exist(outfile,'file')
     unix(['3dvolreg -verbose -Fourier -twopass -base ',infile,' -zpad 4 -prefix ',fmri,'_mc.nii.gz -1Dfile ',fmri,'_mc.1D ',fmri,'_ro.nii.gz']);
     fprintf(fp, '--Motion Correction \n');
-    
-    unix(['fsl_motion_outliers -i ',outfile,' -o ',fmri,'_mco -m ',fmri,'_mask.nii.gz -s ',fmri,'_mco.txt -p ',fmri,'_mco.png --dvars --nomoco -v']);
-    s(:,1) = motionEval(outfile, infile);
-    s(:,2) = motionEval([fmri,'_ro.nii.gz'],infile);
+else
+    disp('file found. skipping step')
+    fprintf(fp, 'Motion Correction file found. skipping step. \n');
+end
+
+if ~exist([fmri,'_mco.txt'],'file')
+    unix(['fsl_motion_outliers -i ',outfile,' -o ',fmri,'_mco -s ',fmri,'_mco.txt -p ',fmri,'_mco.png --dvars --nomoco -v']);
+end
+if ~exist([fmri,'_mc_ssim.txt'],'file')
+    s(:,2) = motionEval(outfile, infile);
+    s(:,1) = motionEval([fmri,'_ro.nii.gz'],infile);
     p = figure('visible','off');
     plot(s(:,1)); hold; plot(s(:,2));
     if exist([fmri,'_ssim-vref.txt'],'file')
         v_ref = importdata([fmri,'_ssim-vref.txt']);
         line([v_ref v_ref], [0 1],'Color','black','LineStyle','--');
-        legend({'motion corrected','original','refence volume'},'Location','southeast');
+        legend({'original','motion corrected','refence volume'},'Location','southeast');
     else
-        legend({'motion corrected','original'},'Location','southeast');
+        legend({'original','motion corrected'},'Location','southeast');
     end
     ylim([0,1.1]);
     ylabel('SSIM');xlabel('vol no.');
     saveas(p,[fmri,'_mc_ssim.png']);
-else
-    disp('file found. skipping step')
-    fprintf(fp, 'Motion Correction file found. skipping step. \n');
+    csvwrite([fmri,'_mc_ssim.txt'],s);
 end
+    
 clear infile
 %% Get image for use in registration
 disp('Getting image for coregistration...')

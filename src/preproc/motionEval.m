@@ -6,7 +6,7 @@ function s = motionEval(v, ref)
 %   author: soyoung choi USC
 if isstruct(v)
     vls = v;
-else isa(v,'char');
+else isa(v,'char')
     if exist(v,'file')
         vls = load_untouch_nii_gz(v);
     end

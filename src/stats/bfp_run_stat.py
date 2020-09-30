@@ -28,7 +28,7 @@ from grayord_utils import vis_grayord_sigcorr, vis_grayord_sigpval
 #%% 
 if not os.path.isdir(cf.out_dir):
     os.makedirs(cf.out_dir)
-log_fname = os.path.join(cf.out_dir, 'bfp_linregr_stat_log.txt')
+log_fname = os.path.join(cf.out_dir, 'bfp_stat.log')
 write_text_timestamp(log_fname, 'Config file used: ' + config_file +"\n All outputs will be written in: " + cf.out_dir )
 # read demographic csv file
 sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(cf.csv_fname,
@@ -157,7 +157,9 @@ if cf.stat_test == 'atlas-linear':
           '\n positive rvalues indicate that higher ' + cf.colvar_main +' is associated with lower similarity to the atlas (higher geodesic distance) '+
           'after controlling for '+ cf.colvar_reg1+' and '+cf.colvar_reg2 +'.'+
           '\n negative rvalues indicate that higher '+ cf.colvar_main +' is associated with higher similarity to the atlas (lower geodesic distance) '+
-          'after controlling for '+ cf.colvar_reg1+' and '+cf.colvar_reg2 +'.')
+          'after controlling for '+ cf.colvar_reg1+' and '+cf.colvar_reg2 +'.' +
+          '\n adjusted pvalues corrected for multiple correction using FDR (alpha='+str(cf.sig_alpha)+')'+
+          '\n see https://doi.org/10.1016/j.neuroimage.2018.01.058 for further details')
     
 #%%
 
@@ -166,26 +168,35 @@ if cf.stat_test == 'atlas-linear':
 #%% PAIRWISE LINEAR REGRESSION TEST
 # Do Linear regression on the covariates
 if cf.stat_test == 'pairwise-linear':
+    if cf.pw_fdr == 'True':
+        msg = 'adjusted pvalues corrected for multiple comparisons using FDR (alpha='+str(cf.sig_alpha)+')'
+    else:
+        msg = 'adjusted pvalues corrected for multiple comparisons using maxT permutation testing (permutations='+str(cf.pw_perm)+'; alpha='+str(cf.sig_alpha)+')'
+    #print(msg)
+    
     write_text_timestamp(
         log_fname,
-        'Performing pair-wise linear regression.')
-    subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
-    subTest_varc12[:, 0] = subTest_varc1
-    subTest_varc12[:, 1] = subTest_varc2
-    regr = LinearRegression()
-    regr.fit(subTest_varc12, subTest_varmain)
-    pre = regr.predict(subTest_varc12)
-    subTest_varmain2 = subTest_varmain - pre    
+        'Performing pair-wise linear regression.' +
+        '\n Number of pairs measured: ' + cf.pw_pairs +
+        '\n '+ msg)
+#    subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
+#    subTest_varc12[:, 0] = subTest_varc1
+#    subTest_varc12[:, 1] = subTest_varc2
+#    regr = LinearRegression()
+#    regr.fit(subTest_varc12, subTest_varmain)
+#    pre = regr.predict(subTest_varc12)
+#    subTest_varmain2 = subTest_varmain - pre    
+
 # Compute pairwise distance and perform regression
     corr_pval_max, corr_pval_fdr = randpairs_regression(
         bfp_path=cf.bfp_path,
         sub_files=subTest_fname,
-        reg_var=subTest_varmain2,
-        num_pairs=20,  # 19900,
-        nperm=20,
+        reg_var=subTest_varmain,
+        num_pairs=int(cf.pw_pairs),  # 19900,
+        nperm=int(cf.pw_perm),
         len_time=int(cf.lentime),
         num_proc=1,
-        pearson_fdr_test=False)
+        pearson_fdr_test=bool(cf.pw_fdr))
     # saves out results
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_max.mat'), {'corr_pval_max': corr_pval_max})
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_fdr.mat'), {'corr_pval_fdr': corr_pval_fdr})
@@ -204,4 +215,6 @@ if cf.stat_test == 'pairwise-linear':
                         bfp_path=cf.bfp_path,
                         fsl_path=cf.fsl_path)
     
-    write_text_timestamp(log_fname, 'BFP regression analysis complete!')
+    write_text_timestamp(log_fname, 'BFP regression analysis complete! '+
+                         '\n significance indicates that brain connectivty is associated with '+ cf.colvar_main +
+                         '\n see https://doi.org/10.1016/j.neuroimage.2018.01.058 for further details')

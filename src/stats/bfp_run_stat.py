@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-07/BFPtest_config_stats.ini'
+config_file = r'C:\Users\chois\Dropbox\SCD\Analysis\BOLD\2020-07\\BFPtest_config_stats_win.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -29,8 +29,7 @@ from grayord_utils import vis_grayord_sigcorr, vis_grayord_sigpval
 if not os.path.isdir(cf.out_dir):
     os.makedirs(cf.out_dir)
 log_fname = os.path.join(cf.out_dir, 'bfp_linregr_stat_log.txt')
-write_text_timestamp(log_fname, 'Config file used: ' + config_file)
-write_text_timestamp(log_fname, "All outputs will be written in: " + cf.out_dir )
+write_text_timestamp(log_fname, 'Config file used: ' + config_file +"\n All outputs will be written in: " + cf.out_dir )
 # read demographic csv file
 sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2 = read_demoCSV(cf.csv_fname,
                 cf.data_dir,
@@ -90,13 +89,14 @@ for ind in range(len(sub_ID)):
 
 del sub_ID, sub_fname, subAtlas_idx, reg_var, reg_cvar1, reg_cvar2, fname, sub, count1, ind, numT
 if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
-    write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.')
-write_text_timestamp(log_fname, str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
+    write_text_timestamp(log_fname, str(len(subAtlas_IDs)) + ' subjects will be used for atlas creation.' +
+                         '\n '+ str(len(subTest_IDs)) + ' subjects will be used for hypothesis testing.')
 #%%
 # reads reference data and creates atlas by BrainSync algorithm
 if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
     if len(cf.atlas_fname) !=0:
-        write_text_timestamp(log_fname, 'User Option: User defined atlas will be used ' + cf.atlas_fname)
+        write_text_timestamp(log_fname, 'User Option: '+ cf.stat_test +
+            '\n User defined atlas will be used ' + cf.atlas_fname)
         df = spio.loadmat(cf.atlas_fname)
         atlas_data = df['atlas_data']
         del df
@@ -106,16 +106,18 @@ if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
             csv.writer(csvfile).writerows(zip(subAtlas_IDs, subAtlas_numT))
             del subAtlas_numT
         if cf.atlas_groupsync == 'True':
-            write_text_timestamp(log_fname, 'User Option: Group BrainSync algorithm will be used for atlas creation')
+            write_text_timestamp(log_fname, 'User Option: '+ cf.stat_test +
+                                 '\n Group BrainSync algorithm will be used for atlas creation')
             atlas_data, _, _, _ = groupBrainSync(subAtlas_data)
-            write_text_timestamp(log_fname, 'Done creating atlas') 
         else:
-            write_text_timestamp(log_fname, 'User Option: representative subject will be used for atlas creation')
+            write_text_timestamp(log_fname, 'User Option: '+ cf.stat_test +
+                                 'Representative subject will be used for atlas creation')
             subRef_data, subRef_num = IDrefsub_BrainSync(subAtlas_data)
             write_text_timestamp(log_fname, 'Subject number ' + str(subAtlas_IDs[subRef_num]) + ' will be used for atlas creation')
             atlas_data = generate_avgAtlas(subRef_data, subAtlas_data)
         del subAtlas_data
         spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
+        write_text_timestamp(log_fname, 'Atlas saved out as '+os.path.join(cf.out_dir + '/atlas.mat')) 
 #%% load data
 if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
     subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),bool(cf.matcht))
@@ -143,12 +145,20 @@ if cf.stat_test == 'atlas-linear':
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_rval.mat'), {'rval': rval})
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval.mat'), {'pval': pval})
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_pval_fdr.mat'), {'pval_fdr': pval_fdr})
-    write_text_timestamp(log_fname, 'Done runnning linear regression. ' + msg)
+    write_text_timestamp(log_fname, 'Done runnning atlas-based linear regression. ' + msg)
     
     #%% visualization of results
     vis_grayord_sigcorr(pval, rval, float(cf.sig_alpha), cf.outname, cf.out_dir, int(cf.smooth_iter), cf.save_figures, cf.bfp_path, cf.fsl_path)
     vis_grayord_sigcorr(pval_fdr, rval, float(cf.sig_alpha), cf.outname + '_fdr', cf.out_dir, int(cf.smooth_iter), bool(cf.save_figures), cf.bfp_path, cf.fsl_path)
-    write_text_timestamp(log_fname, 'BFP regression analysis complete')
+    write_text_timestamp(log_fname, 'BFP regression analysis complete!'+
+          '\n How to interpret results:'+
+          '\n pvalue labeled surfaces have colorbar limits 0 to ' + str(cf.sig_alpha) + '; colorbar class is jet reverse.'+ 
+          '\n rvalue labeled surfaces have colorbar limits -0.5 to +0.5; colorbar class is jet. ' +
+          '\n positive rvalues indicate that higher ' + cf.colvar_main +' is associated with lower similarity to the atlas (higher geodesic distance) '+
+          'after controlling for '+ cf.colvar_reg1+' and '+cf.colvar_reg2 +'.'+
+          '\n negative rvalues indicate that higher '+ cf.colvar_main +' is associated with higher similarity to the atlas (lower geodesic distance) '+
+          'after controlling for '+ cf.colvar_reg1+' and '+cf.colvar_reg2 +'.')
+    
 #%%
 
 
@@ -158,15 +168,14 @@ if cf.stat_test == 'atlas-linear':
 if cf.stat_test == 'pairwise-linear':
     write_text_timestamp(
         log_fname,
-        'Doing linear regression on the covariates from the main variable.')
+        'Performing pair-wise linear regression.')
     subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
     subTest_varc12[:, 0] = subTest_varc1
     subTest_varc12[:, 1] = subTest_varc2
     regr = LinearRegression()
     regr.fit(subTest_varc12, subTest_varmain)
     pre = regr.predict(subTest_varc12)
-    subTest_varmain2 = subTest_varmain - pre
-    
+    subTest_varmain2 = subTest_varmain - pre    
 # Compute pairwise distance and perform regression
     corr_pval_max, corr_pval_fdr = randpairs_regression(
         bfp_path=cf.bfp_path,
@@ -180,9 +189,6 @@ if cf.stat_test == 'pairwise-linear':
     # saves out results
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_max.mat'), {'corr_pval_max': corr_pval_max})
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_corr_pval_fdr.mat'), {'corr_pval_fdr': corr_pval_fdr})
-
-
-
     #Visualization of the results
     vis_grayord_sigpval(corr_pval_max, float(cf.sig_alpha), 
                         surf_name=cf.outname + '_max',
@@ -198,4 +204,4 @@ if cf.stat_test == 'pairwise-linear':
                         bfp_path=cf.bfp_path,
                         fsl_path=cf.fsl_path)
     
-    write_text_timestamp(log_fname, 'BFP regression analysis complete')
+    write_text_timestamp(log_fname, 'BFP regression analysis complete!')

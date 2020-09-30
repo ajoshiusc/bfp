@@ -66,7 +66,7 @@ def vis_grayord_sigcorr(pval, rval, sig_alpha, surf_name, out_dir, smooth_iter,
     rsurf.vColor[prsurf.attributes > sig_alpha, :] = .5
     save2surfgord(lsurf, rsurf, out_dir, surf_name + '_rval_sig', bfp_path,
                   bool(save_png))
-    print('output pvalues on surface')
+    print('output rvalues on surface')
     print('colorbar limits are -0.5 to +0.5; colorbar class is jet')
 
 

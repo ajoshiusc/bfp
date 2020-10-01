@@ -216,5 +216,6 @@ if cf.stat_test == 'pairwise-linear':
                         fsl_path=cf.fsl_path)
     
     write_text_timestamp(log_fname, 'BFP regression analysis complete! '+
+                         '\n pvalue labeled surfaces have colorbar limits 0 to ' + str(cf.sig_alpha) + '; colorbar class is jet reverse.'+ 
                          '\n significance indicates that brain connectivty is associated with '+ cf.colvar_main +
                          '\n see https://doi.org/10.1016/j.neuroimage.2018.01.058 for further details')

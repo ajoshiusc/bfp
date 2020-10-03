@@ -251,8 +251,8 @@ end
 
 fprintf('Copying fMRI files\n');
 for ind = 1:length(fmri)
-    if ~exist(fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
-        copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
+    if ~exist(fullfile(funcDir,sprintf('%s_%s.bold.nii.gz',subid,sessionid{ind})),'file')
+        copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s.bold.nii.gz',subid,sessionid{ind})));
     else
         fprintf('subject=%s session=%s : Already done\n',subid,sessionid{ind});
     end
@@ -461,7 +461,7 @@ fprintf('done\n');
 %%
 fprintf('## Run fmri preprocessing script\n');
 for ind=1:length(fmri)
-    fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
+    fmribasename=fullfile(funcDir,sprintf('%s_%s.bold',subid,sessionid{ind}));
     
     % Check if valid Tr is input, if not try to get it from the header of
     % the nifti fmri file
@@ -475,11 +475,11 @@ for ind=1:length(fmri)
     end
     
     if str2double(config.RunNSR)>0
-        BFP_outfile = [fmribasename,'_res2standard.nii.gz'];
+        BFP_outfile = [fmribasename,'.res2standard.nii.gz'];
     elseif str2double(config.RunDetrend) > 0
-        BFP_outfile = [fmribasename,'_pp2standard.nii.gz'];
+        BFP_outfile = [fmribasename,'.pp2standard.nii.gz'];
     else
-        BFP_outfile = [fmribasename,'_gms2standard.nii.gz'];
+        BFP_outfile = [fmribasename,'.gms2standard.nii.gz'];
     end
     if ~exist(BFP_outfile,'file')
         BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config);
@@ -506,14 +506,14 @@ fprintf('done\n');
 % The filename of grayordinate data is fmri_bold.32k.GOrd.nii.gz
 %%
 fprintf('## Transferring data from subject to atlas...\n');
-logfname=[fmribasename,'_log.txt'];
+logfname=[fmribasename,'.log.txt'];
 fp=fopen(logfname,'a+');
 for ind = 1:length(fmri)
-    fmri2surfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf.mat',subid,sessionid{ind}));
-    GOrdSurfFile=fullfile(funcDir,sprintf('%s_%s_bold2surf_GOrd.mat',subid,sessionid{ind}));
+    fmri2surfFile=fullfile(funcDir,sprintf('%s_%s.bold2surf.mat',subid,sessionid{ind}));
+    GOrdSurfFile=fullfile(funcDir,sprintf('%s_%s.bold2surf.GOrd.mat',subid,sessionid{ind}));
     fmri2standard=BFP_outfile;
-    GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol_GOrd.mat',subid,sessionid{ind}));
-    GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
+    GOrdVolFile=fullfile(funcDir,sprintf('%s_%s.bold2Vol.GOrd.mat',subid,sessionid{ind}));
+    GOrdFile=fullfile(funcDir,sprintf('%s_%s.bold.32k.GOrd.mat',subid,sessionid{ind}));
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         if 0
@@ -607,8 +607,8 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 if config.EnabletNLMPdfFiltering>0
     fprintf('## tNLMPDF Filtering...\n');
     for ind = 1:length(fmri)
-        GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
-        GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
+        GOrdFile=fullfile(funcDir,sprintf('%s_%s.bold.32k.GOrd.mat',subid,sessionid{ind}));
+        GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s.bold.32k.GOrd.filt.mat',subid,sessionid{ind}));
         fprintf('tNLMPdf filtering for subject = %s session = %s\n',subid,sessionid{ind});
         if ~exist(GOrdFiltFile,'file')
             if 0

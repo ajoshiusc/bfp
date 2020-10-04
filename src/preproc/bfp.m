@@ -321,7 +321,8 @@ bse=fullfile(BrainSuitePath,'bin','bse');
 
 if config.T1SpaceProcessing
     bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
-    
+    bsemask=fullfile(anatDir,sprintf('%s_T1w.orig.mask.nii.gz',subid));
+
     if ~exist(bseout,'file')
         bseexist=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
         if exist(bseexist,'file')
@@ -330,9 +331,11 @@ if config.T1SpaceProcessing
     end
 else
     bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
+    bsemask=fullfile(anatDir,sprintf('%s_T1w.ds.orig.mask.nii.gz',subid));
+
 end
 
-cmd=sprintf('%s --auto --trim -i %s -o %s',bse,t1ds,bseout);
+cmd=sprintf('%s --auto --trim -i %s -o %s --mask %s',bse,t1ds,bseout,bsemask);
 if ~exist(bseout,'file')
     unix(cmd);
 
@@ -349,15 +352,19 @@ fprintf('done\n');
 %%
 fprintf('## Coregister t1 to BCI-DNI Space\n');
 bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
+bsemasknew=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
 
 if config.T1SpaceProcessing
     cmd = sprintf('cp %s %s', t1, bsenew);
+    cmdbse = sprintf('cp %s %s', bsemask,bsemasknew)
+    
 else
     cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+    cmdbse=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bsemask,bsemasknew);
 end
 
 if ~exist(bsenew,'file')
-    unix(cmd);
+    unix(cmd); unix(cmdbse);
     
     if ~exist(bsenew, 'file')
         error(['Command: ', cmd, 'failed, existing.'])
@@ -393,10 +400,10 @@ end
 fprintf('done\n');
 
 bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
-cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
-if ~exist(bsemask,'file')
-    unix(cmd);
-end
+% cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
+% if ~exist(bsemask,'file')
+%     unix(cmd);
+% end
 
 if ~exist(bsemask, 'file')
     error(['Command: ', cmd, 'failed, existing.'])

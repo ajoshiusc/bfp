@@ -356,7 +356,7 @@ bsemasknew=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
 
 if config.T1SpaceProcessing
     cmd = sprintf('cp %s %s', t1, bsenew);
-    cmdbse = sprintf('cp %s %s', bsemask,bsemasknew)
+    cmdbse = sprintf('cp %s %s', bsemask,bsemasknew);
     
 else
     cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);

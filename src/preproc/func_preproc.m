@@ -393,7 +393,7 @@ else
 end
 %% Resampling residuals to standard MNI space
 if FSLRigidReg > 0
-    unix(['flirt -ref ',func_dir,'/standard -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',func_dir,'/',example,'.func2standard.mat -interp trilinear']);
+    unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',func_dir,'/',example,'.func2standard.mat -interp trilinear']);
 else
         transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'.func.nii.gz'], 'standard.nii.gz', [fmri,'.example.func2standard.rigid.registration.result.mat'], 'linear');
 end

@@ -317,7 +317,7 @@ if str2double(config.RunNSR) > 0
     % # Extract signal for global, csf, and wm
     % ## 16. Global
     disp('Extracting global signal for subject');
-    unix(['3dmaskave -mask ',fmri,'.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/global.1D'])
+    unix(['3dmaskave -mask ',fmri,'.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/global.1D']);
     %
     % ## 17. csf
     if FSLRigidReg > 0
@@ -335,11 +335,11 @@ if str2double(config.RunNSR) > 0
     unix(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',fmri,'.wm.mask.nii.gz -odt char']);
     %
     % echo "Extracting signal from csf"
-    unix(['3dmaskave -mask ',fmri,'.csf.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/csf.1D'])
+    unix(['3dmaskave -mask ',fmri,'.csf.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/csf.1D']);
     %
     % ## 18. wm
     disp('Extracting signal from white matter for subject');
-    unix(['3dmaskave -mask ',fmri,'.wm.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/wm.1D'])
+    unix(['3dmaskave -mask ',fmri,'.wm.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/wm.1D']);
     %
     % ## 6. Generate mat file (for use later)
     % ## create fsf file

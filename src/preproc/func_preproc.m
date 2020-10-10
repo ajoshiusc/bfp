@@ -80,15 +80,15 @@ if ~exist([fmri,'.ro.nii.gz'],'file')
     unix(['3dresample -orient RPI -inset ',fmri,'.dr.nii.gz -prefix ',fmri,'.ro.nii.gz']);
     fprintf(fp, '--Reorient \n');
 else
-    disp('file found. skipping step')
+    disp('file found. skipping step');
     fprintf(fp, 'Reorient file found. skipping step. \n');
 end
 %% Get reference image used for motion correction and registration
-disp('Getting image for motion correction')
+disp('Getting image for motion correction');
 outfile = [fmri,'.ro.mean.nii.gz'];
 if ~exist(outfile,'file')
     if SimRef
-        disp('Using SimRef...this may take a while if data is large...')
+        disp('Using SimRef...this may take a while if data is large...');
         orig = load_untouch_nii_gz([fmri,'.ro.nii.gz']);
         v_ref = fMRI_findRefv(orig,10,0);
         new = orig;
@@ -97,7 +97,7 @@ if ~exist(outfile,'file')
         new.hdr.dime.dim(5)=1;
         save_untouch_nii_gz(new,outfile);
         csvwrite([fmri,'.ssim.vref.txt'],v_ref);
-        disp(['Reference volume computed using timepoint #',num2str(v_ref)])
+        disp(['Reference volume computed using timepoint #',num2str(v_ref)]);
         fprintf(fp,['--Option SimRef: Reference volume is timpoint #',num2str(v_ref),'\n']);
         clear new orig
     else
@@ -110,7 +110,7 @@ else
 end
 %% Motion correct to average of timeseries
 disp('Motion correcting');
-infile = outfile; clear outfile %[fmri,'.ro.mean.nii.gz'];
+infile = outfile; clear outfile; %[fmri,'.ro.mean.nii.gz'];
 outfile = [fmri,'.mc.nii.gz'];
 if ~exist(outfile,'file')
     unix(['3dvolreg -verbose -Fourier -twopass -base ',infile,' -zpad 4 -prefix ',fmri,'.mc.nii.gz -1Dfile ',fmri,'.mc.1D ',fmri,'.ro.nii.gz']);
@@ -147,7 +147,7 @@ disp('Getting image for coregistration...')
 if ~exist([example,'.func.nii.gz'],'file')
     if SimRef
         disp('Using SimRef...')
-        unix(['cp ',fmri,'.ro.mean.nii.gz ',example,'.func.nii.gz'])
+        unix(['cp ',fmri,'.ro.mean.nii.gz ',example,'.func.nii.gz']);
     else
         disp('Using eigth image')
         unix(['3dcalc -a ',fmri,'.mc.nii.gz[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
@@ -172,7 +172,7 @@ if ~exist([example,'.func2t1.nii.gz'],'file')
         fprintf(fp, '--Registration to T1: Option USC rigid registration\n');
     end
 else
-    disp('file found. skipping step')
+    disp('file found. skipping step');
     fprintf(fp, 'Registration to T1 files found. skipping step. \n');
 end
 %% Remove skull/edge detect
@@ -195,6 +195,7 @@ if ~exist(outfile,'file')
         unix(['3dAutomask -prefix ',fmri,'.mask.nii.gz -dilate 1 ',example,'.func.nii.gz']);
         fprintf(fp, '--Option autothreshold: Skull Strip fMRI\n');
     end
+    % this command shows a lot of warnings
     unix(['3dcalc -a ',fmri,'.mc.nii.gz -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
 else
     disp('file found. skipping step')

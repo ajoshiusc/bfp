@@ -35,9 +35,6 @@ from surfproc import patch_color_attrib, smooth_surf_function
 #    from surfproc import view_patch_vtk, smooth_patch
 
 
-
-
-
 def read_gord_data(data_dir, num_sub=1e6):
 
     dirlist = glob.glob(data_dir + '/*.filt.mat')
@@ -534,6 +531,22 @@ def randpairs_regression(bfp_path,
     return corr_pval, corr_pval2
 
 
+def dist_diff_fdr(grp1, grp2):
+    '''Input grp1 = numvert x (numsamples grp1), grp2 = numvert x (numsamples grp2)
+    alt_hypo: 'less', 'more' or 'two-sided'''  # These are distances so need to use permutation test
+    # Tests if Alt Hypo grp2 > grp1
+
+    pval = 0
+    for j in range(grp2.shape[1]):
+        pval += (grp1[:, :] > grp2[:, j][:, None]).sum(axis=1)/grp1.shape[1]
+
+    pval /= grp2.shape[1]
+
+    _, pval_fdr = fdrcorrection(pval)
+
+    return pval_fdr, pval
+
+
 def group_diff_fdr(grp1, grp2, alt_hypo='less'):
     '''Input grp1 = numvert x (numsamples grp1), grp2 = numvert x (numsamples grp2)
     alt_hypo: 'less', 'more' or 'two-sided'''
@@ -543,14 +556,17 @@ def group_diff_fdr(grp1, grp2, alt_hypo='less'):
 
     for vind in tqdm(range(grp1.shape[0])):
 
-        _, pval[vind] = sp.stats.ranksums(grp1[vind, :], grp2[vind, :])
+        #        _, pval[vind] = sp.stats.ranksums(grp1[vind, :], grp2[vind, :])
 
+        if np.linalg.norm(grp2[vind, :]) > 0:
 
-#        _, pval[vind] = sp.stats.mannwhitneyu(
-#            grp1[vind, :],
-#            grp2[vind, :],
-#            use_continuity=True,
-#            alternative=alt_hypo)
+            _, pval[vind] = sp.stats.mannwhitneyu(
+                grp1[vind, :],
+                grp2[vind, :],
+                use_continuity=True,
+                alternative=alt_hypo)
+        else:
+            pval[vind] = 0.5
 
     _, pval_fdr = fdrcorrection(pval)
     return pval_fdr, pval
@@ -605,9 +621,9 @@ def compare_sub2ctrl(bfp_path,
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
-                                        grp2=sub2ctrl_diff,
-                                        alt_hypo='less')
+        pval_fdr, pval = dist_diff_fdr(grp1=fmri_diff_null,
+                                        grp2=sub2ctrl_diff)
+#                                        alt_hypo='less')
 
     return pval_fdr, pval
 
@@ -668,8 +684,8 @@ def multiLinReg_resid(x, y):
 
 def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
                      subTest_varc2, sig_alpha, ttype):
-    
-    if np.linalg.norm(subTest_varc1) <1e-6:
+
+    if np.linalg.norm(subTest_varc1) < 1e-6:
         diff_resid1 = subTest_diff
         numV = subTest_diff.shape[0]
     else:

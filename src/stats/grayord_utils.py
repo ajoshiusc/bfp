@@ -1,25 +1,25 @@
 """ This module contains helful utility functions for handling and visualizing gray ordinate file """
+import sys
+import scipy.io as spio
+import numpy as np
+import scipy as sp
+import os
+from scipy.io import loadmat
+from nilearn.image import load_img, new_img_like
+from os.path import join
+from dfsio import readdfs, writedfs
+from surfproc import patch_color_attrib, smooth_surf_function
 try:
     import vtk
-    VTK_INSTALLED = 1 
+    VTK_INSTALLED = 1
 except ImportError as e:
     VTK_INSTALLED = 0
 
-import os
-import scipy as sp
-import numpy as np
-import scipy.io as spio
-import sys
 sys.path.append('src/stats')
+
 if VTK_INSTALLED:
     from surfproc import view_patch_vtk, smooth_patch
 
-from surfproc import patch_color_attrib, smooth_surf_function
-
-from dfsio import readdfs, writedfs
-from os.path import join
-from nilearn.image import load_img, new_img_like
-from scipy.io import loadmat
 
 FSL_PATH = '/usr/share/fsl/5.0'
 
@@ -78,11 +78,20 @@ def vis_grayord_sigpval(pval,
                         bfp_path,
                         fsl_path=FSL_PATH,
                         save_png=True):
-    save2volgord(pval,
-                 out_dir,
-                 surf_name + '_pval_sig',
-                 bfp_path,
-                 fsl_path=fsl_path)
+    '''    save2volgord(pval,
+                    out_dir,
+                    surf_name + '_pval_sig',
+                    bfp_path,
+                    fsl_path=fsl_path,
+                    default_value=0.5)
+    '''
+
+    save2volgord_bci((pval < sig_alpha)*(sig_alpha - pval)/sig_alpha,
+                     out_dir,
+                     surf_name + '_pval_sig',
+                     bfp_path,
+                     fsl_path=fsl_path)
+
     plsurf, prsurf = label_surf(pval, [0, sig_alpha],
                                 smooth_iter,
                                 'jet_r',
@@ -106,16 +115,16 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
     rsurf.attributes = sp.zeros((rsurf.vertices.shape[0]))
 
     if VTK_INSTALLED:
-        #smooth surfaces
+        # smooth surfaces
         lsurf = smooth_patch(lsurf, iterations=int(smooth_iter))
         rsurf = smooth_patch(rsurf, iterations=int(smooth_iter))
     else:
         print('VTK is not installed, surface will not be smoothed')
 
     # write on surface attributes
-    lsurf.attributes = pval[:num_vert] #.squeeze()
+    lsurf.attributes = pval[:num_vert]  # .squeeze()
     #   lsurf.attributes = lsurf.attributes[:num_vert]
-    rsurf.attributes = pval[num_vert:2 * num_vert] #.squeeze()
+    rsurf.attributes = pval[num_vert:2 * num_vert]  # .squeeze()
     #    rsurf.attributes = rsurf.attributes[num_vert:2 * num_vert]
 
     lsurf = patch_color_attrib(lsurf, clim=colorbar_lim, cmap=colormap)
@@ -124,7 +133,27 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
     return lsurf, rsurf
 
 
-def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH):
+def save2volgord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):
+
+    vol = load_img(
+        join(bst_path, 'svreg', 'BCI-DNI_brain_atlas', 'BCI-DNI_brain.nii.gz'))
+    a = loadmat(join(bfp_path, 'supp_data', 'bci_grayordinates_vol_ind.mat'))
+
+    ind = a['bci_vol_ind'] - 1
+    gordvol = np.zeros(vol.shape) + default_value
+
+    val_gind = ~np.isnan(ind)
+    ind2 = np.int32(ind[val_gind])
+    ind2 = np.unravel_index(np.int32(ind2), vol.shape, order='F')
+    gordvol[ind2] = data[val_gind.squeeze()]
+
+    grod = new_img_like(vol, gordvol)
+    grod.set_data_dtype(np.float64)
+    outfile = join(out_dir, vol_name + '.nii.gz')
+    grod.to_filename(outfile)
+
+
+def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0):
 
     mni2mm = load_img(join(fsl_path, 'data/standard', 'MNI152_T1_2mm.nii.gz'))
     a = loadmat(join(bfp_path, 'supp_data', 'MNI2mm_gord_vol_coord.mat'))
@@ -132,7 +161,7 @@ def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH):
     ind = ~np.isnan(a['voxc']).any(axis=1)
     voxc = np.int16(a['voxc'] -
                     1)  # subtract 1 to convert from MATLAB to Python indexing
-    gordvol = np.zeros(mni2mm.shape)
+    gordvol = np.zeros(mni2mm.shape) + default_value
 
     gordvol[voxc[ind, 0], voxc[ind, 1], voxc[ind, 2]] = data[ind]
     grod = new_img_like(mni2mm, gordvol)

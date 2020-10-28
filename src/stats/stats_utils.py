@@ -621,7 +621,7 @@ def compare_sub2ctrl(bfp_path,
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = dist_diff_fdr(grp1=fmri_diff_null,
+        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
                                         grp2=sub2ctrl_diff)
 #                                        alt_hypo='less')
 

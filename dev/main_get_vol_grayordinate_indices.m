@@ -4,13 +4,13 @@
 % we coregistred BrainSuiteAtlas1 to BCI atlas and then used the svreg map.
 clear all;close all;clc;
 restoredefaultpath;
-addpath(genpath('/home/ajoshi/coding_ground/bfp/dev/gifti-1.6'));
-addpath(genpath('/home/ajoshi/coding_ground/svreg/src'));
-addpath(genpath('/home/ajoshi/coding_ground/svreg/3rdParty'));
+addpath(genpath('/ImagePTE1/ajoshi/code_farm/bfp/dev/gifti-1.6'));
+addpath(genpath('/ImagePTE1/ajoshi/code_farm/svreg/src'));
+addpath(genpath('/ImagePTE1/ajoshi/code_farm/svreg/3rdParty'));
 addpath(genpath('/big_disk/ajoshi/freesurfer/matlab'));
-addpath(genpath('/home/ajoshi/coding_ground/bfp/dev/Washington-University-cifti-matlab-27383b8'));
-v=ft_read_cifti('/big_disk/ajoshi/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii');
-bci=load_nii_BIG_Lab('/home/ajoshi/BrainSuite19a/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz');
+addpath(genpath('/ImagePTE1/ajoshi/code_farm/bfp/dev/Washington-University-cifti-matlab-27383b8'));
+v=ft_read_cifti('/data_disk/HCP5/100307/MNINonLinear/Results/rfMRI_REST1_LR/rfMRI_REST1_LR_Atlas_hp2000_clean.dtseries.nii');
+bci=load_nii_BIG_Lab('/home/ajoshi/BrainSuite19b/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.bfc.nii.gz');
 SZ=size(bci.img);
 
 voxc=((v.transform)\([v.pos,ones(length(v.pos),1)]'))'; % This is in voxel coordinates
@@ -40,10 +40,12 @@ mp3 = max(1,round(mapz(id1)));
 bci_vol_ind=nan(length(voxc),1);
 bci_vol_ind(ind)=sub2ind(SZ(1:3),mp1,mp2,mp3);
 
+voxc(ind,:) = [mp1,mp2,mp3];
+save('../supp_data/bci_gord_vol_coord.mat','voxc')
 save('../supp_data/bci_grayordinates_vol_ind.mat','bci_vol_ind');
 
 % Mask of Grayordinates in BCI-DNI coordinates (BCI space)
-v=load_nii_BIG_Lab('/home/ajoshi/coding_ground/svreg-matlab/BCI-DNI_brain_atlas/BCI-DNI_brain.nii.gz');
+v=load_nii_BIG_Lab('/ImagePTE1/ajoshi/code_farm/svreg/BCI-DNI_brain_atlas/BCI-DNI_brain.nii.gz');
 v.hdr.dime.datatype=2;v.img=0*v.img;
 v.img(bci_vol_ind(ind))=255;
 save_untouch_nii_gz(v,'../supp_data/Vol_BCI_grayord32k.mask.nii.gz');

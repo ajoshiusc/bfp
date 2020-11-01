@@ -132,6 +132,10 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
 
     return lsurf, rsurf
 
+def save2volbord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):
+
+    a = loadmat(join(bfp_path, 'supp_data', 'bci_brainordinates_vol.mat'))
+
 
 def save2volgord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):
 

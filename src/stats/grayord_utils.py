@@ -9,6 +9,8 @@ from nilearn.image import load_img, new_img_like
 from os.path import join
 from dfsio import readdfs, writedfs
 from surfproc import patch_color_attrib, smooth_surf_function
+from scipy.ndimage import gaussian_filter
+
 try:
     import vtk
     VTK_INSTALLED = 1
@@ -132,9 +134,23 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
 
     return lsurf, rsurf
 
-def save2volbord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):
 
-    a = loadmat(join(bfp_path, 'supp_data', 'bci_brainordinates_vol.mat'))
+def save2volbord_bci(data, outfile, bfp_path='.', smooth_std=0):
+    '''Save output to brainordinates'''
+    a = loadmat(join(bfp_path, 'supp_data', 'bord_ind.mat'))
+    v = load_img(join(bfp_path, 'supp_data',
+                      'BCI-DNI_brain.pvc.frac.3mm.nii.gz'))
+
+    img_dat = np.zeros(v.shape)
+    img_dat[np.unravel_index(a['ind'], img_dat.shape, order='F')]= data[:,None]
+
+    if smooth_std>0:
+        img_dat = gaussian_filter(img_dat, sigma=(smooth_std, smooth_std, smooth_std), order=0)
+
+
+    v2=new_img_like(v,img_dat)
+
+    v2.to_filename(outfile)
 
 
 def save2volgord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):

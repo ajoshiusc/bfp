@@ -181,20 +181,22 @@ outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0
         if FSLRigidReg > 0
-            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
+            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
             fprintf(fp, '--Option T1: mask fMRI\n');
         else
-            transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid.registration.result.mat'], 'nearest');
-            msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
-            msk.img(msk.img==255)=1;
-            save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
-            unix(['rm ',fmri,'.mask.temp.nii.gz'])
+            transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid_registration_result.mat'], 'nearest');
             fprintf(fp, '--Option T1: Skull Strip fMRI\n');
         end
     else
-        unix(['3dAutomask -prefix ',fmri,'.mask.nii.gz -dilate 1 ',example,'.func.nii.gz']);
+        unix(['3dAutomask -prefix ',fmri,'.mask.temp.nii.gz -dilate 1 ',example,'.func.nii.gz']);
         fprintf(fp, '--Option autothreshold: Skull Strip fMRI\n');
     end
+    
+    msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
+    msk.img(msk.img>0)=1;
+    save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
+    unix(['rm ',fmri,'.mask.temp.nii.gz'])
+    
     % this command shows a lot of warnings
     unix(['3dcalc -a ',fmri,'.mc.nii.gz -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
 else

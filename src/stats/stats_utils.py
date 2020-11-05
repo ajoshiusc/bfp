@@ -51,6 +51,21 @@ def read_gord_data(data_dir, num_sub=1e6):
 
     return sub_data_files
 
+def read_bord_data(data_dir, num_sub=1e6):
+
+    dirlist = glob.glob(data_dir + '/*BOrd.mat')
+    subno = 0
+
+    sub_data_files = []
+
+    for fname in dirlist:
+        full_fname = os.path.join(data_dir, fname)
+
+        if os.path.isfile(full_fname) and subno < num_sub:
+            sub_data_files.append(full_fname)
+            subno += 1
+
+    return sub_data_files
 
 def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
@@ -621,7 +636,7 @@ def compare_sub2ctrl(bfp_path,
         #corr_pval = corr_perm_test(X=fmri_diff.T, Y=[], nperm=nperm)
     else:
         print('Performing Pearson correlation with FDR testing')
-        pval_fdr, pval = dist_diff_fdr(grp1=fmri_diff_null,
+        pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
                                         grp2=sub2ctrl_diff)
 #                                        alt_hypo='less')
 

@@ -613,6 +613,15 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 %%
 if config.EnabletNLMPdfFiltering>0
     fprintf('## tNLMPDF Filtering...\n');
+
+%    config.scbPath = fullfile(funcDir,'scb.mat');
+    
+     [scbDir, ~ , ~] = fileparts(config.scbPath);
+     if ~exist(config.scbPath,'dir')
+         mkdir(scbDir)
+     end
+     clear scbDir
+    
     for ind = 1:length(fmri)
         GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
         GOrdFiltFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.filt.mat',subid,sessionid{ind}));

@@ -36,7 +36,8 @@ TRstart=0;
 TRend=n_vols-1;
 sigma=str2double(FWHM)/2.3548;
 
-[~,bname,~]=fileparts(fmri);example=[bname,'.example'];
+% [~,bname,~]=fileparts(fmri);example=[bname,'.example'];
+example = [fmri,'.example'];
 
 disp('---------------------------------------');
 disp('BFP fMRI PREPROCESSING !');

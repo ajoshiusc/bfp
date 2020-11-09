@@ -36,7 +36,8 @@ TRstart=0;
 TRend=n_vols-1;
 sigma=str2double(FWHM)/2.3548;
 
-[~,bname,~]=fileparts(fmri);example=[bname,'.example'];
+% [~,bname,~]=fileparts(fmri);example=[bname,'.example'];
+example = [fmri,'.example'];
 
 disp('---------------------------------------');
 disp('BFP fMRI PREPROCESSING !');
@@ -181,20 +182,23 @@ outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0
         if FSLRigidReg > 0
-            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
+            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
             fprintf(fp, '--Option T1: mask fMRI\n');
         else
-            transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid.registration.result.mat'], 'nearest');
-            msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
-            msk.img(msk.img==255)=1;
-            save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
-            unix(['rm ',fmri,'.mask.temp.nii.gz'])
+            transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], ...
+                [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid_registration_result.mat'], 'nearest');
             fprintf(fp, '--Option T1: Skull Strip fMRI\n');
         end
     else
-        unix(['3dAutomask -prefix ',fmri,'.mask.nii.gz -dilate 1 ',example,'.func.nii.gz']);
+        unix(['3dAutomask -prefix ',fmri,'.mask.temp.nii.gz -dilate 1 ',example,'.func.nii.gz']);
         fprintf(fp, '--Option autothreshold: Skull Strip fMRI\n');
     end
+    
+    msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
+    msk.img(msk.img>0)=1;
+    save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
+    unix(['rm ',fmri,'.mask.temp.nii.gz'])
+    
     % this command shows a lot of warnings
     unix(['3dcalc -a ',fmri,'.mc.nii.gz -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
 else
@@ -229,43 +233,66 @@ else
     disp('file found. skipping step')
     fprintf(fp, 'Grand Mean Scaling file found. skipping step. \n');
 end
-%% Temporal filtering
-disp('Band-pass filtering');
-gmsfile = [fmri,'.gms.nii.gz']; %%%%remove
-infile = outfile; clear outfile %_gms
-outfile = [fmri,'.filt.nii.gz'];
-[~,n_vols]=unix(['3dinfo -nv ',infile]); n_vols=str2double(n_vols);
-if ~exist(outfile,'file')
-    %check if have min number of volumes for high pass filter
-    minvol = 1/(str2double(TR)*str2double(hp));
-    if minvol <= n_vols
-        unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile]);
-        fprintf(fp, '--Temporal Filter\n');
+%%  Bandpass filtering
+if str2double(config.BPoption) > 0
+    disp('Band-pass filtering option 1')
+    infile = outfile; clear outfile
+    if str2double(config.RunDetrend) > 0
+        outfile = [fmri,'.pp.nii.gz'];
+        if ~exist(outfile,'file')
+            unix(['3dBandpass -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile]);
+            fprintf(fp, '--Temporal Filter option 0 with detrending\n');
+        else
+            disp('file found. skipping step')
+            fprintf(fp, 'Temporal Filter with detrending file found. skipping step.\n');
+        end
     else
-        unix(['3dFourier -lowpass ',num2str(lp),' -retrend -prefix ',outfile,' ',infile]);
-        fprintf(fp, '--Temporal Filter: too few volumes. Only lowpass filter was run.\n');
+        outfile = [fmri,'.filt.nii.gz'];
+        if ~exist(outfile,'file')
+            unix(['3dBandpass -nodetrend -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile]);
+            fprintf(fp, '--Temporal Filter option 0 without detrending\n');
+        else
+            disp('file found. skipping step')
+            fprintf(fp, 'Temporal Filter without detrending file found. skipping step.\n');
+        end
     end
 else
-    disp('file found. skipping step')
-    fprintf(fp, 'Temporal Filter file found. skipping step.\n');
-end
-%% Detrending
-if str2double(config.RunDetrend) > 0
-    disp('Removing linear and quadratic trends');
-    infile = outfile; clear outfile; %_filt
-    outfile = [fmri,'.pp.nii.gz'];
-    detrendfile = [fmri,'.pp.nii.gz']; %%%%remove
+    % Temporal filtering
+    disp('Band-pass filtering option 0');
+    infile = outfile; clear outfile %_gms
+    outfile = [fmri,'.filt.nii.gz'];
+    [~,n_vols]=unix(['3dinfo -nv ',infile]); n_vols=str2double(n_vols);
     if ~exist(outfile,'file')
-        unix(['3dTstat -mean -prefix ',fmri,'.filt.mean.nii.gz ',infile]);
-        unix(['3dDetrend -polort 2 -prefix ',fmri,'.dt.nii.gz ',infile]);
-        unix(['3dcalc -a ',fmri,'.filt.mean.nii.gz -b ',fmri,'.dt.nii.gz -expr ''a+b'' -prefix ',outfile]);
-        fprintf(fp, '--Option Detrend: Yes\n');
+        %check if have min number of volumes for high pass filter
+        minvol = 1/(str2double(TR)*str2double(hp));
+        if minvol <= n_vols
+            unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile]);
+            fprintf(fp, '--Temporal Filter option 0\n');
+        else
+            unix(['3dFourier -lowpass ',num2str(lp),' -retrend -prefix ',outfile,' ',infile]);
+            fprintf(fp, '--Temporal Filter option 0: too few volumes. Only lowpass filter was run.\n');
+        end
     else
         disp('file found. skipping step')
-        fprintf(fp, 'Detrend file found. skipping step.\n');
+        fprintf(fp, 'Temporal Filter file found. skipping step.\n');
     end
-else
-    fprintf(fp, '--Option Detrend: No\n');
+    % Detrending
+    if str2double(config.RunDetrend) > 0
+        disp('Removing linear and quadratic trends');
+        infile = outfile; clear outfile; %_filt
+        outfile = [fmri,'.pp.nii.gz'];
+        if ~exist(outfile,'file')
+            unix(['3dTstat -mean -prefix ',fmri,'.filt.mean.nii.gz ',infile]);
+            unix(['3dDetrend -polort 2 -prefix ',fmri,'.dt.nii.gz ',infile]);
+            unix(['3dcalc -a ',fmri,'.filt.mean.nii.gz -b ',fmri,'.dt.nii.gz -expr ''a+b'' -prefix ',outfile]);
+            fprintf(fp, '--Option Detrend: yes\n');
+        else
+            disp('file found. skipping step')
+            fprintf(fp, 'Detrend file found. skipping step.\n');
+        end
+    else
+        fprintf(fp, '--Option Detrend: No\n');
+    end
 end
 %% FUNC->standard (3mm)
 disp('Performing registration to standard space')
@@ -324,7 +351,7 @@ if str2double(config.RunNSR) > 0
     if FSLRigidReg > 0
         unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
     else
-        transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid.registration.result.mat'], 'nearest');
+        transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid_registration_result.mat'], 'nearest');
     end
     %
     pvclbl = load_untouch_nii_gz([fmri,'.pvc.label.nii.gz']);
@@ -382,6 +409,8 @@ if str2double(config.RunNSR) > 0
     BFP_outfile = [fmri,'.res2standard.nii.gz'];
     fprintf(fp, '--Option Nuissance Signal Regression: Yes\n');
 else
+    gmsfile = [fmri,'.gms.nii.gz'];
+    detrendfile = [fmri,'.pp.nii.gz'];
     if str2double(config.RunDetrend) > 0
         RS_infile = detrendfile;
         BFP_outfile = [fmri,'.pp2standard.nii.gz'];
@@ -396,7 +425,7 @@ end
 if FSLRigidReg > 0
     unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',func_dir,'/',example,'.func2standard.mat -interp trilinear']);
 else
-        transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'.func.nii.gz'], 'standard.nii.gz', [fmri,'.example.func2standard.rigid.registration.result.mat'], 'linear');
+        transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'.func.nii.gz'], 'standard.nii.gz', [fmri,'.example.func2standard.rigid_registration_result.mat'], 'linear');
 end
 fprintf(fp, '--Transform fMRI data to standard space\n');
 fclose(fp);

@@ -1,5 +1,5 @@
 #%%
-config_file = r'C:\Users\chois\Dropbox\SCD\Analysis\BOLD\2020-07\\BFPtest_config_stats_win.ini'
+config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/test/BFPtest_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -18,7 +18,7 @@ section = config.sections()
 bfp_path = config.get('inputs','bfp_path')
 sys.path.append(os.path.join(bfp_path, 'src/stats/') )
 sys.path.append(os.path.join(str(bfp_path), 'src/BrainSync/')) 
-from read_data_utils import load_bfp_dataT, read_demoCSV, write_text_timestamp,readConfig
+from read_data_utils import load_bfp_dataT, read_demoCSV, write_text_timestamp,readConfig,load_bfp_dataT_dist2atlas
 os.chdir(bfp_path)
 cf = readConfig(config_file)
 from brainsync import IDrefsub_BrainSync, groupBrainSync, generate_avgAtlas
@@ -118,28 +118,20 @@ if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
         del subAtlas_data
         spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
         write_text_timestamp(log_fname, 'Atlas saved out as '+os.path.join(cf.out_dir + '/atlas.mat')) 
-#%% load data
-if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
-    subTest_data, numT = load_bfp_dataT(subTest_fname, int(cf.lentime),bool(cf.matcht))
 
-with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
-    if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
-        csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
-    else:
-        csv.writer(csvfile).writerows(zip(subTest_IDs, subTest_varmain, subTest_varc1, subTest_varc2))
-
-#%%
-    
-    
-    
-    
 #%% atlas-based linear regression
 if cf.stat_test == 'atlas-linear':
-    #sync and calculates geodesic distances
-    subTest_syndata = sync2atlas(atlas_data, subTest_data)
-    subTest_diff,_ = dist2atlas(atlas_data, subTest_syndata)
+    #load, sync and calculates geodesic distances
+    subTest_diff, numT = load_bfp_dataT_dist2atlas(subTest_fname, cf.atlas_fname, int(cf.lentime), cf.matcht)
     spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
-    del subTest_data, subTest_syndata
+    
+    #write out csv file of subjects tested and variables used for testing
+    with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
+        if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
+            csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
+        else:
+            csv.writer(csvfile).writerows(zip(subTest_IDs, subTest_varmain, subTest_varc1, subTest_varc2))
+    
     # computes correlation after controlling for two covariates
     rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2, float(cf.sig_alpha), 'linear')
     spio.savemat(os.path.join(cf.out_dir + '/' + cf.outname + '_rval.mat'), {'rval': rval})

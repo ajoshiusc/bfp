@@ -77,6 +77,26 @@ def sync2atlas(atlas, sub_data):
 
     return syn_data
 
+def dist2atlas_sub(atlas, syn_data):
+    ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
+    inputs: atlas: Time x Vector matrix of reference atlas (see brainsync.py)
+            syn_data: Time x Vector x Subjects matrix of subjects already synchronized to the atlas.
+    output: geo_dist Vector x Subjects data matrix of Geodesic distances
+            pearson_corr Vector x Subjects data matrix of Pearson correlations
+    '''
+
+    numVert = syn_data.shape[1]
+    pearson_corr = sp.zeros([numVert, 1])
+    geo_dist = sp.zeros([numVert, 1])
+
+    pearson_corr = sp.sum((syn_data * atlas), axis=0)
+    geo_dist = np.arccos(pearson_corr)
+        
+    a = pearson_corr > 1
+    geo_dist[a] = 0
+    print('done')
+    return geo_dist, pearson_corr
+
 
 def dist2atlas(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 

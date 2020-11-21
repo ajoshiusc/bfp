@@ -46,7 +46,7 @@ end
 LookUpTable.IDs=IDs;
 LookUpTable.IDNames=IDNames;
 
-save('USCLobes_grayordinate_labels.mat', 'LookUpTable', 'labels');
+save('USCBrain_grayordinate_labels.mat', 'LookUpTable', 'labels');
 
 
 
@@ -62,7 +62,7 @@ vol_labs=double(vol_labs);
 vol_labs(bad_lab_ind)=griddata(voxc(good_lab_ind,1),voxc(good_lab_ind,2),voxc(good_lab_ind,3),vol_labs(good_lab_ind), voxc(bad_lab_ind,1),voxc(bad_lab_ind,2),voxc(bad_lab_ind,3),'nearest');
 % Concatenate surface and volume labels
 labels=[surf_labs;vol_labs(1+length(surf_labs):end)];
-save('USCLobes_grayordinate_labels_clean.mat', 'LookUpTable', 'labels');
+save('USCBrain_grayordinate_labels_clean.mat', 'LookUpTable', 'labels');
 
 
 

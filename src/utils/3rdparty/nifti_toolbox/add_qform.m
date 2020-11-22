@@ -66,7 +66,7 @@ elseif nii.hdr.hist.sform_code==0 && ~force_flag
    
 elseif nii.hdr.hist.qform_code>0 && ~force_flag
    outnii = nii;
-   warning('BDP:addQform:QformSet', 'qform is already set. Nothing to do.');
+%   warning('BDP:addQform:QformSet', 'qform is already set. Nothing to do.');
    
 else
    outnii = nii;

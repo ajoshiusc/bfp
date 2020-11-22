@@ -8,6 +8,13 @@ function gen_brainordinates(BSTDir, bfp_out, subid, sessionid)
 
 sub_mri = fullfile(bfp_out,subid,'anat',[subid,'_T1w.bfc.nii.gz']);
 subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.nii.gz']);
+if ~isfile(subfmri)
+    subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_res2standard.nii.gz']);
+    if ~isfile(subfmri)
+        fprintf('File doesn''t exist:%s\n',subfmri);
+        return;
+    end
+end
 map_file = fullfile(bfp_out,subid,'anat',[subid,'_T1w.svreg.inv.map.nii.gz']);
 mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.mapped.nii.gz']);
 bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.BOrd.mat']);

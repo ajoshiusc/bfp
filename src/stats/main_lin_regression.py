@@ -18,11 +18,11 @@ from tqdm import tqdm
 import time
 # In[2]:
 
-BFPPATH = '/home/ajoshi/coding_ground/bfp'
+BFPPATH = '/ImagePTE1/ajoshi/code_farm/bfp'
 FSL_PATH = '/usr/share/fsl/5.0'
 # study directory where all the grayordinate files lie
-DATA_DIR = '/deneb_disk/ADHD_Peking_gord'
-CSV_FILE = '/deneb_disk/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
+DATA_DIR = '/big_disk/ajoshi/ADHD_Peking_gord'
+CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 
 # ### Read CSV file to read the group IDs. This study has three subgroups:
 # 1. Normal controls,
@@ -56,7 +56,7 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=5000,  # 19900,
+        num_pairs=2000,  # 19900,
         nperm=2000,
         len_time=LEN_TIME,
         num_proc=6,
@@ -65,25 +65,27 @@ def main():
 
     print(t1 - t0)
     sp.savez(
-        'pval_num_pairs5000_nsub200_nperm2000.npz',
+        'pval_num_pairs2000_nsub200_nperm2000.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
     # corr_pval_max=a['corr_pval_max']
     # corr_pval_fdr=a['corr_pval_fdr']
     vis_grayord_sigpval(
         corr_pval_max,
-        surf_name='rand_dist_corr_perm_max',
+        surf_name='rand_dist_corr_perm_pairs2000_max',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
-        fsl_path=FSL_PATH)
+        fsl_path=FSL_PATH,
+        sig_alpha=0.05)
     vis_grayord_sigpval(
         corr_pval_fdr,
-        surf_name='rand_dist_corr_perm_fdr',
+        surf_name='rand_dist_corr_perm_pairs2000_fdr',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
-        fsl_path=FSL_PATH)
+        fsl_path=FSL_PATH,
+        sig_alpha=0.05)
 
     print('Results saved')
 

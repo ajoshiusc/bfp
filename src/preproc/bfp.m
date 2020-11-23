@@ -519,6 +519,7 @@ for ind = 1:length(fmri)
     
     fprintf('Generating Brainordinate files\n')
     fprintf(fp, 'Generating Brainordinates files\n');
+    BOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.BOrd.mat',subid,sessionid{ind}));
     if ~isfile(BOrdFile)
         gen_brainordinates(BrainSuitePath, studydir, subid, sessionid{ind});
     else
@@ -534,6 +535,7 @@ for ind = 1:length(fmri)
     fmri2standard=BFP_outfile;
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol.GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
+
     fprintf('Resampling fMRI to surface\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         if 0

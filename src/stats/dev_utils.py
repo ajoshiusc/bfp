@@ -3,6 +3,9 @@ workspace for tools used for developing
 not to be published
 """
 
+from brainsync import normalizeData, brainSync
+from functools import partial
+import multiprocessing
 import csv
 import os
 import scipy as sp
@@ -17,10 +20,6 @@ from surfproc import view_patch_vtk, patch_color_attrib, smooth_surf_function, s
 from dfsio import readdfs, writedfs
 import sys
 sys.path.append('../BrainSync')
-import multiprocessing
-from functools import partial
-from brainsync import normalizeData, brainSync
-
 
 
 def pair_dist(rand_pair, sub_files, reg_var, len_time=235):
@@ -110,7 +109,7 @@ def randpairsdist_reg(bfp_path,
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
-    #Generate random pairs
+    # Generate random pairs
     rand_pairs = sp.random.choice(len(sub_files), (num_pairs, 2), replace=True)
 
     fmri_diff = sp.zeros((num_vert, num_pairs))
@@ -161,7 +160,7 @@ def pairsdist_regression(bfp_path,
     # Allocate memory for subject data
     sub_data = np.zeros(shape=(len_time, num_vert, num_sub))
 
-    #Generate random pairs
+    # Generate random pairs
     print('Reading subjects')
     for subno, filename in enumerate(tqdm(sub_files)):
         data = spio.loadmat(filename)['dtseries'].T
@@ -299,7 +298,8 @@ def read_fcon1000_data(csv_fname,
                        data_dir,
                        reg_var_name='Verbal IQ',
                        num_sub=5,
-                       reg_var_positive=1):
+                       reg_var_positive=1,
+                       gord=1):
     """ reads fcon1000 csv and data"""
 
     count1 = 0
@@ -314,9 +314,13 @@ def read_fcon1000_data(csv_fname,
             # read the regression variable
             rvar = row[reg_var_name]
 
-            # Read the filtered data by default
-            fname = os.path.join(
-                data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.filt.mat')
+            if gord == 1:
+                # Read the filtered data by default
+                fname = os.path.join(
+                    data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.filt.mat')
+            else:
+                fname = os.path.join(
+                    data_dir, row['ScanDir ID'] + '_rest_bold.BOrd.mat')
 
             # If the data does not exist for this subject then skip it
             if not os.path.isfile(fname) or int(row['QC_Rest_1']) != 1:

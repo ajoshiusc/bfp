@@ -556,12 +556,14 @@ def randpairs_regression(bfp_path,
 
     corr_pval[sp.isnan(corr_pval)] = .5
 
+
     labs = spio.loadmat(
         bfp_path +
         '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
     labs[sp.isnan(labs)] = 0
 
-    corr_pval[labs == 0] = 0.5
+    if len(corr_pval) == len(labs):
+        corr_pval[labs == 0] = 0.5
 
     return corr_pval, corr_pval2
 

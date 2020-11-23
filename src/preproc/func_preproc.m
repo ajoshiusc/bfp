@@ -162,7 +162,7 @@ if ~exist([example,'.func2t1.nii.gz'],'file')
     if FSLRigidReg > 0
         disp('Using FSL rigid registration');
         unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'.func.nii.gz -out ',example,'.func2t1.nii.gz -omat ',example,'.func2t1.mat -cost corratio -dof 6 -interp trilinear']);
-        unix(['convert_xfm -inverse -omat t12',example,'.func.mat ',example,'.func2t1.mat']);
+        unix(['convert_xfm -inverse -omat ',example,'.t12func.mat ',example,'.func2t1.mat']);
         fprintf(fp, '--Registration to T1: Option FSL\n');
     else
         disp('Using USC rigid registration');
@@ -182,7 +182,7 @@ outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0
         if FSLRigidReg > 0
-            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
+            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
             fprintf(fp, '--Option T1: mask fMRI\n');
         else
             transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], ...

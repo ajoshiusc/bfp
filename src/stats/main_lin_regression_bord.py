@@ -22,7 +22,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 50  # Number of subjects for the study
+NUM_SUB = 150  # Number of subjects for the study
 
 
 def main():
@@ -49,15 +49,15 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=2000,  # 19900,
-        nperm=2000,
+        num_pairs=5000,  # 19900,
+        nperm=5000,
         len_time=LEN_TIME,
         num_proc=6,
         pearson_fdr_test=False)
     t1 = time.time()
 
     print(t1 - t0)
-    sp.savez(
+    np.savez(
         'pval_num_pairs2000_nsub200_nperm2000_bord.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
@@ -65,17 +65,17 @@ def main():
     # corr_pval_fdr=a['corr_pval_fdr']
 
     save2volbord_bci((0.05-corr_pval_fdr)*np.float32(corr_pval_fdr < 0.05),
-                     'pval_bord_ADHD_fdr_smooth1.5.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+                     'pval_bord_ADHD_fdr_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
     save2volbord_bci((0.05-corr_pval_max)*np.float32(corr_pval_max < 0.05),
-                     'pval_bord_ADHD_max_smooth1.5.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
+                     'pval_bord_ADHD_max_smooth1.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.5)
     save2volbord_bci((0.05-corr_pval_fdr)*np.float32(corr_pval_fdr < 0.05),
-                     'pval_bord_ADHD_fdr_smooth1.nii.gz', bfp_path=BFPPATH, smooth_std=1.0)
+                     'pval_bord_ADHD_fdr_smooth1_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.0)
     save2volbord_bci((0.05-corr_pval_max)*np.float32(corr_pval_max < 0.05),
-                     'pval_bord_ADHD_max_smooth1.nii.gz', bfp_path=BFPPATH, smooth_std=1.0)
+                     'pval_bord_ADHD_max_smooth1_150.nii.gz', bfp_path=BFPPATH, smooth_std=1.0)
     save2volbord_bci((0.05-corr_pval_fdr)*np.float32(corr_pval_fdr < 0.05),
-                     'pval_bord_ADHD_fdr_smooth0.5.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
+                     'pval_bord_ADHD_fdr_smooth0.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
     save2volbord_bci((0.05-corr_pval_max)*np.float32(corr_pval_max < 0.05),
-                     'pval_bord_ADHD_max_smooth0.5.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
+                     'pval_bord_ADHD_max_smooth0.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
 
     print('Results saved')
 

@@ -26,10 +26,13 @@ import statsmodels.api as sm
 from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
+from scipy.stats import f
 
 from brainsync import brainSync, normalizeData
 from dfsio import readdfs, writedfs
 from surfproc import patch_color_attrib, smooth_surf_function
+from sklearn.kernel_ridge import KernelRidge as KRR
+
 
 # if VTK_INSTALLED:
 #    from surfproc import view_patch_vtk, smooth_patch
@@ -51,6 +54,7 @@ def read_gord_data(data_dir, num_sub=1e6):
 
     return sub_data_files
 
+
 def read_bord_data(data_dir, num_sub=1e6):
 
     dirlist = glob.glob(data_dir + '/*BOrd.mat')
@@ -67,6 +71,7 @@ def read_bord_data(data_dir, num_sub=1e6):
 
     return sub_data_files
 
+
 def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
 
@@ -76,6 +81,7 @@ def sync2atlas(atlas, sub_data):
         syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
 
     return syn_data
+
 
 def dist2atlas_sub(atlas, syn_data):
     ''' calculates geodesic distance between atlas and individual subjects at each vertex. all data should be synchronized to the atlas 
@@ -91,7 +97,7 @@ def dist2atlas_sub(atlas, syn_data):
 
     pearson_corr = sp.sum((syn_data * atlas), axis=0)
     geo_dist = np.arccos(pearson_corr)
-        
+
     a = pearson_corr > 1
     geo_dist[a] = 0
     print('done')
@@ -495,6 +501,75 @@ def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
     return F, pval
 
 
+##
+def kernel_regression(bfp_path,
+                      sub_files,
+                      reg_var,
+                      nperm=1000,
+                      len_time=235,
+                      num_proc=4,
+                      fdr_test=False):
+    """  and Kernel Regression """
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+    num_sub = len(sub_files)
+    pairs = np.array(list(itertools.combinations(range(num_sub), r=2)))
+    num_pairs = len(pairs)
+
+    fmri_diff = np.zeros((num_vert, num_pairs))
+    regvar_diff = np.zeros(num_pairs)
+
+    if num_proc > 1:
+        pool = Pool(num_proc)
+
+        results = pool.imap(
+            partial(pair_dist,
+                    sub_files=sub_files,
+                    reg_var=reg_var,
+                    len_time=len_time), pairs)
+
+        ind = 0
+        for res in results:
+            fmri_diff[:, ind] = res[0]
+            regvar_diff[ind] = res[1]
+            ind += 1
+
+    else:
+        for ind in tqdm(range(len(pairs))):
+
+            fmri_diff[:, ind], regvar_diff[ind] = pair_dist(
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time,
+                rand_pair=pairs[ind])
+
+    kr = KRR(kernel='precomputed')
+    D = np.zeros((num_sub, num_sub))
+    pval_kr = np.zeros(num_vert)
+    gamma = 0.75 # checked by brute force #1/20  # bandwidth for RBF
+
+    for v in tqdm(range(num_vert)):
+        D = np.zeros((num_sub, num_sub))
+        D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
+
+        D = D+D.T  # make it symmetric
+        D = np.exp(-gamma * D)
+        # Do this in a split train test split
+        kr.fit(D, reg_var)
+        pred_v = kr.predict(D)
+
+        pred_var_null = np.mean(reg_var)
+
+        Fstat = np.mean((pred_v-reg_var)**2) / \
+            np.mean((pred_var_null-reg_var)**2)
+        pval_kr[v] = f.cdf(Fstat, num_sub-2, num_sub-1)
+
+    _, pval_kr_fdr = fdrcorrection(pval_kr)
+
+    return pval_kr, pval_kr_fdr
+
+
 def randpairs_regression(bfp_path,
                          sub_files,
                          reg_var,
@@ -555,7 +630,6 @@ def randpairs_regression(bfp_path,
                                                  nperm=nperm)
 
     corr_pval[sp.isnan(corr_pval)] = .5
-
 
     labs = spio.loadmat(
         bfp_path +

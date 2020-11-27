@@ -591,7 +591,7 @@ def kernel_regression(bfp_path,
     gamma = 5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
     nperm = 10
-    null_err = np.zeros(nperm)
+    null_err = np.zeros((nperm,num_sub))
 
     for v in tqdm(range(num_vert)):
         D = np.zeros((num_sub, num_sub))
@@ -602,7 +602,7 @@ def kernel_regression(bfp_path,
         # Do this in a split train test split
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
-        err = np.sum((pred_v - reg_var)**2)
+        err = (pred_v - reg_var)**2
 
 
         for p in range(nperm):
@@ -610,13 +610,13 @@ def kernel_regression(bfp_path,
             kr.fit(D, reg_var_perm)
             #pred_var_null = np.mean(reg_var)
             pred_var_null = kr.predict(D)
-            null_err[p] = np.sum((pred_var_null-reg_var_perm)**2)
+            null_err[p,:] = (pred_var_null-reg_var_perm)**2
         
 
         #Fstat = np.mean((pred_v-reg_var)**2) / \
         #    np.mean((pred_var_null-reg_var)**2)
         #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
-        pval_kr[v] = np.sum(np.sum(err>null_err))/nperm
+        pval_kr[v] = np.sum(err[:,None,None]>null_err[None,:,:])/(nperm*num_sub*num_sub)
 
     _, pval_kr_fdr = fdrcorrection(pval_kr)
 

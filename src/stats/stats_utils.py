@@ -585,7 +585,7 @@ def kernel_regression(bfp_path,
                 len_time=len_time,
                 rand_pair=pairs[ind])
 
-    kr = KRR(kernel='precomputed', alpha=1.5)
+    kr = KRR(kernel='precomputed', alpha=1.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr = np.zeros(num_vert)
     gamma = 5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF

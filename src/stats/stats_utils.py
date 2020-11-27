@@ -30,6 +30,7 @@ from scipy.stats import f
 
 from brainsync import brainSync, normalizeData
 from dfsio import readdfs, writedfs
+#from stats.main_lin_regression_simulation import NUM_SUB
 from surfproc import patch_color_attrib, smooth_surf_function
 from sklearn.kernel_ridge import KernelRidge as KRR
 
@@ -193,6 +194,43 @@ def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
     else:
         sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
         sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+
+    sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
+    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+
+    # Returns SQUARE of the distance
+    if len(reg_var) > 0:
+        regvar_diff = sp.square(reg_var[rand_pair[0]] - reg_var[rand_pair[1]])
+        return fmri_diff, regvar_diff
+    else:
+        return fmri_diff
+
+
+def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235, roi=[]):
+    """ Pair distance """
+
+    # normalize the clinical variable
+    reg_var_norm, _, _ = normalizeData(reg_var)
+
+    roi_ind, _ = np.where(roi)
+
+    noise_data = reg_var_norm * np.random.normal(size=(len(roi_ind),len_time,len(reg_var)))
+
+    sub_data = np.array(sub_data)
+    if sub_data.size > 0:
+        sub1_data = sub_data[:, :, rand_pair[0]]
+        sub2_data = sub_data[:, :, rand_pair[1]]
+        sub1_data += noise_data[:,:,rand_pair[0]]
+        sub2_data += noise_data[:,:,rand_pair[1]]
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
+    else:
+        sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
+        sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+        sub1_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[0]].T
+        sub2_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[1]].T
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
@@ -511,6 +549,9 @@ def kernel_regression(bfp_path,
                       fdr_test=False):
     """  and Kernel Regression """
 
+    # Normalize the variable
+    reg_var, _, _ = normalizeData(reg_var)
+
     # Get the number of vertices from a file
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
     num_sub = len(sub_files)
@@ -544,10 +585,10 @@ def kernel_regression(bfp_path,
                 len_time=len_time,
                 rand_pair=pairs[ind])
 
-    kr = KRR(kernel='precomputed')
+    kr = KRR(kernel='precomputed', alpha=1.5)
     D = np.zeros((num_sub, num_sub))
     pval_kr = np.zeros(num_vert)
-    gamma = 0.75 # checked by brute force #1/20  # bandwidth for RBF
+    gamma = 5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
     for v in tqdm(range(num_vert)):
         D = np.zeros((num_sub, num_sub))
@@ -612,6 +653,83 @@ def randpairs_regression(bfp_path,
                 reg_var=reg_var,
                 len_time=len_time,
                 rand_pair=pairs[ind])
+
+    corr_pval2 = 0
+    if not pearson_fdr_test:
+        print('Performing Permutation test with MAX statistic')
+        corr_pval, corr_pval2, _ = corr_perm_test(X_pairs=fmri_diff.T,
+                                                  Y_pairs=regvar_diff,
+                                                  reg_var=reg_var,
+                                                  num_sub=len(sub_files),
+                                                  nperm=nperm)
+    else:
+        print('Performing Pearson correlation with FDR testing')
+        corr_pval, corr_pval2 = corr_pearson_fdr(X_pairs=fmri_diff.T,
+                                                 Y_pairs=regvar_diff,
+                                                 reg_var=reg_var,
+                                                 num_sub=len(sub_files),
+                                                 nperm=nperm)
+
+    corr_pval[sp.isnan(corr_pval)] = .5
+
+    labs = spio.loadmat(
+        bfp_path +
+        '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
+    labs[sp.isnan(labs)] = 0
+
+    if len(corr_pval) == len(labs):
+        corr_pval[labs == 0] = 0.5
+
+    return corr_pval, corr_pval2
+
+
+def randpairs_regression_simulation(bfp_path,
+                                    sub_files,
+                                    reg_var,
+                                    num_pairs=2000,
+                                    nperm=1000,
+                                    len_time=235,
+                                    num_proc=4,
+                                    pearson_fdr_test=False):
+    """ Perform regression stats based on square distance between random pairs """
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+
+    labs = spio.loadmat(
+        '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+
+    roi = (labs == 200)  # R. Parietal Lobe
+
+    pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
+                                      num_pairs=num_pairs)
+
+    fmri_diff = sp.zeros((num_vert, num_pairs))
+    regvar_diff = sp.zeros(num_pairs)
+
+    if num_proc > 1:
+        pool = Pool(num_proc)
+
+        results = pool.imap(
+            partial(pair_dist_simulation,
+                    sub_files=sub_files,
+                    reg_var=reg_var,
+                    len_time=len_time, roi=roi), pairs)
+
+        ind = 0
+        for res in results:
+            fmri_diff[:, ind] = res[0]
+            regvar_diff[ind] = res[1]
+            ind += 1
+
+    else:
+        for ind in tqdm(range(len(pairs))):
+
+            fmri_diff[:, ind], regvar_diff[ind] = pair_dist_simulation(
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time,
+                rand_pair=pairs[ind], roi=roi)
 
     corr_pval2 = 0
     if not pearson_fdr_test:

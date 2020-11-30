@@ -216,12 +216,14 @@ def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time
 
     roi_ind, _ = np.where(roi)
 
-    noise_data = reg_var_norm * np.random.normal(size=(len(roi_ind),len_time,len(reg_var)))
+    noise_data = (reg_var_norm-np.min(reg_var_norm)) * np.random.normal(size=(len(roi_ind),len_time,len(reg_var)))
 
     sub_data = np.array(sub_data)
     if sub_data.size > 0:
         sub1_data = sub_data[:, :, rand_pair[0]]
         sub2_data = sub_data[:, :, rand_pair[1]]
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
         sub1_data += noise_data[:,:,rand_pair[0]]
         sub2_data += noise_data[:,:,rand_pair[1]]
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
@@ -229,6 +231,8 @@ def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time
     else:
         sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
         sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+        sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
+        sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
         sub1_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[0]].T
         sub2_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[1]].T
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
@@ -549,6 +553,11 @@ def kernel_regression(bfp_path,
                       fdr_test=False):
     """  and Kernel Regression """
 
+
+    labs = spio.loadmat(
+        '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+    roi = (labs == 200)  # R. Parietal Lobe
+
     # Normalize the variable
     reg_var, _, _ = normalizeData(reg_var)
 
@@ -565,10 +574,11 @@ def kernel_regression(bfp_path,
         pool = Pool(num_proc)
 
         results = pool.imap(
-            partial(pair_dist,
+            partial(pair_dist_simulation,
                     sub_files=sub_files,
                     reg_var=reg_var,
-                    len_time=len_time), pairs)
+                    len_time=len_time, 
+                    roi=roi), pairs)
 
         ind = 0
         for res in results:
@@ -579,18 +589,19 @@ def kernel_regression(bfp_path,
     else:
         for ind in tqdm(range(len(pairs))):
 
-            fmri_diff[:, ind], regvar_diff[ind] = pair_dist(
+            fmri_diff[:, ind], regvar_diff[ind] = pair_dist_simulation(
                 sub_files=sub_files,
                 reg_var=reg_var,
                 len_time=len_time,
-                rand_pair=pairs[ind])
+                rand_pair=pairs[ind],
+                roi=roi)
 
     kr = KRR(kernel='precomputed') #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr = np.zeros(num_vert)
     gamma = .1 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
-    nperm =100
+    nperm = 10
     null_err = np.zeros(nperm)
 
     for v in tqdm(range(num_vert)):

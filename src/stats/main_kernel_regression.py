@@ -30,7 +30,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 150  # Number of subjects for the study
+NUM_SUB = 15  # Number of subjects for the study
 
 
 def main():
@@ -44,7 +44,7 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    #reg_var = np.random.permutation(reg_var)
+    reg_var = np.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
@@ -58,7 +58,7 @@ def main():
         reg_var=reg_var,
         nperm=2000,
         len_time=LEN_TIME,
-        num_proc=4,
+        num_proc=1,
         fdr_test=False)
     t1 = time.time()
 
@@ -76,7 +76,7 @@ def main():
         smooth_iter=1000,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH,
-        sig_alpha=0.15)
+        sig_alpha=0.05)
     vis_grayord_sigpval(
         pval_fdr,
         surf_name='KR_pval_fdr',
@@ -84,7 +84,7 @@ def main():
         smooth_iter=1000,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH,
-        sig_alpha=0.25)
+        sig_alpha=0.05)
 
     print('Results saved')
 

@@ -30,7 +30,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 5  # Number of subjects for the study
+NUM_SUB = 150  # Number of subjects for the study
 
 
 def main():

@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import h5py
 #%%
 # This is the name of the directory that contains the grayordinate files
-p_dir = '/ImagePTE1/ajoshi/BFP_samples'
-lst = glob.glob(p_dir + '/*.mat')
+p_dir = '/big_disk/ajoshi/ADHD_Peking_gord'
+lst = glob.glob(p_dir + '/*.filt.mat')
 count1 = 0
 
 # Get number of subjects

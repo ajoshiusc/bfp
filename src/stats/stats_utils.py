@@ -601,7 +601,7 @@ def kernel_regression(bfp_path,
     pval_kr = np.zeros(num_vert)
     gamma = .1 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
-    nperm = 10
+    nperm = 100
     null_err = np.zeros(nperm)
 
     for v in tqdm(range(num_vert)):

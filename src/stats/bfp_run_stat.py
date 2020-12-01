@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/test/BFPtest_config_stats.ini'
+config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/atlas-male/BFPtest_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -116,7 +116,8 @@ if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
             write_text_timestamp(log_fname, 'Subject number ' + str(subAtlas_IDs[subRef_num]) + ' will be used for atlas creation')
             atlas_data = generate_avgAtlas(subRef_data, subAtlas_data)
         del subAtlas_data
-        spio.savemat(os.path.join(cf.out_dir + '/atlas.mat'), {'atlas_data': atlas_data})
+        cf.atlas_fname = os.path.join(cf.out_dir + '/atlas.mat')
+        spio.savemat(cf.atlas_fname, {'atlas_data': atlas_data})
         write_text_timestamp(log_fname, 'Atlas saved out as '+os.path.join(cf.out_dir + '/atlas.mat')) 
 
 #%% atlas-based linear regression

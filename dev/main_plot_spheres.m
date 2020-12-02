@@ -53,7 +53,7 @@ end
 
 %%
 load('/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat');
-r=readdfs('/ImagePTE1/ajoshi/code_farm/bfp/supp_data/bci32kright.dfs');
+r=readdfs('/ImagePTE1/ajoshi/code_farm/bfp/supp_data/bci32kright_smooth.dfs');
 c=0.5+0*r.vertices;
 c(labels(32492+1:2*32492)==200,1:2)=1;
 patch('vertices',r.vertices,'faces',r.faces,'facevertexcdata',c,'edgecolor','none','facecolor','flat');

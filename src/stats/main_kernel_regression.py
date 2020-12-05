@@ -50,28 +50,29 @@ def main():
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
 
     t0 = time.time()
-    print('performing stats based on random pairwise distances')
+    print('performing stats based on kernel regression')
 
-    pval, pval_fdr = kernel_regression(
+    pval, pval_fdr, pval_max = kernel_regression(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
         nperm=2000,
         len_time=LEN_TIME,
         num_proc=1,
-        fdr_test=False)
+        fdr_test=False,
+        simulation=True)
     t1 = time.time()
 
     print(t1 - t0)
-    sp.savez(
-        'pval_KR.npz',
+    np.savez(
+        'pval_KR_simulation.npz',
         pval=pval,
         pval_fdr=pval_fdr)
     # corr_pval_max=a['corr_pval_max']
     # corr_pval_fdr=a['corr_pval_fdr']
     vis_grayord_sigpval(
         pval,
-        surf_name='KR_pval',
+        surf_name='KR_pval_simulation',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
@@ -79,7 +80,15 @@ def main():
         sig_alpha=0.05)
     vis_grayord_sigpval(
         pval_fdr,
-        surf_name='KR_pval_fdr',
+        surf_name='KR_pval_fdr_simulation',
+        out_dir='.',
+        smooth_iter=1000,
+        bfp_path=BFPPATH,
+        fsl_path=FSL_PATH,
+        sig_alpha=0.05)
+    vis_grayord_sigpval(
+        pval_max,
+        surf_name='KR_pval_max_simulation',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,

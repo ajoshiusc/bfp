@@ -544,19 +544,25 @@ def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
 
 
 ##
+
+
+##
 def kernel_regression(bfp_path,
                       sub_files,
                       reg_var,
                       nperm=1000,
                       len_time=235,
                       num_proc=4,
-                      fdr_test=False):
+                      fdr_test=False,
+                      simulation=False):
     """  and Kernel Regression """
 
 
-    labs = spio.loadmat(
-        '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
-    roi = (labs == 200)  # R. Parietal Lobe
+    if simulation:
+        # added for simulation
+        labs = spio.loadmat(
+            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+        roi = (labs == 200)  # R. Parietal Lobe
 
     # Normalize the variable
     reg_var, _, _ = normalizeData(reg_var)
@@ -570,11 +576,16 @@ def kernel_regression(bfp_path,
     fmri_diff = np.zeros((num_vert, num_pairs))
     regvar_diff = np.zeros(num_pairs)
 
+    if simulation:
+        pairdistfunc = pair_dist_simulation
+    else:
+        pairdistfunc = pair_dist
+
     if num_proc > 1:
         pool = Pool(num_proc)
 
         results = pool.imap(
-            partial(pair_dist_simulation,
+            partial(pairdistfunc,
                     sub_files=sub_files,
                     reg_var=reg_var,
                     len_time=len_time, 
@@ -589,7 +600,7 @@ def kernel_regression(bfp_path,
     else:
         for ind in tqdm(range(len(pairs))):
 
-            fmri_diff[:, ind], regvar_diff[ind] = pair_dist_simulation(
+            fmri_diff[:, ind], regvar_diff[ind] = pairdistfunc(
                 sub_files=sub_files,
                 reg_var=reg_var,
                 len_time=len_time,
@@ -599,10 +610,11 @@ def kernel_regression(bfp_path,
     kr = KRR(kernel='precomputed') #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr = np.zeros(num_vert)
-    gamma = .1 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
+    gamma = 2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
-    nperm = 100
-    null_err = np.zeros(nperm)
+    nperm = 50
+
+    rho = np.zeros(num_vert)
 
     for v in tqdm(range(num_vert)):
         D = np.zeros((num_sub, num_sub))
@@ -613,25 +625,51 @@ def kernel_regression(bfp_path,
         # Do this in a split train test split
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
-        err = np.sum((pred_v - reg_var)**2)
+
+        if np.var(pred_v)<1e-6:
+            rho[v] = 0
+        else:
+            rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
 
 
-        for p in range(nperm):
-            reg_var_perm = np.random.permutation(reg_var)
+    print('Performing permutation testing')
+
+    null_rho = np.zeros(num_vert)
+    max_null = np.zeros(nperm)
+    n_count = np.zeros(num_vert)
+
+    for p in tqdm(range(nperm)):
+        reg_var_perm = np.random.permutation(reg_var)
+        for v in range(num_vert):
+            D = np.zeros((num_sub, num_sub))
+            D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
+
+            D = D + D.T  # make it symmetric
+            D = np.exp(-gamma * D)
+
             kr.fit(D, reg_var_perm)
             #pred_var_null = np.mean(reg_var)
             pred_var_null = kr.predict(D)
-            null_err[p] = np.sum((pred_var_null-reg_var_perm)**2)
-        
+            
+            if np.var(pred_var_null)<1e-6:
+                null_rho[v] = 0
+            else:
+                null_rho[v] = np.corrcoef(pred_var_null,reg_var_perm)[0,1]
+
+
+        max_null[p] = np.amax(null_rho)
+        n_count += np.float32(null_rho >= rho)
+
+    pval_max = np.sum(rho[:, None] <= max_null[None, :], axis=1) / nperm
 
         #Fstat = np.mean((pred_v-reg_var)**2) / \
         #    np.mean((pred_var_null-reg_var)**2)
         #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
-        pval_kr[v] = np.sum(np.sum(err>null_err))/nperm
+    pval_kr = n_count/nperm
 
     _, pval_kr_fdr = fdrcorrection(pval_kr)
 
-    return pval_kr, pval_kr_fdr
+    return pval_kr, pval_kr_fdr, pval_max
 
 
 def randpairs_regression(bfp_path,

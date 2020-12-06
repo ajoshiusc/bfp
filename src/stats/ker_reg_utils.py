@@ -90,6 +90,8 @@ def kernel_regression_choose_gamma(bfp_path,
             # Do this in a split train test split
 
             D_train = D[:num_sub-num_sub_val,:num_sub-num_sub_val]
+
+            kr = KRR(kernel='precomputed') #, alpha=1.1)
             kr.fit(D_train, reg_var[:num_sub-num_sub_val])
 
             D_val = D[num_sub-num_sub_val:,:num_sub-num_sub_val]

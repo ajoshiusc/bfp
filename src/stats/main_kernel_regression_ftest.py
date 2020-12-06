@@ -2,7 +2,7 @@ import time
 from tqdm import tqdm
 from grayord_utils import visdata_grayord, vis_grayord_sigpval
 from dev_utils import read_fcon1000_data
-from stats_utils import kernel_regression
+from stats_utils import kernel_regression_ftest
 from statsmodels.stats.multitest import fdrcorrection
 from sklearn.decomposition import PCA
 from brainsync import normalizeData, brainSync
@@ -52,7 +52,7 @@ def main():
     t0 = time.time()
     print('performing stats based on kernel regression')
 
-    pval, pval_fdr, pval_max, pval_kr_ftest, pval_kr_ftest_fdr = kernel_regression(
+    pval_kr_ftest, pval_kr_ftest_fdr = kernel_regression_ftest(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
@@ -65,30 +65,22 @@ def main():
 
     print(t1 - t0)
     np.savez(
-        'pval_KR_simulation.npz',
-        pval=pval,
-        pval_fdr=pval_fdr)
+        'pval_KR_ftest5null.npz',
+        pval=pval_kr_ftest,
+        pval_fdr=pval_kr_ftest_fdr)
     # corr_pval_max=a['corr_pval_max']
     # corr_pval_fdr=a['corr_pval_fdr']
     vis_grayord_sigpval(
-        pval,
-        surf_name='KR_pval_simulation',
+        pval_kr_ftest,
+        surf_name='KR_pval_ftest5null',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH,
         sig_alpha=0.05)
     vis_grayord_sigpval(
-        pval_fdr,
-        surf_name='KR_pval_fdr_simulation',
-        out_dir='.',
-        smooth_iter=1000,
-        bfp_path=BFPPATH,
-        fsl_path=FSL_PATH,
-        sig_alpha=0.05)
-    vis_grayord_sigpval(
-        pval_max,
-        surf_name='KR_pval_max_simulation',
+        pval_kr_ftest_fdr,
+        surf_name='KR_pval_ftest_fdr5null',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,

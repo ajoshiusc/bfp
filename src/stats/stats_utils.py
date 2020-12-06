@@ -316,11 +316,11 @@ def corr_pearson_fdr(X_pairs, Y_pairs, reg_var, num_sub, nperm=1000):
 
     num_vert = X.shape[1]
 
-    corr_pval = sp.zeros(num_vert)
+    corr_pval = np.zeros(num_vert)
     for ind in tqdm(range(num_vert)):
         _, corr_pval[ind] = sp.stats.pearsonr(X[:, ind], Y.squeeze())
 
-    corr_pval[sp.isnan(corr_pval)] = .5
+    corr_pval[np.isnan(corr_pval)] = .5
 
     _, corr_pval_fdr = fdrcorrection(corr_pval)
 
@@ -577,7 +577,8 @@ def kernel_regression(bfp_path,
     regvar_diff = np.zeros(num_pairs)
 
     if simulation:
-        pairdistfunc = pair_dist_simulation
+        pairdistfunc = partial(pair_dist_simulation,roi=roi)
+        #pairdistfunc = pair_dist_simulation
     else:
         pairdistfunc = pair_dist
 
@@ -588,8 +589,7 @@ def kernel_regression(bfp_path,
             partial(pairdistfunc,
                     sub_files=sub_files,
                     reg_var=reg_var,
-                    len_time=len_time, 
-                    roi=roi), pairs)
+                    len_time=len_time), pairs)
 
         ind = 0
         for res in results:
@@ -604,8 +604,7 @@ def kernel_regression(bfp_path,
                 sub_files=sub_files,
                 reg_var=reg_var,
                 len_time=len_time,
-                rand_pair=pairs[ind],
-                roi=roi)
+                rand_pair=pairs[ind])
 
     kr = KRR(kernel='precomputed') #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
@@ -715,7 +714,7 @@ def kernel_regression_ftest(bfp_path,
     regvar_diff = np.zeros(num_pairs)
 
     if simulation:
-        pairdistfunc = pair_dist_simulation
+        pairdistfunc = partial(pair_dist_simulation,roi=roi)
     else:
         pairdistfunc = pair_dist
 
@@ -726,8 +725,7 @@ def kernel_regression_ftest(bfp_path,
             partial(pairdistfunc,
                     sub_files=sub_files,
                     reg_var=reg_var,
-                    len_time=len_time, 
-                    roi=roi), pairs)
+                    len_time=len_time), pairs)
 
         ind = 0
         for res in results:
@@ -742,8 +740,7 @@ def kernel_regression_ftest(bfp_path,
                 sub_files=sub_files,
                 reg_var=reg_var,
                 len_time=len_time,
-                rand_pair=pairs[ind],
-                roi=roi)
+                rand_pair=pairs[ind])
 
     kr = KRR(kernel='precomputed') #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
@@ -755,7 +752,7 @@ def kernel_regression_ftest(bfp_path,
     null_res = np.zeros(num_vert)
 
     reg_var_null = np.random.permutation(reg_var)
-    reg_var = np.random.permutation(reg_var)
+    #reg_var = np.random.permutation(reg_var)
 
     for v in tqdm(range(num_vert)):
         D = np.zeros((num_sub, num_sub))
@@ -767,7 +764,7 @@ def kernel_regression_ftest(bfp_path,
         kr = KRR(kernel='precomputed') #, alpha=1.1)
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
-        
+
         kr = KRR(kernel='precomputed') #, alpha=1.1)
         kr.fit(D, reg_var_null)
         pred_v_null = kr.predict(D)
@@ -776,11 +773,11 @@ def kernel_regression_ftest(bfp_path,
         if np.var(pred_v)<1e-6 or np.var(pred_v_null)<1e-6:
             rho[v] = 0
             res[v] = np.mean(reg_var**2)
-            null_res[v] = np.mean((reg_var)**2)
+            null_res[v] = np.mean((reg_var_null)**2)
         else:
             rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
             res[v] = np.mean((pred_v-reg_var)**2)
-            null_res[v] = np.mean((pred_v_null-reg_var)**2)
+            null_res[v] = np.mean((pred_v_null-reg_var_null)**2)
     print('Doing f test')
     for v in tqdm(range(num_vert)):
         Fstat = res[v]/null_res[v]

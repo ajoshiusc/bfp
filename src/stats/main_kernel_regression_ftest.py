@@ -30,7 +30,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 15  # Number of subjects for the study
+NUM_SUB = 100  # Number of subjects for the study
 
 
 def main():
@@ -44,43 +44,48 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    reg_var = np.random.permutation(reg_var)
+    #reg_var = np.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
+    sub_files=sub_files[30:30+15]
+    reg_var = reg_var[30:30+15]
 
     t0 = time.time()
     print('performing stats based on kernel regression')
-
+    
     pval_kr_ftest, pval_kr_ftest_fdr = kernel_regression_ftest(
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
         nperm=2000,
         len_time=LEN_TIME,
-        num_proc=1,
+        num_proc=4,
         fdr_test=False,
-        simulation=True)
+        simulation=False)
     t1 = time.time()
 
     print(t1 - t0)
     np.savez(
-        'pval_KR_ftest5null.npz',
+        'pval_KR_ftest.npz',
         pval=pval_kr_ftest,
         pval_fdr=pval_kr_ftest_fdr)
     # corr_pval_max=a['corr_pval_max']
     # corr_pval_fdr=a['corr_pval_fdr']
+    
+    #a=np.load('pval_KR_ftest5null.npz')
+    #pval_kr_ftest = a['pval']
     vis_grayord_sigpval(
         pval_kr_ftest,
-        surf_name='KR_pval_ftest5null',
+        surf_name='KR_pval_ftest',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
         fsl_path=FSL_PATH,
-        sig_alpha=0.05)
+        sig_alpha=0.5)
     vis_grayord_sigpval(
         pval_kr_ftest_fdr,
-        surf_name='KR_pval_ftest_fdr5null',
+        surf_name='KR_pval_ftest_fdr',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,

@@ -74,12 +74,13 @@ def kernel_regression_choose_gamma(bfp_path,
 
     rho = np.zeros(num_vert)
     num_sub_val = 5
-    gamma_values = np.arange(1e-8,15,.1)
+    gamma_values = np.arange(1e-8,.2,.01)#np.arange(1e-8,15,.1)
     rho_all=np.zeros(len(gamma_values))
 
     roi_ind, _ = np.where(roi)
+    gamma = 2.6
 
-    for i, gamma in enumerate(gamma_values):
+    for i, alpha in enumerate(gamma_values):
         for v in roi_ind[::5]: #range(0,num_vert,100):
             D = np.zeros((num_sub, num_sub))
             D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
@@ -91,7 +92,7 @@ def kernel_regression_choose_gamma(bfp_path,
 
             D_train = D[:num_sub-num_sub_val,:num_sub-num_sub_val]
 
-            kr = KRR(kernel='precomputed') #, alpha=1.1)
+            kr = KRR(kernel='precomputed', alpha=alpha)
             kr.fit(D_train, reg_var[:num_sub-num_sub_val])
 
             D_val = D[num_sub-num_sub_val:,:num_sub-num_sub_val]
@@ -105,7 +106,7 @@ def kernel_regression_choose_gamma(bfp_path,
         rho_all[i]=np.mean(rho)
         
 
-        print(gamma,np.mean(rho))
+        print(alpha,np.mean(rho))
 
     print(np.argmax(rho_all), gamma_values[np.argmax(rho_all)])
 

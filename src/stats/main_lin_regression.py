@@ -30,7 +30,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 50  # Number of subjects for the study
+NUM_SUB = 150  # Number of subjects for the study
 
 
 def main():
@@ -41,7 +41,7 @@ def main():
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
         reg_var_name='ADHD Index',  #'Verbal IQ',  #  #
-        num_sub=NUM_SUB)
+        num_sub=100)
 
     # Shuffle reg_var and subjects for testing
     #reg_var = sp.random.permutation(reg_var)
@@ -49,6 +49,8 @@ def main():
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
 
+    sub_files=sub_files[50:100]
+    reg_var = reg_var[50:100]
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
@@ -65,7 +67,7 @@ def main():
 
     print(t1 - t0)
     sp.savez(
-        'pval_num_pairs2000_nsub200_nperm2000.npz',
+        'pval_num_pairs2000_nsub50_nperm2000.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
     # corr_pval_max=a['corr_pval_max']

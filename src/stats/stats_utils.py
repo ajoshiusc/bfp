@@ -27,7 +27,7 @@ from sklearn.decomposition import PCA
 from statsmodels.stats.multitest import fdrcorrection
 from tqdm import tqdm
 from scipy.stats import f
-
+from sklearn.metrics.pairwise import pairwise_kernels
 from brainsync import brainSync, normalizeData
 from dfsio import readdfs, writedfs
 #from stats.main_lin_regression_simulation import NUM_SUB
@@ -751,7 +751,6 @@ def kernel_regression_ftest(bfp_path,
     res = np.zeros(num_vert)
     null_res = np.zeros(num_vert)
 
-    reg_var_null = np.random.permutation(reg_var)
     #reg_var = np.random.permutation(reg_var)
 
     for v in tqdm(range(num_vert)):
@@ -759,13 +758,15 @@ def kernel_regression_ftest(bfp_path,
         D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
 
         D = D+D.T  # make it symmetric
-        D = np.exp(-gamma * D)
+        D1 = np.exp(-gamma * D)
+        D = 1 - D
         # Do this in a split train test split
         kr = KRR(kernel='precomputed') #, alpha=1.1)
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
 
         kr = KRR(kernel='precomputed') #, alpha=1.1)
+        reg_var_null = np.random.permutation(reg_var)
         kr.fit(D, reg_var_null)
         pred_v_null = kr.predict(D)
 
@@ -791,6 +792,113 @@ def kernel_regression_ftest(bfp_path,
 
     return pval_kr_ftest, pval_kr_ftest_fdr
 
+##
+def kernel_regression_ftest_permutation(bfp_path,
+                      sub_files,
+                      reg_var,
+                      nperm=100,
+                      len_time=235,
+                      num_proc=4,
+                      fdr_test=False,
+                      simulation=False):
+    """  and Kernel Regression """
+
+
+    if simulation:
+        # added for simulation
+        labs = spio.loadmat(
+            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+        roi = (labs == 200)  # R. Parietal Lobe
+
+    # Normalize the variable
+    reg_var, _, _ = normalizeData(reg_var)
+
+    # Get the number of vertices from a file
+    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+    num_sub = len(sub_files)
+    pairs = np.array(list(itertools.combinations(range(num_sub), r=2)))
+    num_pairs = len(pairs)
+
+    fmri_diff = np.zeros((num_vert, num_pairs))
+    regvar_diff = np.zeros(num_pairs)
+
+    if simulation:
+        pairdistfunc = partial(pair_dist_simulation,roi=roi)
+    else:
+        pairdistfunc = pair_dist
+
+    if num_proc > 1:
+        pool = Pool(num_proc)
+
+        results = pool.imap(
+            partial(pairdistfunc,
+                    sub_files=sub_files,
+                    reg_var=reg_var,
+                    len_time=len_time), pairs)
+
+        ind = 0
+        for res in results:
+            fmri_diff[:, ind] = res[0]
+            regvar_diff[ind] = res[1]
+            ind += 1
+
+    else:
+        for ind in tqdm(range(len(pairs))):
+
+            fmri_diff[:, ind], regvar_diff[ind] = pairdistfunc(
+                sub_files=sub_files,
+                reg_var=reg_var,
+                len_time=len_time,
+                rand_pair=pairs[ind])
+
+    kr = KRR(kernel='precomputed', alpha=0.1)
+    D = np.zeros((num_sub, num_sub))
+    pval_kr_ftest = np.zeros(num_vert)
+    gamma = 2.6 #2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
+
+    rho = np.zeros(num_vert)
+    res = np.zeros(num_vert)
+    null_res = np.zeros(num_vert)
+
+    #reg_var = np.random.permutation(reg_var)
+
+    for v in tqdm(range(num_vert)):
+        D = np.zeros((num_sub, num_sub))
+        D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
+
+        D = D+D.T  # make it symmetric
+        D = np.exp(-gamma * D)
+        #D = (2-D)/2
+        # Do this in a split train test split
+        kr = KRR(kernel='precomputed', alpha=0.1)
+        kr.fit(D, reg_var)
+        pred_v = kr.predict(D)
+        rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
+        res[v] = np.mean((pred_v-reg_var)**2)
+        
+        for p in range(nperm):
+            reg_var_null = np.random.permutation(reg_var)
+            kr = KRR(kernel='precomputed', alpha=0.1)
+            kr.fit(D, reg_var_null)
+            pred_v_null = kr.predict(D)
+            null_res[v] += np.sum((pred_v_null-reg_var_null)**2)
+        
+        null_res[v] = null_res[v]/(nperm*num_sub)
+        
+        #null_res[v] = np.mean(reg_var**2)
+
+    print('Doing f test')
+    for v in tqdm(range(num_vert)):
+        Fstat = res[v]/null_res[v]
+        pval_kr_ftest[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+
+    _, pval_kr_ftest_fdr = fdrcorrection(pval_kr_ftest)
+        #Fstat = np.mean((pred_v-reg_var)**2) / \
+        #    np.mean((pred_var_null-reg_var)**2)
+        #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+
+
+    return pval_kr_ftest, pval_kr_ftest_fdr
 
 
 

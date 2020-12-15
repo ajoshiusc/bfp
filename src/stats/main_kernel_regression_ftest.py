@@ -30,7 +30,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 100  # Number of subjects for the study
+NUM_SUB = 50  # Number of subjects for the study
 
 
 def main():
@@ -44,12 +44,12 @@ def main():
         num_sub=NUM_SUB)
 
     # Shuffle reg_var and subjects for testing
-    #reg_var = np.random.permutation(reg_var)
+    reg_var = np.random.permutation(reg_var)
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
-    sub_files=sub_files[30:30+15]
-    reg_var = reg_var[30:30+15]
+    #sub_files=sub_files[30:30+15]
+    #reg_var = reg_var[30:30+15]
 
     t0 = time.time()
     print('performing stats based on kernel regression')

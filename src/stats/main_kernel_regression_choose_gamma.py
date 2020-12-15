@@ -18,7 +18,7 @@ CSV_FILE = '/data_disk/ADHD/ADHD_Peking_bfp/Peking_all_phenotypic.csv'
 # 3. ADHD-inattentive.
 
 LEN_TIME = 235  # length of the time series
-NUM_SUB = 15  # Number of subjects for the study
+NUM_SUB = 25  # Number of subjects for the study
 
 
 def main():
@@ -36,11 +36,13 @@ def main():
     #ran_perm = sp.random.permutation(len(reg_var))
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
+    #sub_files = sub_files[15:15+15]
+    #reg_var = reg_var[50:50+15]
 
     t0 = time.time()
     print('performing stats based on kernel regression')
-    reg_var = reg_var[15:15+NUM_SUB]
-    sub_files = sub_files[15:15+NUM_SUB]
+    reg_var = reg_var[50:50+NUM_SUB]
+    sub_files = sub_files[50:50+NUM_SUB]
 
     gamma_max = kernel_regression_choose_gamma(
         bfp_path=BFPPATH,

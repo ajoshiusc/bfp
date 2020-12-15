@@ -317,7 +317,7 @@ def read_fcon1000_data(csv_fname,
             if gord == 1:
                 # Read the filtered data by default
                 fname = os.path.join(
-                    data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.filt.mat')
+                    data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.mat')
             else:
                 fname = os.path.join(
                     data_dir, row['ScanDir ID'] + '_rest_bold.BOrd.mat')

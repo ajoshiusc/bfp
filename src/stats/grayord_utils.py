@@ -142,13 +142,14 @@ def save2volbord_bci(data, outfile, bfp_path='.', smooth_std=0):
                       'BCI-DNI_brain.pvc.frac.3mm.nii.gz'))
 
     img_dat = np.zeros(v.shape)
-    img_dat[np.unravel_index(a['ind'], img_dat.shape, order='F')]= data[:,None]
+    img_dat[np.unravel_index(a['ind'], img_dat.shape,
+                             order='F')] = data[:, None]
 
-    if smooth_std>0:
-        img_dat = gaussian_filter(img_dat, sigma=(smooth_std, smooth_std, smooth_std), order=0)
+    if smooth_std > 0:
+        img_dat = gaussian_filter(img_dat, sigma=(
+            smooth_std, smooth_std, smooth_std), order=0)
 
-
-    v2=new_img_like(v,img_dat)
+    v2 = new_img_like(v, img_dat)
 
     v2.to_filename(outfile)
 

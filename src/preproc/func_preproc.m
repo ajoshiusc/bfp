@@ -349,7 +349,7 @@ if str2double(config.RunNSR) > 0
     %
     % ## 17. csf
     if FSLRigidReg > 0
-        unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init t12',example,'.func.mat -interp nearestneighbour']);
+        unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
     else
         transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid_registration_result.mat'], 'nearest');
     end

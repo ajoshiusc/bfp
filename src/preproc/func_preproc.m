@@ -197,7 +197,7 @@ if ~exist(outfile,'file')
     msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
     msk.img(msk.img>0)=1;
     save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
-    unix(['rm ',fmri,'.mask.temp.nii.gz'])
+    unix(['rm ',fmri,'.mask.temp.nii.gz']);
     
     % this command shows a lot of warnings
     unix(['3dcalc -a ',fmri,'.mc.nii.gz -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);

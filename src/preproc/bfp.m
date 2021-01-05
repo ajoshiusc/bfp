@@ -205,11 +205,15 @@ fprintf('Creating Dir:%s\n',anatDir);
 % BFP log file in subject dir
 logfname=fullfile(studydir,subid,'BFP_log.txt');
 fp=fopen(logfname,'a+');
+
+if exist(logfname,'file')
+    fprintf(fp,'\n##########\n');
+end
 t = now;
 d = datetime(t,'ConvertFrom','datenum');
 fprintf(fp,'%s\n',d);
 fprintf(fp, 'BFP version: %s\n', ver);
-fprintf(fp,'bfp %s %s %s %s %s %s %s\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
+fprintf(fp,'bfp %s %s %s %s %s %s %0.2f\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
 
 fclose(fp);
 
@@ -249,14 +253,25 @@ if ~exist(funcDir,'dir')
     mkdir(funcDir);
 end
 
-fprintf('Copying fMRI files\n');
+fp=fopen(logfname,'a+');
+fprintf(fp, 'Copying fMRI files\n');
 for ind = 1:length(fmri)
-    if ~exist(fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
-        copyfile(fmri{ind},fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})));
+    if exist(fmri{ind},'file')
+        fmri_out = fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind}));
+        if ~exist(fmri_out,'file')
+            copyfile(fmri{ind},fmri_out);
+            msg = ['--fMRI file rewritten to BIDS format: ', fmri_out];
+        else
+            msg = ['--fMRI file already written to BIDS format: ',fmri_out],;
+        end
     else
-        fprintf('subject=%s session=%s : Already done\n',subid,sessionid{ind});
+        msg = ['--file does not exist! ', fmri{ind},' exiting.'];
+        fprintf(fp,'%s\n',msg);
+        error(msg);
     end
 end
+fprintf(fp,'%s\n',msg);
+fclose(fp);
 fprintf('done\n');
 
 
@@ -631,13 +646,13 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 if config.EnabletNLMPdfFiltering>0
     fprintf('## tNLMPDF Filtering...\n');
 
-%    config.scbPath = fullfile(funcDir,'scb.mat');
+   config.scbPath = fullfile(funcDir,'scb.mat');
     
-     [scbDir, ~ , ~] = fileparts(config.scbPath);
-     if ~exist(config.scbPath,'dir')
-         mkdir(scbDir)
-     end
-     clear scbDir
+%      [scbDir, ~ , ~] = fileparts(config.scbPath);
+%      if ~exist(config.scbPath,'dir')
+%          mkdir(scbDir)
+%      end
+%      clear scbDir
     
     for ind = 1:length(fmri)
         GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));

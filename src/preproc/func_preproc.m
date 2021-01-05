@@ -205,6 +205,8 @@ else
     disp('file found. skipping step')
     fprintf(fp, 'Skull Strip fMRI file found. skipping step. \n');
 end
+%%  t1 based distortion correction
+
 %% skull strip image used for registration
 disp( 'Skull stripping reference image')
 orig = load_untouch_nii_gz([example,'.func.nii.gz']);

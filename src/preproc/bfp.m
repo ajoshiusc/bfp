@@ -262,7 +262,7 @@ for ind = 1:length(fmri)
             copyfile(fmri{ind},fmri_out);
             msg = ['--fMRI file rewritten to BIDS format: ', fmri_out];
         else
-            msg = ['--fMRI file already written to BIDS format: ',fmri_out],;
+            msg = ['--fMRI file already written to BIDS format: ',fmri_out];
         end
     else
         msg = ['--file does not exist! ', fmri{ind},' exiting.'];
@@ -270,11 +270,9 @@ for ind = 1:length(fmri)
         error(msg);
     end
 end
-fprintf(fp,'%s\n',msg);
-fclose(fp);
+fprintf(fp,'%s\n\n',msg);
 fprintf('done\n');
-
-
+fclose(fp);
 %% Generate 1mm BCI-DNI_brain brain as a standard template
 % This is used a template for anatomical T1 data
 %%
@@ -299,8 +297,6 @@ else
     fprintf('Already ');
 end
 fprintf('done\n');
-
-
 %% Resample T1w image to 1mm cubic resolution
 % BrainSuite works best at this resolution
 %%
@@ -482,9 +478,11 @@ fprintf('done\n');
 %% Run Batch_Process Pipeline for fMRI
 %%
 fprintf('## Run fmri preprocessing script\n');
+fp=fopen(logfname,'a+');
+fprintf(fp, 'Running fMRI preprocessing pipeline\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
-    
+    fprintf(fp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
     % Check if valid Tr is input, if not try to get it from the header of
     % the nifti fmri file
     if (~isnumeric(TR)) || (TR<=0)
@@ -506,20 +504,16 @@ for ind=1:length(fmri)
     if ~exist(BFP_outfile,'file')
         BFP_outfile = func_preproc(BFPPATH, subbasename,fmribasename,funcDir,num2str(TR),config);
         if ~exist(BFP_outfile, 'file')
-            error('Command: func_preproc failed, existing.')
+            error('Command: func_preproc failed, exiting.')
+            fprintf(fp, '--func_preproc failed. exiting\n');
         end
     else
         fprintf('fMRI %s : Already done\n',fmribasename);
-        fp=fopen(logfname,'a+');
-        t = now;
-        d = datetime(t,'ConvertFrom','datenum');
-        fprintf(fp,'\n%s\n',d);
-        fprintf(fp, 'func_preproc BFP version: %s\n', ver);
-        fprintf(fp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
         fprintf(fp, '--Preprocess fMRI files found. skipping pipeline. \n');
     end
 end
 fprintf('done\n');
+fclose(fp);
 %% Grayordinate representation
 % Transfer data to surface and then to USCBrain atlas surface and produce surface
 % grayordinates and then Transfer data to volumetric grayordinates.
@@ -528,6 +522,9 @@ fprintf('done\n');
 % The filename of grayordinate data is fmri_bold.32k.GOrd.nii.gz
 %%
 fprintf('## Transferring data from subject to atlas...\n');
+flog=fopen(logfname,'a+');
+fprintf(flog, 'Transferring data to grayordinate and filtering\n');
+
 logfname=[fmribasename,'.log.txt'];
 fp=fopen(logfname,'a+');
 for ind = 1:length(fmri)
@@ -720,5 +717,5 @@ if config.EnableShapeMeasures>0
     fprintf('done\n');
 end
 
-
+fprintf(flog,'\nBFP complete!\n');
 fprintf('All done!\n');

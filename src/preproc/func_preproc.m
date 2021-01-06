@@ -46,34 +46,35 @@ disp('---------------------------------------');
 cwd = pwd;
 cd(func_dir);
 %% write out log file
-ver_file = fullfile(BFPPATH, 'bfp_version.txt');
+logfname=[fmri,'.log.txt'];
+fp=fopen(logfname,'a+');
 
+ver_file = fullfile(BFPPATH, 'bfp_version.txt');
 if ~exist(ver_file, 'file')
     ver_file = fullfile(BFPPATH, '/src/preproc', 'bfp_version.txt');
     if ~exist(ver_file, 'file')
         error('BFP directory: %s \n: Directory does not exist\n',BFPPATH);
+        fprintf(fp,'BFP directory: %s \n: Directory does not exist\n',BFPPATH);
     end
 end
 fid = fopen(ver_file, 'r');
 [ver,~] = fscanf(fid, '%s',Inf);
 fclose(fid);
 
-logfname=[fmri,'.log.txt'];
-fp=fopen(logfname,'a+');
-t = now;
-d = datetime(t,'ConvertFrom','datenum');
-fprintf(fp,'\n%s\n',d);
-fprintf(fp, 'func_preproc BFP version: %s\n', ver);
-fprintf(fp,'fMRI: %s \nT1: %s \n', fmri,t1);
+% t = now;
+% d = datetime(t,'ConvertFrom','datenum');
+% fprintf(fp,'\n%s\n',d);
+% fprintf(fp, 'func_preproc BFP version: %s\n', ver);
+% fprintf(fp,'fMRI: %s \nT1: %s \n', fmri,t1);
 %% Deoblique
 disp('Deobliquing');
 if ~exist([fmri,'.dr.nii.gz'],'file')
     unix(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'.dr.nii.gz']);
     unix(['3drefit -deoblique ',fmri,'.dr.nii.gz']);
-    fprintf(fp, '--Deoblique \n');
+    fprintf(fp, '\n--Deoblique \n');
 else
     disp('file found. skipping step')
-    fprintf(fp, 'Deoblique file found. skipping step. \n');
+    fprintf(fp, '\nDeoblique file found. skipping step. \n');
 end
 %% Reorient into fsl friendly space (what AFNI calls RPI)
 disp('Reorienting');

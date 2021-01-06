@@ -204,16 +204,17 @@ fprintf('Creating Dir:%s\n',anatDir);
 
 % BFP log file in subject dir
 logfname=fullfile(studydir,subid,'BFP_log.txt');
-fp=fopen(logfname,'a+');
-
 if exist(logfname,'file')
+    fp=fopen(logfname,'a+');
     fprintf(fp,'\n##########\n');
+else
+    fp=fopen(logfname,'a+');
 end
 t = now;
 d = datetime(t,'ConvertFrom','datenum');
 fprintf(fp,'%s\n',d);
 fprintf(fp, 'BFP version: %s\n', ver);
-fprintf(fp,'bfp %s %s %s %s %s %s %0.2f\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
+fprintf(fp,'config: %s\nt1: %s\nfmri: %s\nstudydir: %s\nsubid: %s\nsessionid: %s\nTR: %0.2f\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
 
 fclose(fp);
 
@@ -483,6 +484,21 @@ fprintf(fp, 'Running fMRI preprocessing pipeline\n');
 for ind=1:length(fmri)
     fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
     fprintf(fp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
+    
+    logpp_fname=[fmribasename,'.log.txt'];
+    if exist(logpp_fname,'file')
+        logpp=fopen(logpp_fname,'a+');
+        fprintf(logpp,'\n#############\n');
+    else
+        logpp=fopen(logpp_fname,'a+');
+    end    
+    t = now;
+    d = datetime(t,'ConvertFrom','datenum');
+    fprintf(logpp,'%s\n',d);
+    fprintf(logpp, 'func_preproc BFP version: %s\n', ver);
+    fprintf(logpp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
+    fclose(logpp);
+
     % Check if valid Tr is input, if not try to get it from the header of
     % the nifti fmri file
     if (~isnumeric(TR)) || (TR<=0)
@@ -525,8 +541,8 @@ fprintf('## Transferring data from subject to atlas...\n');
 flog=fopen(logfname,'a+');
 fprintf(flog, 'Transferring data to grayordinate and filtering\n');
 
-logfname=[fmribasename,'.log.txt'];
-fp=fopen(logfname,'a+');
+logpp_fname=[fmribasename,'.log.txt'];
+fp=fopen(logpp_fname,'a+');
 for ind = 1:length(fmri)
     
     fprintf('Generating Brainordinate files\n')
@@ -718,4 +734,7 @@ if config.EnableShapeMeasures>0
 end
 
 fprintf(flog,'\nBFP complete!\n');
-fprintf('All done!\n');
+fprintf(fp,'\nBFP complete!\n');
+fclose(flog);
+fclose(fp);
+fprintf('All done!\n\n');

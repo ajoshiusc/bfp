@@ -87,6 +87,9 @@ opts.struct_mask = [t1,'.mask.nii.gz'];
 opts.num_threads = str2num(config.epit1corr_numthreads);
 fprintf(fp, '--number of threads: %d \n', opts.num_threads);
 
+fprintf(fp, '--initialize rigid registration method: %s \n', config.epit1corr_rigidsim);
+opts.rigid_similarity = config.epit1corr_rigidsim;
+
 fprintf(fp, '--bias field correction: %s \n', mat2str(config.epit1corr_bias));
 if config.epit1corr_bias == '0'
     opts.non_uniformity_correction = false;

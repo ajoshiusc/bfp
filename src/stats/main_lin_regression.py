@@ -49,8 +49,8 @@ def main():
     #reg_var = reg_var
     #sub_files = [sub_files[i] for i in range(len(reg_var))]
 
-    sub_files=sub_files[50:100]
-    reg_var = reg_var[50:100]
+    sub_files=sub_files #[50:100]
+    reg_var = reg_var #[50:100]
     t0 = time.time()
     print('performing stats based on random pairwise distances')
 
@@ -67,7 +67,7 @@ def main():
 
     print(t1 - t0)
     sp.savez(
-        'pval_num_pairs2000_nsub50_nperm2000.npz',
+        'pval_num_pairs2000_nsub150_nperm2000.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
     # corr_pval_max=a['corr_pval_max']

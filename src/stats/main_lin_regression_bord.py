@@ -49,8 +49,8 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=5000,  # 19900,
-        nperm=5000,
+        num_pairs=2000,  # 19900,
+        nperm=2000,
         len_time=LEN_TIME,
         num_proc=6,
         pearson_fdr_test=False)
@@ -76,6 +76,9 @@ def main():
                      'pval_bord_ADHD_fdr_smooth0.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
     save2volbord_bci((0.05-corr_pval_max)*np.float32(corr_pval_max < 0.05),
                      'pval_bord_ADHD_max_smooth0.5_150.nii.gz', bfp_path=BFPPATH, smooth_std=0.5)
+
+    save2volbord_bci((0.05-corr_pval_max)*np.float32(corr_pval_max < 0.05),
+                     'pval_bord_ADHD_max_smooth0_150.nii.gz', bfp_path=BFPPATH, smooth_std=0)
 
     print('Results saved')
 

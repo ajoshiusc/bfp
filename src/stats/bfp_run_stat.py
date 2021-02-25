@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/atlas-male/BFPtest_config_stats.ini'
+config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/atlas-sex-SSIM2/BFPtest_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

@@ -144,15 +144,37 @@ if ~exist([fmri,'.mc.ssim.txt'],'file')
 end
     
 clear infile
+%%  t1 based distortion correction
+fprintf(fp,'--Option T1-based distortion correction: ');
+if str2double(config.epit1corr) > 0
+    fprintf(fp,'Yes');
+    infile = outfile;
+    outfile = [fmri,'.epicorr.nii.gz'];
+    if ~exist(outfile,'file')
+        disp('Performing T1-based distortion correction')
+        fprintf(fp,'.\n');
+        ref_filename = [fmri,'.ro.mean.nii.gz'];
+        fMRI_epicorr_t1based_bfp(infile, ref_filename, fmri,t1,config)
+    else
+        disp('T1-based distortion correction: files found. skipping step.')
+        fprintf(fp,'. files found. skipping step.\n');
+    end
+else
+    fprintf(fp,'No \n');
+end
 %% Get image for use in registration
 disp('Getting image for coregistration...')
 if ~exist([example,'.func.nii.gz'],'file')
-    if SimRef
+    if SimRef=='1'
         disp('Using SimRef...')
-        unix(['cp ',fmri,'.ro.mean.nii.gz ',example,'.func.nii.gz']);
-    else
+        refvol = importdata([fmri,'.ssim.vref.txt']);
+        unix(['3dcalc -a ',outfile,'[',num2str(refvol-1),'] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+    elseif SimRef=='2'
         disp('Using eigth image')
-        unix(['3dcalc -a ',fmri,'.mc.nii.gz[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+        unix(['3dcalc -a ',outfile,'[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+    elseif SimRef=='0'
+        disp('Using mean image')
+        unix(['3dTstat -mean -prefix ',example,'.func.nii.gz ',outfile]);
     end
 else
     disp('file found. skipping step')
@@ -179,6 +201,7 @@ else
 end
 %% Remove skull/edge detect
 disp('Skull stripping');
+infile = outfile;
 outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0
@@ -201,7 +224,7 @@ if ~exist(outfile,'file')
     unix(['rm ',fmri,'.mask.temp.nii.gz']);
     
     % this command shows a lot of warnings
-    unix(['3dcalc -a ',fmri,'.mc.nii.gz -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
+    unix(['3dcalc -a ',infile,' -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
 else
     disp('file found. skipping step')
     fprintf(fp, 'Skull Strip fMRI file found. skipping step. \n');

@@ -1,4 +1,8 @@
 %% BFP: BrainSuite fMRI Pipeline
+% authors: Anand A. Joshi & Soyoung Choi
+% University of Southern California
+% bainsuite.org/bfp
+%
 % This pipeline takes fMRI and anatomical data and processes them using a series
 % of scripts from BrainSuite, FSL and AFNI. The functional processing script is
 % based on batch_process. sh script from fcon1000.
@@ -412,10 +416,10 @@ end
 fprintf('done\n');
 
 bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
-% cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
-% if ~exist(bsemask,'file')
-%     unix(cmd);
-% end
+cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
+if ~exist(bsemask,'file')
+    unix(cmd);
+end
 
 if ~exist(bsemask, 'file')
     error(['Command: ', cmd, 'failed, existing.'])

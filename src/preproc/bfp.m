@@ -663,7 +663,8 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 if config.EnabletNLMPdfFiltering>0
     fprintf('## tNLMPDF Filtering...\n');
 
-   config.scbPath = fullfile(funcDir,'scb.mat');
+   config.scbPath = fullfile(funcDir,'scb.mat'); FUNC->standard (3mm)
+
     
 %      [scbDir, ~ , ~] = fileparts(config.scbPath);
 %      if ~exist(config.scbPath,'dir')

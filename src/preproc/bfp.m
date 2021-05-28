@@ -1,4 +1,8 @@
 %% BFP: BrainSuite fMRI Pipeline
+% authors: Anand A. Joshi & Soyoung Choi
+% University of Southern California
+% bainsuite.org/bfp
+%
 % This pipeline takes fMRI and anatomical data and processes them using a series
 % of scripts from BrainSuite, FSL and AFNI. The functional processing script is
 % based on batch_process. sh script from fcon1000.
@@ -659,7 +663,8 @@ fprintf('The fMRI grayordinates file is: %s\n',GOrdFile);
 if config.EnabletNLMPdfFiltering>0
     fprintf('## tNLMPDF Filtering...\n');
 
-   config.scbPath = fullfile(funcDir,'scb.mat');
+   config.scbPath = fullfile(funcDir,'scb.mat'); FUNC->standard (3mm)
+
     
 %      [scbDir, ~ , ~] = fileparts(config.scbPath);
 %      if ~exist(config.scbPath,'dir')

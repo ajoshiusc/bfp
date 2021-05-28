@@ -1,9 +1,5 @@
 #%%
-<<<<<<< HEAD
 config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2020-11/atlas-male/BFPtest_config_stats.ini'
-=======
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2021-01/SSIM2_Fatlas_exclude/BFPtest_config_stats.ini'
->>>>>>> a3420225758750013d9bd16e84243da30b2a8f6a
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

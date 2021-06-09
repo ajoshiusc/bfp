@@ -113,7 +113,7 @@ BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
 svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
 thicknessPVC_exe=fullfile(BrainSuitePath,'svreg','bin','thicknessPVC.sh');
-
+thickness_map2atlas_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_thickness2atlas.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain');
 ATLAS=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.bfc.nii.gz');
 GOrdSurfIndFile=fullfile(BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
@@ -703,13 +703,19 @@ end
 if config.EnableShapeMeasures>0
     
     fprintf('Running thicknessPVC');
-    cmd=sprintf('%s %s %s',thicknessPVC_exe,subbasename);
+    cmd1=sprintf('%s %s %s',thicknessPVC_exe,subbasename);
+    cmd2=sprintf('%s %s %s',thickness_map2atlas_exe,subbasename);
     subdir = fileparts(subbasename);
     if ~exist(fullfile(subdir, 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'),'file')
-        unix(cmd);
+        unix(cmd1);
+        
+        if exist(thickness_map2atlas_exe,'file')
+            fprintf('Using separate exes for thickness computation and mapping to atlas');
+            unix(cmd2);
+        end
 
-        if ~exist(GOrdFiltFile,'file')
-            fprintf(['command ', cmd, ' failed, exiting.'])
+        if ~exist(fullfile(subdir, 'atlas.pvc-thickness_0-6mm.right.mid.cortex.dfs'),'file')
+            fprintf(['command ', cmd1, ' failed.'])
         end        
         
     else

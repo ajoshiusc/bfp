@@ -144,6 +144,24 @@ if ~exist([fmri,'.mc.ssim.txt'],'file')
 end
     
 clear infile
+%%  t1 based distortion correction
+fprintf(fp,'--Option T1-based distortion correction: ');
+if str2double(config.epit1corr) > 0
+    fprintf(fp,'Yes');
+    infile = outfile;
+    outfile = [fmri,'.epicorr.nii.gz'];
+    if ~exist(outfile,'file')
+        disp('Performing T1-based distortion correction')
+        fprintf(fp,'.\n');
+        ref_filename = [fmri,'.ro.mean.nii.gz'];
+        fMRI_epicorr_t1based_bfp(infile, ref_filename, fmri,t1,config)
+    else
+        disp('T1-based distortion correction: files found. skipping step.')
+        fprintf(fp,'. files found. skipping step.\n');
+    end
+else
+    fprintf(fp,'No \n');
+end
 %% Get image for use in registration
 disp('Getting image for coregistration...')
 if ~exist([example,'.func.nii.gz'],'file')
@@ -151,8 +169,8 @@ if ~exist([example,'.func.nii.gz'],'file')
         disp('Using SimRef...')
         unix(['cp ',fmri,'.ro.mean.nii.gz ',example,'.func.nii.gz']);
     else
-        disp('Using eigth image')
-        unix(['3dcalc -a ',fmri,'.mc.nii.gz[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+        disp('Using eigth image');
+-       unix(['3dcalc -a ',fmri,'.mc.nii.gz[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
     end
 else
     disp('file found. skipping step')
@@ -179,6 +197,7 @@ else
 end
 %% Remove skull/edge detect
 disp('Skull stripping');
+%infile = outfile;
 outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0

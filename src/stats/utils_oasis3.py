@@ -1,15 +1,17 @@
 import csv
 import os
 from tqdm import tqdm
-
+import scipy as sp
+import numpy as np
+import scipy.io as spio
 
 
 def read_oasis3_data(csv_fname,
                        data_dir,
-                       reg_var_name='Verbal IQ',
+                       reg_var_name='Age',
                        num_sub=5,
                        reg_var_positive=1,
-                       gord=1):
+                       len_time=20):
     """ reads fcon1000 csv and data"""
 
     count1 = 0
@@ -24,21 +26,20 @@ def read_oasis3_data(csv_fname,
             # read the regression variable
             rvar = row[reg_var_name]
 
-            if gord == 1:
-                # Read the filtered data by default
-                subname = row['Subject']
-                fname = os.path.join(data_dir, subname,'func',subname+'_rest_bold.32k.GOrd.filt.mat')
-                #fname = os.path.join(
-                #    data_dir, row['ScanDir ID'] + '_rest_bold.32k.GOrd.mat')
-            else:
-                fname = os.path.join(
-                    data_dir, row['ScanDir ID'] + '_rest_bold.BOrd.mat')
+            # Read the filtered data by default
+            fname = row['FileName']
 
             # If the data does not exist for this subject then skip it
             if not os.path.isfile(fname):
                 continue
+            num_v_t = spio.loadmat(fname)['dtseries'].shape
+    
+            # Check if there are enough time points
+            if num_v_t[1]<len_time:
+                print(fname + ' doesn\'t have enough timepoints' + str(num_v_t[1]) + '/' + str(len_time))
+                continue
 
-            if reg_var_positive == 1 and sp.float64(rvar) < 0:
+            if len(rvar)==0 or (reg_var_positive == 1 and np.float64(rvar) < 0):
                 continue
 
             if count1 == 0:
@@ -47,7 +48,7 @@ def read_oasis3_data(csv_fname,
             # Truncate the data at a given number of time samples This is needed because
             # BrainSync needs same number of time sampples
             sub_data_files.append(fname)
-            sub_ids.append(row['ScanDir ID'])
+            sub_ids.append(row['Subject'])
             reg_var.append(float(rvar))
 
             count1 += 1

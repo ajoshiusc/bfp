@@ -29,8 +29,8 @@ CSV_FILE = '/home/ajoshi/projects/AD_processing/src/oasis3_bfp.csv'
 # 2. ADHD-hyperactive, and
 # 3. ADHD-inattentive.
 
-LEN_TIME = 235  # length of the time series
-NUM_SUB = 150  # Number of subjects for the study
+LEN_TIME = 164  # length of the time series
+NUM_SUB = 350  # Number of subjects for the study
 
 
 def main():
@@ -41,7 +41,8 @@ def main():
         csv_fname=CSV_FILE,
         data_dir=DATA_DIR,
         reg_var_name='UDSB9',  #'Verbal IQ',  #  #
-        num_sub=100)
+        num_sub=NUM_SUB,
+        len_time=LEN_TIME)
 
     # Shuffle reg_var and subjects for testing
     #reg_var = sp.random.permutation(reg_var)
@@ -58,7 +59,7 @@ def main():
         bfp_path=BFPPATH,
         sub_files=sub_files,
         reg_var=reg_var,
-        num_pairs=2000,  # 19900,
+        num_pairs=20000,  # 19900,
         nperm=2000,
         len_time=LEN_TIME,
         num_proc=6,
@@ -67,14 +68,14 @@ def main():
 
     print(t1 - t0)
     sp.savez(
-        'pval_num_pairs2000_nsub150_nperm2000.npz',
+        'pval_num_pairs20000_nsub350_nperm2000.npz',
         corr_pval_max=corr_pval_max,
         corr_pval_fdr=corr_pval_fdr)
     # corr_pval_max=a['corr_pval_max']
     # corr_pval_fdr=a['corr_pval_fdr']
     vis_grayord_sigpval(
         corr_pval_max,
-        surf_name='rand_dist_corr_perm_pairs2000_max',
+        surf_name='rand_dist_corr_perm_pairs20000_max',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,
@@ -82,7 +83,7 @@ def main():
         sig_alpha=0.05)
     vis_grayord_sigpval(
         corr_pval_fdr,
-        surf_name='rand_dist_corr_perm_pairs2000_fdr',
+        surf_name='rand_dist_corr_perm_pairs20000_fdr',
         out_dir='.',
         smooth_iter=1000,
         bfp_path=BFPPATH,

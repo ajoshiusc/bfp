@@ -11,7 +11,8 @@ def read_oasis3_data(csv_fname,
                        reg_var_name='Age',
                        num_sub=5,
                        reg_var_positive=1,
-                       len_time=20):
+                       len_time=20,
+                       data_field='dtseries'):
     """ reads fcon1000 csv and data"""
 
     count1 = 0
@@ -32,7 +33,7 @@ def read_oasis3_data(csv_fname,
             # If the data does not exist for this subject then skip it
             if not os.path.isfile(fname):
                 continue
-            num_v_t = spio.loadmat(fname)['dtseries'].shape
+            num_v_t = spio.loadmat(fname)[data_field].shape
     
             # Check if there are enough time points
             if num_v_t[1]<len_time:

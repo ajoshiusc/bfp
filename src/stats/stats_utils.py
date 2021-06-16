@@ -34,7 +34,6 @@ from dfsio import readdfs, writedfs
 from surfproc import patch_color_attrib, smooth_surf_function
 from sklearn.kernel_ridge import KernelRidge as KRR
 
-
 # if VTK_INSTALLED:
 #    from surfproc import view_patch_vtk, smooth_patch
 
@@ -185,15 +184,20 @@ def pair_dist_two_groups(rand_pair,
     return fmri_diff
 
 
-def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
+def pair_dist(rand_pair,
+              sub_files,
+              sub_data=[],
+              reg_var=[],
+              len_time=235,
+              data_field='dtseries'):
     """ Pair distance """
     sub_data = np.array(sub_data)
     if sub_data.size > 0:
         sub1_data = sub_data[:, :, rand_pair[0]]
         sub2_data = sub_data[:, :, rand_pair[1]]
     else:
-        sub1_data = spio.loadmat(sub_files[rand_pair[0]])['dtseries'].T
-        sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
+        sub1_data = spio.loadmat(sub_files[rand_pair[0]])[data_field].T
+        sub2_data = spio.loadmat(sub_files[rand_pair[1]])[data_field].T
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
@@ -208,7 +212,12 @@ def pair_dist(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235):
         return fmri_diff
 
 
-def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time=235, roi=[]):
+def pair_dist_simulation(rand_pair,
+                         sub_files,
+                         sub_data=[],
+                         reg_var=[],
+                         len_time=235,
+                         roi=[]):
     """ Pair distance """
 
     # normalize the clinical variable
@@ -216,7 +225,8 @@ def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time
 
     roi_ind, _ = np.where(roi)
 
-    noise_data = (reg_var_norm-np.min(reg_var_norm)) * np.random.normal(size=(len(roi_ind),len_time,len(reg_var)))
+    noise_data = (reg_var_norm - np.min(reg_var_norm)) * np.random.normal(
+        size=(len(roi_ind), len_time, len(reg_var)))
 
     sub_data = np.array(sub_data)
     if sub_data.size > 0:
@@ -224,8 +234,8 @@ def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time
         sub2_data = sub_data[:, :, rand_pair[1]]
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
-        sub1_data += noise_data[:,:,rand_pair[0]]
-        sub2_data += noise_data[:,:,rand_pair[1]]
+        sub1_data += noise_data[:, :, rand_pair[0]]
+        sub2_data += noise_data[:, :, rand_pair[1]]
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
     else:
@@ -233,8 +243,8 @@ def pair_dist_simulation(rand_pair, sub_files, sub_data=[], reg_var=[], len_time
         sub2_data = spio.loadmat(sub_files[rand_pair[1]])['dtseries'].T
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
-        sub1_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[0]].T
-        sub2_data[:len_time,roi_ind] += noise_data[:,:,rand_pair[1]].T
+        sub1_data[:len_time, roi_ind] += noise_data[:, :, rand_pair[0]].T
+        sub2_data[:len_time, roi_ind] += noise_data[:, :, rand_pair[1]].T
         sub1_data, _, _ = normalizeData(sub1_data[:len_time, :])
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
@@ -389,7 +399,9 @@ def gen_rand_pairs(num_sub, num_pairs):
     return pairs, num_pairs
 
 
-def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
+def randpair_groupdiff(sub_grp1_files,
+                       sub_grp2_files,
+                       num_pairs,
                        len_time=255):
 
     print('Grp diff')
@@ -472,14 +484,17 @@ def randpair_groupdiff(sub_grp1_files, sub_grp2_files, num_pairs,
 
     tscore[np.isnan(tscore)] = 0
 
-    dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) * (n1 - 1)) + S2**2 /
+    dof = (S1 / n1 + S2 / n2 + 1e-6)**2 / (S1**2 / ((n1**2) *
+                                                    (n1 - 1)) + S2**2 /
                                            ((n2**2) * (n2 - 1)) + 1e-6)
     pval = sp.stats.t.sf(tscore, dof) * 2  # two-sided pvalue = Prob(abs(t)>tt)
 
     return tscore, pval
 
 
-def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
+def randpair_groupdiff_ftest(sub_grp1_files,
+                             sub_grp2_files,
+                             num_pairs,
                              len_time=255):
 
     print('Grp diff using f-test and brainsync')
@@ -533,12 +548,12 @@ def randpair_groupdiff_ftest(sub_grp1_files, sub_grp2_files, num_pairs,
     # We will perform f-test test (modified in a pairwise stats)
     #
 
-    n1 = sub_data1.shape[2]*len_time
-    n2 = sub_data2.shape[2]*len_time
+    n1 = sub_data1.shape[2] * len_time
+    n2 = sub_data2.shape[2] * len_time
 
     F = S1 / (S2 + 1e-16)
 
-    pval = 1-ss.f.cdf(F, n1 - 1, n2 - 1)
+    pval = 1 - ss.f.cdf(F, n1 - 1, n2 - 1)
 
     return F, pval
 
@@ -557,11 +572,11 @@ def kernel_regression(bfp_path,
                       simulation=False):
     """  and Kernel Regression """
 
-
     if simulation:
         # added for simulation
         labs = spio.loadmat(
-            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+        )['labels']
         roi = (labs == 200)  # R. Parietal Lobe
 
     # Normalize the variable
@@ -577,7 +592,7 @@ def kernel_regression(bfp_path,
     regvar_diff = np.zeros(num_pairs)
 
     if simulation:
-        pairdistfunc = partial(pair_dist_simulation,roi=roi)
+        pairdistfunc = partial(pair_dist_simulation, roi=roi)
         #pairdistfunc = pair_dist_simulation
     else:
         pairdistfunc = pair_dist
@@ -606,11 +621,11 @@ def kernel_regression(bfp_path,
                 len_time=len_time,
                 rand_pair=pairs[ind])
 
-    kr = KRR(kernel='precomputed') #, alpha=1.1)
+    kr = KRR(kernel='precomputed')  #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr = np.zeros(num_vert)
     pval_kr_ftest = np.zeros(num_vert)
-    gamma = 2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
+    gamma = 2  #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
     nperm = 50
 
@@ -621,19 +636,18 @@ def kernel_regression(bfp_path,
         D = np.zeros((num_sub, num_sub))
         D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
 
-        D = D+D.T  # make it symmetric
+        D = D + D.T  # make it symmetric
         D = np.exp(-gamma * D)
         # Do this in a split train test split
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
 
-        if np.var(pred_v)<1e-6:
+        if np.var(pred_v) < 1e-6:
             rho[v] = 0
             res[v] = np.mean(reg_var**2)
         else:
-            rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
-            res[v] = np.mean((pred_v-reg_var)**2)
-
+            rho[v] = np.corrcoef(pred_v, reg_var)[0, 1]
+            res[v] = np.mean((pred_v - reg_var)**2)
 
     print('Performing permutation testing')
 
@@ -654,13 +668,14 @@ def kernel_regression(bfp_path,
             kr.fit(D, reg_var_perm)
             #pred_var_null = np.mean(reg_var)
             pred_var_null = kr.predict(D)
-            
-            if np.var(pred_var_null)<1e-6:
+
+            if np.var(pred_var_null) < 1e-6:
                 null_rho[v] = 0
-                null_res[v] += np.mean(reg_var_perm**2)/nperm
+                null_res[v] += np.mean(reg_var_perm**2) / nperm
             else:
-                null_rho[v] = np.corrcoef(pred_var_null,reg_var_perm)[0,1]
-                null_res[v] += np.mean((reg_var_perm - pred_var_null)**2)/nperm
+                null_rho[v] = np.corrcoef(pred_var_null, reg_var_perm)[0, 1]
+                null_res[v] += np.mean(
+                    (reg_var_perm - pred_var_null)**2) / nperm
 
         max_null[p] = np.amax(null_rho)
         n_count += np.float32(null_rho >= rho)
@@ -669,14 +684,14 @@ def kernel_regression(bfp_path,
 
     print('Doing f test')
     for v in range(num_vert):
-        Fstat = res[v]/null_res[v]
-        pval_kr_ftest[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+        Fstat = res[v] / null_res[v]
+        pval_kr_ftest[v] = f.cdf(Fstat, num_sub - 1, num_sub - 1)
 
     _, pval_kr_ftest_fdr = fdrcorrection(pval_kr_ftest)
-        #Fstat = np.mean((pred_v-reg_var)**2) / \
-        #    np.mean((pred_var_null-reg_var)**2)
-        #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
-    pval_kr = n_count/nperm
+    #Fstat = np.mean((pred_v-reg_var)**2) / \
+    #    np.mean((pred_var_null-reg_var)**2)
+    #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+    pval_kr = n_count / nperm
 
     _, pval_kr_fdr = fdrcorrection(pval_kr)
 
@@ -685,20 +700,20 @@ def kernel_regression(bfp_path,
 
 ##
 def kernel_regression_ftest(bfp_path,
-                      sub_files,
-                      reg_var,
-                      nperm=1000,
-                      len_time=235,
-                      num_proc=4,
-                      fdr_test=False,
-                      simulation=False):
+                            sub_files,
+                            reg_var,
+                            nperm=1000,
+                            len_time=235,
+                            num_proc=4,
+                            fdr_test=False,
+                            simulation=False):
     """  and Kernel Regression """
-
 
     if simulation:
         # added for simulation
         labs = spio.loadmat(
-            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+        )['labels']
         roi = (labs == 200)  # R. Parietal Lobe
 
     # Normalize the variable
@@ -714,7 +729,7 @@ def kernel_regression_ftest(bfp_path,
     regvar_diff = np.zeros(num_pairs)
 
     if simulation:
-        pairdistfunc = partial(pair_dist_simulation,roi=roi)
+        pairdistfunc = partial(pair_dist_simulation, roi=roi)
     else:
         pairdistfunc = pair_dist
 
@@ -742,10 +757,10 @@ def kernel_regression_ftest(bfp_path,
                 len_time=len_time,
                 rand_pair=pairs[ind])
 
-    kr = KRR(kernel='precomputed') #, alpha=1.1)
+    kr = KRR(kernel='precomputed')  #, alpha=1.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr_ftest = np.zeros(num_vert)
-    gamma = 2.6 #2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
+    gamma = 2.6  #2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
     rho = np.zeros(num_vert)
     res = np.zeros(num_vert)
@@ -757,57 +772,55 @@ def kernel_regression_ftest(bfp_path,
         D = np.zeros((num_sub, num_sub))
         D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
 
-        D = D+D.T  # make it symmetric
+        D = D + D.T  # make it symmetric
         D1 = np.exp(-gamma * D)
         D = 1 - D
         # Do this in a split train test split
-        kr = KRR(kernel='precomputed') #, alpha=1.1)
+        kr = KRR(kernel='precomputed')  #, alpha=1.1)
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
 
-        kr = KRR(kernel='precomputed') #, alpha=1.1)
+        kr = KRR(kernel='precomputed')  #, alpha=1.1)
         reg_var_null = np.random.permutation(reg_var)
         kr.fit(D, reg_var_null)
         pred_v_null = kr.predict(D)
-
-
-        if np.var(pred_v)<1e-6 or np.var(pred_v_null)<1e-6:
+        if np.var(pred_v) < 1e-6 or np.var(pred_v_null) < 1e-6:
             rho[v] = 0
             res[v] = np.mean(reg_var**2)
             null_res[v] = np.mean((reg_var_null)**2)
         else:
-            rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
-            res[v] = np.mean((pred_v-reg_var)**2)
-            null_res[v] = np.mean((pred_v_null-reg_var_null)**2)
+            rho[v] = np.corrcoef(pred_v, reg_var)[0, 1]
+            res[v] = np.mean((pred_v - reg_var)**2)
+            null_res[v] = np.mean((pred_v_null - reg_var_null)**2)
     print('Doing f test')
     for v in tqdm(range(num_vert)):
-        Fstat = res[v]/null_res[v]
-        pval_kr_ftest[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+        Fstat = res[v] / null_res[v]
+        pval_kr_ftest[v] = f.cdf(Fstat, num_sub - 1, num_sub - 1)
 
     _, pval_kr_ftest_fdr = fdrcorrection(pval_kr_ftest)
-        #Fstat = np.mean((pred_v-reg_var)**2) / \
-        #    np.mean((pred_var_null-reg_var)**2)
-        #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
-
+    #Fstat = np.mean((pred_v-reg_var)**2) / \
+    #    np.mean((pred_var_null-reg_var)**2)
+    #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
 
     return pval_kr_ftest, pval_kr_ftest_fdr
 
+
 ##
 def kernel_regression_ftest_permutation(bfp_path,
-                      sub_files,
-                      reg_var,
-                      nperm=100,
-                      len_time=235,
-                      num_proc=4,
-                      fdr_test=False,
-                      simulation=False):
+                                        sub_files,
+                                        reg_var,
+                                        nperm=100,
+                                        len_time=235,
+                                        num_proc=4,
+                                        fdr_test=False,
+                                        simulation=False):
     """  and Kernel Regression """
-
 
     if simulation:
         # added for simulation
         labs = spio.loadmat(
-            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+            '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+        )['labels']
         roi = (labs == 200)  # R. Parietal Lobe
 
     # Normalize the variable
@@ -823,7 +836,7 @@ def kernel_regression_ftest_permutation(bfp_path,
     regvar_diff = np.zeros(num_pairs)
 
     if simulation:
-        pairdistfunc = partial(pair_dist_simulation,roi=roi)
+        pairdistfunc = partial(pair_dist_simulation, roi=roi)
     else:
         pairdistfunc = pair_dist
 
@@ -854,7 +867,7 @@ def kernel_regression_ftest_permutation(bfp_path,
     kr = KRR(kernel='precomputed', alpha=0.1)
     D = np.zeros((num_sub, num_sub))
     pval_kr_ftest = np.zeros(num_vert)
-    gamma = 2.6 #2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
+    gamma = 2.6  #2 #5  # checked by brute force #5 gives a lot of significance  # bandwidth for RBF
 
     rho = np.zeros(num_vert)
     res = np.zeros(num_vert)
@@ -866,40 +879,38 @@ def kernel_regression_ftest_permutation(bfp_path,
         D = np.zeros((num_sub, num_sub))
         D[pairs[:, 0], pairs[:, 1]] = fmri_diff[v, :]
 
-        D = D+D.T  # make it symmetric
+        D = D + D.T  # make it symmetric
         D = np.exp(-gamma * D)
         #D = (2-D)/2
         # Do this in a split train test split
         kr = KRR(kernel='precomputed', alpha=0.1)
         kr.fit(D, reg_var)
         pred_v = kr.predict(D)
-        rho[v] = np.corrcoef(pred_v,reg_var)[0,1]
-        res[v] = np.mean((pred_v-reg_var)**2)
-        
+        rho[v] = np.corrcoef(pred_v, reg_var)[0, 1]
+        res[v] = np.mean((pred_v - reg_var)**2)
+
         for p in range(nperm):
             reg_var_null = np.random.permutation(reg_var)
             kr = KRR(kernel='precomputed', alpha=0.1)
             kr.fit(D, reg_var_null)
             pred_v_null = kr.predict(D)
-            null_res[v] += np.sum((pred_v_null-reg_var_null)**2)
-        
-        null_res[v] = null_res[v]/(nperm*num_sub)
-        
+            null_res[v] += np.sum((pred_v_null - reg_var_null)**2)
+
+        null_res[v] = null_res[v] / (nperm * num_sub)
+
         #null_res[v] = np.mean(reg_var**2)
 
     print('Doing f test')
     for v in tqdm(range(num_vert)):
-        Fstat = res[v]/null_res[v]
-        pval_kr_ftest[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
+        Fstat = res[v] / null_res[v]
+        pval_kr_ftest[v] = f.cdf(Fstat, num_sub - 1, num_sub - 1)
 
     _, pval_kr_ftest_fdr = fdrcorrection(pval_kr_ftest)
-        #Fstat = np.mean((pred_v-reg_var)**2) / \
-        #    np.mean((pred_var_null-reg_var)**2)
-        #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
-
+    #Fstat = np.mean((pred_v-reg_var)**2) / \
+    #    np.mean((pred_var_null-reg_var)**2)
+    #pval_kr[v] = f.cdf(Fstat, num_sub-1, num_sub-1)
 
     return pval_kr_ftest, pval_kr_ftest_fdr
-
 
 
 def randpairs_regression(bfp_path,
@@ -909,11 +920,12 @@ def randpairs_regression(bfp_path,
                          nperm=1000,
                          len_time=235,
                          num_proc=4,
-                         pearson_fdr_test=False):
+                         pearson_fdr_test=False,
+                         data_field='dtseries'):
     """ Perform regression stats based on square distance between random pairs """
 
     # Get the number of vertices from a file
-    num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
+    num_vert = spio.loadmat(sub_files[0])[data_field].shape[0]
 
     pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
                                       num_pairs=num_pairs)
@@ -928,7 +940,8 @@ def randpairs_regression(bfp_path,
             partial(pair_dist,
                     sub_files=sub_files,
                     reg_var=reg_var,
-                    len_time=len_time), pairs)
+                    len_time=len_time,
+                    data_field=data_field), pairs)
 
         ind = 0
         for res in results:
@@ -939,11 +952,12 @@ def randpairs_regression(bfp_path,
     else:
         for ind in tqdm(range(len(pairs))):
 
-            fmri_diff[:, ind], regvar_diff[ind] = pair_dist(
-                sub_files=sub_files,
-                reg_var=reg_var,
-                len_time=len_time,
-                rand_pair=pairs[ind])
+            fmri_diff[:,
+                      ind], regvar_diff[ind] = pair_dist(sub_files=sub_files,
+                                                         reg_var=reg_var,
+                                                         len_time=len_time,
+                                                         rand_pair=pairs[ind],
+                                                         data_field=data_field)
 
     corr_pval2 = 0
     if not pearson_fdr_test:
@@ -988,7 +1002,8 @@ def randpairs_regression_simulation(bfp_path,
     num_vert = spio.loadmat(sub_files[0])['dtseries'].shape[0]
 
     labs = spio.loadmat(
-        '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat')['labels']
+        '/ImagePTE1/ajoshi/code_farm/bfp/supp_data/USCLobes_grayordinate_labels.mat'
+    )['labels']
 
     roi = (labs == 200)  # R. Parietal Lobe
 
@@ -1005,7 +1020,8 @@ def randpairs_regression_simulation(bfp_path,
             partial(pair_dist_simulation,
                     sub_files=sub_files,
                     reg_var=reg_var,
-                    len_time=len_time, roi=roi), pairs)
+                    len_time=len_time,
+                    roi=roi), pairs)
 
         ind = 0
         for res in results:
@@ -1020,7 +1036,8 @@ def randpairs_regression_simulation(bfp_path,
                 sub_files=sub_files,
                 reg_var=reg_var,
                 len_time=len_time,
-                rand_pair=pairs[ind], roi=roi)
+                rand_pair=pairs[ind],
+                roi=roi)
 
     corr_pval2 = 0
     if not pearson_fdr_test:
@@ -1058,7 +1075,7 @@ def dist_diff_fdr(grp1, grp2):
 
     pval = 0
     for j in range(grp2.shape[1]):
-        pval += (grp1[:, :] > grp2[:, j][:, None]).sum(axis=1)/grp1.shape[1]
+        pval += (grp1[:, :] > grp2[:, j][:, None]).sum(axis=1) / grp1.shape[1]
 
     pval /= grp2.shape[1]
 
@@ -1080,11 +1097,10 @@ def group_diff_fdr(grp1, grp2, alt_hypo='less'):
 
         if np.linalg.norm(grp2[vind, :]) > 0:
 
-            _, pval[vind] = sp.stats.mannwhitneyu(
-                grp1[vind, :],
-                grp2[vind, :],
-                use_continuity=True,
-                alternative=alt_hypo)
+            _, pval[vind] = sp.stats.mannwhitneyu(grp1[vind, :],
+                                                  grp2[vind, :],
+                                                  use_continuity=True,
+                                                  alternative=alt_hypo)
         else:
             pval[vind] = 0.5
 
@@ -1143,11 +1159,11 @@ def compare_sub2ctrl(bfp_path,
         print('Performing Pearson correlation with FDR testing')
         pval_fdr, pval = group_diff_fdr(grp1=fmri_diff_null,
                                         grp2=sub2ctrl_diff)
+
+
 #                                        alt_hypo='less')
 
     return pval_fdr, pval
-
-
 '''Deprecated'''
 
 
@@ -1225,11 +1241,11 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     pval = np.zeros(numV)
     for nv in tqdm(range(numV)):
         if ttype == 'linear':
-            rval[nv], pval[nv] = sp.stats.pearsonr(
-                subTest_varmain, diff_resid1[nv, :])
+            rval[nv], pval[nv] = sp.stats.pearsonr(subTest_varmain,
+                                                   diff_resid1[nv, :])
         if ttype == 'group':
-            rval[nv], pval[nv] = sp.stats.ttest_ind(
-                subTest_varmain, diff_resid1[nv, :])
+            rval[nv], pval[nv] = sp.stats.ttest_ind(subTest_varmain,
+                                                    diff_resid1[nv, :])
             #g = set(subTest_varmain)
             # for gnum in len(g):
 

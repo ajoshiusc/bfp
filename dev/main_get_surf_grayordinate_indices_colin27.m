@@ -31,7 +31,7 @@ col32kright.vertices=col_BST.vertices(ind_right,:);
 
 writedfs('../supp_data/colin27_32kright_orig.dfs',col32kright);
 
-bci32kright=smooth_cortex_fast(col32kright,.1,75);
+col32kright=smooth_cortex_fast(col32kright,.1,75);
 
 view_patch(col32kright);
 writedfs('../supp_data/colin27_32kright.dfs',col32kright);
@@ -39,16 +39,16 @@ writedfs('../supp_data/colin27_32kright.dfs',col32kright);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Resample from one sphere to the other (Left)
 g_32k = gifti('/big_disk/ajoshi/data/standard_mesh_atlases/resample_fsaverage/fs_LR-deformed_to-fsaverage.L.sphere.32k_fs_LR.surf.gii');
-[bci.vertices, bci.faces] = freesurfer_read_surf('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_fs/surf/lh.sphere.reg');
+[col.vertices, col.faces] = freesurfer_read_surf('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_fs/surf/lh.sphere.reg');
 tic
-[ind_left,d] = dsearchn(bci.vertices,g_32k.vertices);
+[ind_left,d] = dsearchn(col.vertices,g_32k.vertices);
 toc
-g.vertices=bci.vertices(ind_left,:);
+g.vertices=col.vertices(ind_left,:);
 g.faces=g_32k.faces;
 
 %% Resample to 32k Surfaces (Left)
 [col_inner_fs.vertices, col_inner_fs.faces] = freesurfer_read_surf('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_fs/surf/lh.orig');
-col_BST=readdfs('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_BST/colin27_t1_tal_lin.left.inner.cortex.dfs');
+col_BST=readdfs('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_BST/colin27_t1_tal_lin.left.inner.cortex.svreg.dfs');
 col_BST.vertices(:, 1) = col_BST.vertices(:, 1)-181.0/2.0;
 col_BST.vertices(:, 2) = col_BST.vertices(:, 2)-217.0/2.0;
 col_BST.vertices(:, 3) = col_BST.vertices(:, 3)-181.0/2.0;
@@ -56,7 +56,7 @@ col_BST.vertices(:, 3) = col_BST.vertices(:, 3)-181.0/2.0;
 tic
 [ind_left,d] = dsearchn(col_BST.vertices,col_inner_fs.vertices(ind_left,:));
 toc
-col_BST=readdfs('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_BST/colin27_t1_tal_lin.left.mid.cortex.dfs');
+col_BST=readdfs('/ImagePTE1/ajoshi/mni_colin27_1998/mni_colin27_BST/colin27_t1_tal_lin.left.mid.cortex.svreg.dfs');
 
 col32kleft.faces=double(g.faces);
 col32kleft.vertices=col_BST.vertices(ind_left,:);
@@ -66,6 +66,6 @@ writedfs('../supp_data/colin27_32kleft_orig.dfs',col32kleft);
 col32kleft=smooth_cortex_fast(col32kleft,.1,75);
 view_patch(col32kleft);
 
-writedfs('../supp_data/colin27_32kleft.dfs',bci32kleft);
+writedfs('../supp_data/colin27_32kleft.dfs',col32kleft);
 
 save('../supp_data/colin27_grayordinates_surf_ind.mat','ind_left','ind_right');

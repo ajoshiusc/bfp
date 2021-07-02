@@ -4,7 +4,7 @@ addpath(genpath('/ImagePTE1/ajoshi/code_farm/svreg/src'));
 addpath(genpath('/ImagePTE1/ajoshi/code_farm/svreg/3rdParty'));
 
 load('../supp_data/USCBrain_grayordinate_labels.mat');
-roilist=[1147,225, 373,247,186,187,188,189,227,145];%, 345,351];
+roilist=[147,225, 373,247,186,187,188,189,227,145];%, 345,351];
 
 
 s{1}=readdfs('../supp_data/bci32kleft.dfs');

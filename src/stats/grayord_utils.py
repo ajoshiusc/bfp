@@ -79,7 +79,8 @@ def vis_grayord_sigpval(pval,
                         smooth_iter,
                         bfp_path,
                         fsl_path=FSL_PATH,
-                        save_png=True):
+                        save_png=True,
+                        bst_path='/home/ajoshi/BrainSuite19b'):
     '''    save2volgord(pval,
                     out_dir,
                     surf_name + '_pval_sig',
@@ -97,7 +98,8 @@ def vis_grayord_sigpval(pval,
     plsurf, prsurf = label_surf(pval, [0, sig_alpha],
                                 smooth_iter,
                                 'jet_r',
-                                bfp_path=bfp_path)
+                                bfp_path=bfp_path,
+                                bst_path=bst_path)
     # If p value above .05 then make the surface grey
     plsurf.vColor[plsurf.attributes >= sig_alpha, :] = .5
     prsurf.vColor[prsurf.attributes >= sig_alpha, :] = .5

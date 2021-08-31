@@ -79,8 +79,7 @@ def vis_grayord_sigpval(pval,
                         smooth_iter,
                         bfp_path,
                         fsl_path,
-                        save_png,
-                        bst_path):
+                        save_png):
     '''    save2volgord(pval,
                     out_dir,
                     surf_name + '_pval_sig',
@@ -94,8 +93,7 @@ def vis_grayord_sigpval(pval,
                      surf_name + '_pval_sig',
                      bfp_path,
                      fsl_path,
-                     0,
-                     bst_path)
+                     0)
 
     plsurf, prsurf = label_surf(pval, [0, sig_alpha],
                                 smooth_iter,
@@ -157,10 +155,10 @@ def save2volbord_bci(data, outfile, bfp_path, smooth_std=0):
     v2.to_filename(outfile)
 
 
-def save2volgord_bci(data, out_dir, vol_name, bfp_path, fsl_path, default_value, bst_path):
+def save2volgord_bci(data, out_dir, vol_name, bfp_path, fsl_path, default_value):
 
     vol = load_img(
-        join(bst_path, 'svreg', 'BCI-DNI_brain_atlas', 'BCI-DNI_brain.nii.gz'))
+        join(bfp_path, 'supp_data', 'Vol_BCI_grayord32k.mask.nii.gz'))
     a = loadmat(join(bfp_path, 'supp_data', 'bci_grayordinates_vol_ind.mat'))
 
     ind = a['bci_vol_ind'] - 1

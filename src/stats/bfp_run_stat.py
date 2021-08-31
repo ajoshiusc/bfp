@@ -199,14 +199,18 @@ if cf.stat_test == 'pairwise-linear':
                         out_dir=cf.out_dir,
                         smooth_iter=int(cf.smooth_iter),
                         bfp_path=cf.bfp_path,
-                        fsl_path=cf.fsl_path)
+                        fsl_path=cf.fsl_path,
+                        save_png=cf.save_figures,
+                        bst_path=cf.brainsuite_path)
     
     vis_grayord_sigpval(corr_pval_fdr, float(cf.sig_alpha), 
                         surf_name=cf.outname + 'fdr',
                         out_dir=cf.out_dir,
                         smooth_iter=int(cf.smooth_iter),
                         bfp_path=cf.bfp_path,
-                        fsl_path=cf.fsl_path)
+                        fsl_path=cf.fsl_path,
+                        save_png=cf.save_figures,
+                        bst_path=cf.brainsuite_path)                        )
     
     write_text_timestamp(log_fname, 'BFP regression analysis complete! '+
                          '\n pvalue labeled surfaces have colorbar limits 0 to ' + str(cf.sig_alpha) + '; colorbar class is jet reverse.'+ 

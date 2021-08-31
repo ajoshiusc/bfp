@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/Dropbox/SCD/Analysis/BOLD/2021-01/SSIM2_Fatlas_exclude/BFPtest_config_stats.ini'
+config_file = '/home/sychoi/repo/bfp/src/stats/sample_config_stats.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

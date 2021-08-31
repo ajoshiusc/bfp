@@ -23,7 +23,7 @@ if VTK_INSTALLED:
     from surfproc import view_patch_vtk, smooth_patch
 
 
-FSL_PATH = '/usr/share/fsl/5.0'
+#FSL_PATH = '/usr/share/fsl/5.0'
 
 
 def visdata_grayord(data,
@@ -33,13 +33,13 @@ def visdata_grayord(data,
                     colorbar_lim,
                     colormap,
                     save_png,
-                    bfp_path='.',
-                    fsl_path=FSL_PATH):
+                    bfp_path,
+                    fsl_path):
     lsurf, rsurf = label_surf(data,
                               colorbar_lim,
                               smooth_iter,
                               colormap,
-                              bfp_path=bfp_path)
+                              bfp_path)
     save2surfgord(lsurf, rsurf, out_dir, surf_name, bfp_path, save_png)
     save2volgord(data, out_dir, surf_name, bfp_path)
 
@@ -78,9 +78,9 @@ def vis_grayord_sigpval(pval,
                         out_dir,
                         smooth_iter,
                         bfp_path,
-                        fsl_path=FSL_PATH,
-                        save_png=True,
-                        bst_path='/home/ajoshi/BrainSuite19b'):
+                        fsl_path,
+                        save_png,
+                        bst_path):
     '''    save2volgord(pval,
                     out_dir,
                     surf_name + '_pval_sig',
@@ -93,13 +93,14 @@ def vis_grayord_sigpval(pval,
                      out_dir,
                      surf_name + '_pval_sig',
                      bfp_path,
-                     fsl_path=fsl_path)
+                     fsl_path,
+                     0,
+                     bst_path)
 
     plsurf, prsurf = label_surf(pval, [0, sig_alpha],
                                 smooth_iter,
                                 'jet_r',
-                                bfp_path=bfp_path,
-                                bst_path=bst_path)
+                                bfp_path)
     # If p value above .05 then make the surface grey
     plsurf.vColor[plsurf.attributes >= sig_alpha, :] = .5
     prsurf.vColor[prsurf.attributes >= sig_alpha, :] = .5
@@ -137,7 +138,7 @@ def label_surf(pval, colorbar_lim, smooth_iter, colormap, bfp_path='.'):
     return lsurf, rsurf
 
 
-def save2volbord_bci(data, outfile, bfp_path='.', smooth_std=0):
+def save2volbord_bci(data, outfile, bfp_path, smooth_std=0):
     '''Save output to brainordinates'''
     a = loadmat(join(bfp_path, 'supp_data', 'bord_ind.mat'))
     v = load_img(join(bfp_path, 'supp_data',
@@ -156,7 +157,7 @@ def save2volbord_bci(data, outfile, bfp_path='.', smooth_std=0):
     v2.to_filename(outfile)
 
 
-def save2volgord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0, bst_path='/home/ajoshi/BrainSuite19b'):
+def save2volgord_bci(data, out_dir, vol_name, bfp_path, fsl_path, default_value, bst_path):
 
     vol = load_img(
         join(bst_path, 'svreg', 'BCI-DNI_brain_atlas', 'BCI-DNI_brain.nii.gz'))
@@ -176,7 +177,7 @@ def save2volgord_bci(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, d
     grod.to_filename(outfile)
 
 
-def save2volgord(data, out_dir, vol_name, bfp_path='.', fsl_path=FSL_PATH, default_value=0):
+def save2volgord(data, out_dir, vol_name, bfp_path, fsl_path, default_value=0):
 
     mni2mm = load_img(join(fsl_path, 'data/standard', 'MNI152_T1_2mm.nii.gz'))
     a = loadmat(join(bfp_path, 'supp_data', 'MNI2mm_gord_vol_coord.mat'))

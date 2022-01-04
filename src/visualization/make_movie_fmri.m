@@ -25,10 +25,15 @@ dataL(isnan(llab),:)=0;dataR(isnan(rlab),:)=0;
 if ~exist('sc','var')
     sc=prctile(abs(dtseries(:)),99);
 end
-%dataL=normalizeData(dataL')';
-%dataL=dataL*sqrt(size(dataL,2));
-%dataR=normalizeData(dataR')';
-%dataR=dataR*sqrt(size(dataR,2));
+
+
+% normalize data
+dataL=normalizeData(dataL')';
+dataL=dataL*sqrt(size(dataL,2));
+dataR=normalizeData(dataR')';
+dataR=dataR*sqrt(size(dataR,2));
+
+
 % interpolate data to 10 fps 
 tMax = TR*(size(dataL,2)-1); % desired length of the video in seconds, here 30sec
 tItvOrg = TR; % TR, here for HCP 0.72

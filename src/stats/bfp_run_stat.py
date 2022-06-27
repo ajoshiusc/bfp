@@ -1,5 +1,5 @@
 #%%
-config_file = '/home/sychoi/repo/bfp/src/stats/sample_config_stats.ini'
+config_file = os.environ['CONFIG_FILE']
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

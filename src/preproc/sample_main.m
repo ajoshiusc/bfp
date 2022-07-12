@@ -4,13 +4,13 @@ addpath(genpath('/ImagePTE1/ajoshi/code_farm/bfp/src'));
 %    1050345 rest 2
 
 % Set the input arguments
-configfile='/home/ajoshi/bfp_sample/bfpconfig.ini';
+configfile='/big_disk/ajoshi/bfp_sample/bfpconfig.ini';
 
-t1='/home/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
-fmri='/home/ajoshi/bfp_sample/input/sub08001/func/rest.nii.gz';
+t1='/big_disk/ajoshi/bfp_sample/input/sub08001/anat/mprage_anonymized.nii.gz';
+fmri='/big_disk/ajoshi/bfp_sample/input/sub08001/func/rest.nii.gz';
 
 %fmri='/home/ajoshi/Downloads/BFP_issues/ACTL005/ACTL005.BOLD.resting.nii.gz';
-studydir='/home/ajoshi/bfp_sample/output';
+studydir='/big_disk/ajoshi/bfp_sample/output';
 subid='sub08001';
 sessionid='rest';
 TR='';

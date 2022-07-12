@@ -128,18 +128,18 @@ end
 if ~exist([fmri,'.mc.ssim.txt'],'file')
     s(:,2) = motionEval(outfile, infile);
     s(:,1) = motionEval([fmri,'.ro.nii.gz'],infile);
-%    p = figure('visible','off');
-%    plot(s(:,1)); hold; plot(s(:,2));
-%    if exist([fmri,'.ssim.vref.txt'],'file')
-%        v_ref = importdata([fmri,'.ssim.vref.txt']);
-%        line([v_ref v_ref], [0 1],'Color','black','LineStyle','--');
-%        legend({'original','motion corrected','refence volume'},'Location','southeast');
-%    else
-%        legend({'original','motion corrected'},'Location','southeast');
-%    end
-%    ylim([0,1.1]);
-%    ylabel('SSIM');xlabel('vol no.');
-%    saveas(p,[fmri,'.mc.ssim.png']);
+    p = figure('visible','off');
+    plot(s(:,1)); hold; plot(s(:,2));
+    if exist([fmri,'.ssim.vref.txt'],'file')
+        v_ref = importdata([fmri,'.ssim.vref.txt']);
+        line([v_ref v_ref], [0 1],'Color','black','LineStyle','--');
+        legend({'original','motion corrected','refence volume'},'Location','southeast');
+    else
+        legend({'original','motion corrected'},'Location','southeast');
+    end
+    ylim([0,1.1]);
+    ylabel('SSIM');xlabel('vol no.');
+    saveas(p,[fmri,'.mc.ssim.png']);
     csvwrite([fmri,'.mc.ssim.txt'],s);
 end
     

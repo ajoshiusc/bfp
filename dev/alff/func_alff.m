@@ -59,7 +59,7 @@ for i = 1:length(alff_ext)
 
     a=load(fmri2surfFile);
     left_go_data=a.datal_atlas(ind_left);
-    right_go_data=a.datar_atlas(ind_left);
+    right_go_data=a.datar_atlas(ind_right);
 
     lsz=size(left_go_data,1);
     rsz=size(right_go_data,1);

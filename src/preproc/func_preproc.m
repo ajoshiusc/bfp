@@ -445,7 +445,7 @@ else
         fprintf(fp, '--Option Nuissance Signal Regression: No\n');
     end
 end
-%% Resampling residuals to standard MNI space
+%% Resampling residuals to standard space
 if FSLRigidReg > 0
     unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',example,'.func2standard.mat -interp trilinear']);
 else

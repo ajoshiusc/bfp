@@ -1,6 +1,6 @@
 clc;clear all;close all;restoredefaultpath;
 %addpath(genpath('/big_disk/ajoshi/coding_ground/bfp/supp_data'))
-addpath(genpath('/ImagePTE1/ajoshi/code_farm/bfp/src'));
+addpath(genpath('/home/ajoshi/projects/bfp/src'));
 %    1050345 rest 2
 
 % Set the input arguments

@@ -38,9 +38,22 @@ else
     end    
 end
 
-v1=var(datal,[],2);
+% Compute data variance
+v1=var(datal,[],2); 
+% For 1 D data do not comute variance
+if size(datal,2) ==1
+    v1 = ones(size(v1));
+end
+
+% Compute data variance
 v2=var(datar,[],2);
-sl2=sl; v1=(v1==0); ind=(sum(v1(sl2.faces),2)>0); sl2.faces(ind,:)=[];[sl2,locl]=myclean_patch_cc(sl2);
+% For 1 D data do not comute variance
+if size(datar,2) ==1
+    v2 = ones(size(v2));
+end
+
+sl2=sl; v1=(v1==0); ind=(sum(v1(sl2.faces),2)>0); sl2.faces(ind,:)=[];
+[sl2,locl]=myclean_patch_cc(sl2);
 sr2=sr; v2=(v2==0); ind=(sum(v2(sr2.faces),2)>0); sr2.faces(ind,:)=[];[sr2,locr]=myclean_patch_cc(sr2);
 
 if MultiThreading > 0

@@ -7,9 +7,7 @@ config.FSLOUTPUTTYPE='NIFTI_GZ';
 config.AFNIPATH = '/home/ajoshi/abin';
 config.FSLRigidReg=0;
 config.MultiThreading=1;
-BFPPATH='/home/ajoshi/projects/bfp';
-[~,subid] = fileparts(subbasename);
-sessionid = 'rest';
+config.BFPPATH='/home/ajoshi/projects/bfp';
 
 %function gen_alff_gord()
-get_alff_gord(config, fmri, BFPPATH, subid, sessionid, subbasename);
+get_alff_gord(config, fmri, subbasename);

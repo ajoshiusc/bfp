@@ -1,4 +1,4 @@
-function get_alff_gord(config, fmri, subid, sessionid, subbasename)
+function get_alff_gord(config, fmri,subbasename)
 
 GordSize=96854;
 setenv('PATH', [getenv('PATH'),':',config.FSLPATH,':',config.FSLPATH,'/bin']);
@@ -38,8 +38,8 @@ for i = 1:length(alff_ext)
         transform_data_affine([fmri,'_',alff_ext{i},'.nii.gz'], 'm', [fmri,'_',alff_ext{i},'2standard.nii.gz'], [example,'.func.nii.gz'], fullfile(func_dir,'standard.nii.gz'), [fmri,'.example.func2standard.rigid_registration_result.mat'], 'linear');
     end
 
-    fmri2surfFile=fullfile(func_dir,sprintf('%s_%s_bold2surf.mat',subid,sessionid));
-    GOrdFile=fullfile(func_dir,sprintf('%s_%s_bold.%s.GOrd.mat',subid,sessionid,alff_ext{i}));
+    fmri2surfFile=fullfile(func_dir,sprintf('data2surf.mat'));
+    GOrdFile=fullfile(func_dir,sprintf('%s_bold.%s.GOrd.mat',fmri,alff_ext{i}));
     resample2surf(subbasename,[fmri,'_',alff_ext{i},'2standard.nii.gz'],fmri2surfFile,config.MultiThreading);
 
     load(GOrdSurfIndFile,'ind_left','ind_right');
@@ -57,6 +57,7 @@ for i = 1:length(alff_ext)
     fprintf('Saving file: %s\n', GOrdFile);
 
     save(GOrdFile,'data');
+    delete(fmri2surfFile);
 
 end
 end

@@ -12,7 +12,7 @@ setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 alff_ext={'ALFF','fALFF','ALFF_Z'};
 
 func_dir = fileparts(fmribase);
-infile = [fmribase,'_gms.nii.gz'];
+infile = [fmribase,'.gms.nii.gz'];
 outbase = fmribase;
 
 GOrdSurfIndFile=fullfile(config.BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
@@ -21,7 +21,7 @@ GOrdSurfIndFile=fullfile(config.BFPPATH,'supp_data','bci_grayordinates_surf_ind.
 TR = num2str(str2double(b));
 LP = num2str(0.01);
 HP = num2str(0.1);
-mask_file = [fmribase,'_mask.nii.gz'];
+mask_file = [fmribase,'.mask.nii.gz'];
 
 cmd = [fullfile(config.BFPPATH,'src/connectivity/createALFF.sh '), outbase, ' ', infile, ' ',mask_file, ' ', TR, ' ', LP,',',HP];
 unix(cmd);
@@ -39,7 +39,7 @@ for i = 1:length(alff_ext)
     end
 
     fmribase2surfFile=fullfile(func_dir,sprintf('data2surf.mat'));
-    GOrdFile=fullfile(sprintf('%s_bold.%s.GOrd.mat',fmribase,alff_ext{i}));
+    GOrdFile=fullfile(sprintf('%s.%s.GOrd.mat',fmribase,alff_ext{i}));
     resample2surf(anatbase,[fmribase,'_',alff_ext{i},'2standard.nii.gz'],fmribase2surfFile,config.MultiThreading);
 
     load(GOrdSurfIndFile,'ind_left','ind_right');

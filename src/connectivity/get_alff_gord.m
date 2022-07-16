@@ -1,4 +1,4 @@
-function get_alff_gord(config, fmri,subbasename)
+function get_alff_gord(config, fmribase,anatbase)
 
 GordSize=96854;
 setenv('PATH', [getenv('PATH'),':',config.FSLPATH,':',config.FSLPATH,'/bin']);
@@ -11,40 +11,40 @@ setenv('PATH', [getenv('PATH'),':',config.AFNIPATH,':',config.AFNIPATH,'/bin']);
 
 alff_ext={'ALFF','fALFF','ALFF_Z'};
 
-func_dir = fileparts(fmri);
-infile = [fmri,'_gms.nii.gz'];
-outbase = fmri;
+func_dir = fileparts(fmribase);
+infile = [fmribase,'_gms.nii.gz'];
+outbase = fmribase;
 
 GOrdSurfIndFile=fullfile(config.BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
 
-[~,b] = unix(['3dinfo -tr ',[fmri,'.nii.gz']]); % get TR
+[~,b] = unix(['3dinfo -tr ',[fmribase,'.nii.gz']]); % get TR
 TR = num2str(str2double(b));
 LP = num2str(0.01);
 HP = num2str(0.1);
-mask_file = [fmri,'_mask.nii.gz'];
+mask_file = [fmribase,'_mask.nii.gz'];
 
 cmd = [fullfile(config.BFPPATH,'src/connectivity/createALFF.sh '), outbase, ' ', infile, ' ',mask_file, ' ', TR, ' ', LP,',',HP];
 unix(cmd);
 
-example = [fmri,'.example'];
+example = [fmribase,'.example'];
 
 
 % Resampling ALFF_images to standard space
 for i = 1:length(alff_ext)
 
     if config.FSLRigidReg > 0
-        unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',fmri,'_',alff_ext{i},'.nii.gz -out ',fmri,'_',alff_ext{i},'2standard.nii.gz -applyxfm -init ',fmri,'_example_func2standard.mat -interp trilinear']);
+        unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',fmribase,'_',alff_ext{i},'.nii.gz -out ',fmribase,'_',alff_ext{i},'2standard.nii.gz -applyxfm -init ',fmribase,'_example_func2standard.mat -interp trilinear']);
     else
-        transform_data_affine([fmri,'_',alff_ext{i},'.nii.gz'], 'm', [fmri,'_',alff_ext{i},'2standard.nii.gz'], [example,'.func.nii.gz'], fullfile(func_dir,'standard.nii.gz'), [fmri,'.example.func2standard.rigid_registration_result.mat'], 'linear');
+        transform_data_affine([fmribase,'_',alff_ext{i},'.nii.gz'], 'm', [fmribase,'_',alff_ext{i},'2standard.nii.gz'], [example,'.func.nii.gz'], fullfile(func_dir,'standard.nii.gz'), [fmribase,'.example.func2standard.rigid_registration_result.mat'], 'linear');
     end
 
-    fmri2surfFile=fullfile(func_dir,sprintf('data2surf.mat'));
-    GOrdFile=fullfile(func_dir,sprintf('%s_bold.%s.GOrd.mat',fmri,alff_ext{i}));
-    resample2surf(subbasename,[fmri,'_',alff_ext{i},'2standard.nii.gz'],fmri2surfFile,config.MultiThreading);
+    fmribase2surfFile=fullfile(func_dir,sprintf('data2surf.mat'));
+    GOrdFile=fullfile(sprintf('%s_bold.%s.GOrd.mat',fmribase,alff_ext{i}));
+    resample2surf(anatbase,[fmribase,'_',alff_ext{i},'2standard.nii.gz'],fmribase2surfFile,config.MultiThreading);
 
     load(GOrdSurfIndFile,'ind_left','ind_right');
 
-    a=load(fmri2surfFile);
+    a=load(fmribase2surfFile);
     left_go_data=a.datal_atlas(ind_left);
     right_go_data=a.datar_atlas(ind_right);
 
@@ -57,7 +57,7 @@ for i = 1:length(alff_ext)
     fprintf('Saving file: %s\n', GOrdFile);
 
     save(GOrdFile,'data');
-    delete(fmri2surfFile);
+    delete(fmribase2surfFile);
 
 end
 end

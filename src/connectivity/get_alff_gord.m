@@ -23,6 +23,11 @@ LP = num2str(0.01);
 HP = num2str(0.1);
 mask_file = [fmribase,'.mask.nii.gz'];
 
+GOrdFile=fullfile(sprintf('%s.%s.GOrd.mat',fmribase,alff_ext{3}));
+if exist(GOrdFile,'file')
+    return;
+end
+
 cmd = [fullfile(config.BFPPATH,'src/connectivity/createALFF.sh '), outbase, ' ', infile, ' ',mask_file, ' ', TR, ' ', LP,',',HP];
 unix(cmd);
 
@@ -32,6 +37,11 @@ example = [fmribase,'.example'];
 % Resampling ALFF_images to standard space
 for i = 1:length(alff_ext)
 
+    GOrdFile=fullfile(sprintf('%s.%s.GOrd.mat',fmribase,alff_ext{i}));
+    if exist('GOrdFile','file')
+        continue;
+    end
+    
     if config.FSLRigidReg > 0
         unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',fmribase,'_',alff_ext{i},'.nii.gz -out ',fmribase,'_',alff_ext{i},'2standard.nii.gz -applyxfm -init ',fmribase,'_example_func2standard.mat -interp trilinear']);
     else
@@ -39,7 +49,7 @@ for i = 1:length(alff_ext)
     end
 
     fmribase2surfFile=fullfile(func_dir,sprintf('data2surf.mat'));
-    GOrdFile=fullfile(sprintf('%s.%s.GOrd.mat',fmribase,alff_ext{i}));
+
     resample2surf(anatbase,[fmribase,'_',alff_ext{i},'2standard.nii.gz'],fmribase2surfFile,config.MultiThreading);
 
     load(GOrdSurfIndFile,'ind_left','ind_right');

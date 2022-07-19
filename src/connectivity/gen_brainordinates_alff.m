@@ -9,7 +9,7 @@ if ~isfile(subfmri)
     return;
 end
 map_file = fullfile(bfp_out,subid,'anat',[subid,'_T1w.svreg.inv.map.nii.gz']);
-mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.mapped.nii.gz']);
+mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'2standard.mapped.nii.gz']);
 bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'.BOrd.mat']);
 %fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
 

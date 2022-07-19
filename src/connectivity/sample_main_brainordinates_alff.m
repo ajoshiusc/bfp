@@ -11,4 +11,7 @@ a=dir(studydir);
 for j=3:length(a)
     subid = a(j).name;
     gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'ALFF_Z');
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'ALFF');
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'fALFF');
+
 end

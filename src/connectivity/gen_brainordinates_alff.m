@@ -11,6 +11,11 @@ end
 map_file = fullfile(bfp_out,subid,'anat',[subid,'_T1w.svreg.inv.map.nii.gz']);
 mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'2standard.mapped.nii.gz']);
 bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'.BOrd.mat']);
+
+if exist(bordfmri,'file')
+    return;
+end
+
 %fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
 
 target = fullfile(BSTDir, 'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.pvc.frac.nii.gz');

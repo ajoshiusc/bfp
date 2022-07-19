@@ -99,4 +99,5 @@ vr.hdr.hist.srow_z(1:3)=[0,0,vr.hdr.dime.pixdim(4)];
 vr.hdr.dime.scl_slope= 0;
 
 % save the output
+
 save_untouch_nii(vr,outfile);

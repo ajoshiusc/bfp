@@ -8,7 +8,7 @@ sessionid='rest';
 
 a=dir(studydir);
 
-for j=1:length(a)
+for j=3:length(a)
     subid = a(j).name;
-    gen_brainordinates_alff('/home/ajoshi/BrainSuite19b', studydir, subid, sessionid);
+    gen_brainordinates_alff('/home/ajoshi/BrainSuite21a', studydir, subid, sessionid, 'ALFF_Z');
 end

@@ -1,23 +1,16 @@
-function gen_brainordinates_alff(BSTDir, bfp_out, subid, sessionid)
-%sub_mri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/anat/sub-01_T1w.bfc.nii.gz';
-%subfmri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/func/sub-01_task-sadln.bold.res2standard.nii.gz';
-%map_file = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/anat/sub-01_T1w.svreg.inv.map.nii.gz';
-%mappedfmri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/func/sub-01_task-sadln.bold.res2standard.mapped.nii.gz';
-%bordfmri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/func/sub-01_task-sadln.bold.BOrd.mat';
+function gen_brainordinates_alff(BSTDir, bfp_out, subid, sessionid,measure)
 
+% Measure could be 'ALFF', 'ALFF_Z', or 'fALFF_Z'
 
 sub_mri = fullfile(bfp_out,subid,'anat',[subid,'_T1w.bfc.nii.gz']);
-subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.nii.gz']);
+subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'2standard.nii.gz']);
 if ~isfile(subfmri)
-    subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_res2standard.nii.gz']);
-    if ~isfile(subfmri)
-        fprintf('File doesn''t exist:%s\n',subfmri);
-        return;
-    end
+    fprintf('File doesn''t exist:%s\n',subfmri);
+    return;
 end
 map_file = fullfile(bfp_out,subid,'anat',[subid,'_T1w.svreg.inv.map.nii.gz']);
 mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.mapped.nii.gz']);
-bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.BOrd.mat']);
+bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'.BOrd.mat']);
 %fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind})),'file')
 
 target = fullfile(BSTDir, 'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain.pvc.frac.nii.gz');

@@ -13,6 +13,13 @@ alff_ext={'ALFF','fALFF','ALFF_Z'};
 
 func_dir = fileparts(fmribase);
 infile = [fmribase,'.gms.nii.gz'];
+if ~exist(infile,'file')
+    infile = [fmribase,'_gms.nii.gz'];
+end
+if ~exist(infile,'file')
+    return;
+end
+
 outbase = fmribase;
 
 GOrdSurfIndFile=fullfile(config.BFPPATH,'supp_data','bci_grayordinates_surf_ind.mat');
@@ -22,7 +29,12 @@ TR = num2str(str2double(b));
 LP = num2str(0.01);
 HP = num2str(0.1);
 mask_file = [fmribase,'.mask.nii.gz'];
-
+if ~exist(mask_file,'file')
+    mask_file = [fmribase,'_mask.nii.gz'];
+end
+if ~exist(mask_file,'file')
+    return;
+end
 GOrdFile=fullfile(sprintf('%s.%s.GOrd.mat',fmribase,alff_ext{3}));
 if exist(GOrdFile,'file')
     return;

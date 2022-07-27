@@ -1,16 +1,16 @@
-function gen_brainordinates_alff(BSTDir, bfp_out, subid, sessionid,measure)
+function gen_brainordinates_alff(BSTDir, anatbasename, fmribasename,measure)
 
 % Measure could be 'ALFF', 'ALFF_Z', or 'fALFF_Z'
-
-sub_mri = fullfile(bfp_out,subid,'anat',[subid,'_T1w.bfc.nii.gz']);
-subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'2standard.nii.gz']);
+%bfp_out,subid,'func',[subid,'_',sessionid
+sub_mri = [anatbasename, '.bfc.nii.gz'];
+subfmri = [fmribasename,'_',measure,'2standard.nii.gz'];
 if ~isfile(subfmri)
     fprintf('File doesn''t exist:%s\n',subfmri);
     return;
 end
-map_file = fullfile(bfp_out,subid,'anat',[subid,'_T1w.svreg.inv.map.nii.gz']);
-mappedfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'2standard.mapped.nii.gz']);
-bordfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_',measure,'.BOrd.mat']);
+map_file = [anatbasename,'.svreg.inv.map.nii.gz'];
+mappedfmri = [fmribasename,'_bold_',measure,'2standard.mapped.nii.gz'];
+bordfmri = [fmribasename,'_bold_',measure,'.BOrd.mat'];
 
 if exist(bordfmri,'file')
     return;

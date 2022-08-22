@@ -24,7 +24,7 @@ function isInstalled = checkMatlabToolbox(tb)
 
     switch tb
         case 'pct'
-            v = ver('distcomp');
+            v = ver('parallel');
         case 'smlt'
             v = ver('stats');
         case 'ipt'

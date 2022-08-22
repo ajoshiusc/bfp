@@ -146,6 +146,26 @@ else
     config.MultiThreading=1;
 end
 
+if config.MultiThreading == 1
+    pc = parcluster('local');
+    % explicitly set the JobStorageLocation to the temp directory that was
+    % created in your sbatch script
+    par_dir=strcat(subbasename,'_parcluster_tmp');
+    if exist(par_dir,'dir')
+        rmdir(par_dir,'s');
+    end
+    mkdir(par_dir);
+    pc.JobStorageLocation = par_dir;
+    ps = parallel.Settings;
+    ps.Pool.AutoCreate = true;
+    delete(gcp('nocreate'));
+    parpool(4); % default to using 4 threads.
+
+else
+    ps = parallel.Settings;
+    ps.Pool.AutoCreate = false;
+end
+
 if isfield(config, 'T1SpaceProcessing')
     config.T1SpaceProcessing=str2double(config.T1SpaceProcessing);
     if isnan(config.T1SpaceProcessing)
@@ -568,7 +588,7 @@ for ind = 1:length(fmri)
     GOrdVolFile=fullfile(funcDir,sprintf('%s_%s_bold2Vol.GOrd.mat',subid,sessionid{ind}));
     GOrdFile=fullfile(funcDir,sprintf('%s_%s_bold.32k.GOrd.mat',subid,sessionid{ind}));
 
-    fprintf('Resampling fMRI to surface\n')
+    fprintf('Resampling fMRI to surface. This can take several minutes...\n')
     if ~exist(fmri2surfFile,'file') && ~exist(GOrdSurfFile,'file') && ~exist(GOrdFile,'file')
         if 0
             cmd = sprintf('%s %s %s %s %d', resample2surf_bin, subbasename, fmri2standard, fmri2surfFile, config.MultiThreading);

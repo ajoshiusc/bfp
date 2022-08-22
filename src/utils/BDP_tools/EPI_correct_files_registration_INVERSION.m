@@ -489,6 +489,9 @@ cpb.stop();
 % save corrected data
 moving_out.hdr.dime.scl_slope = 0;
 moving_out.hdr.dime.scl_inter = 0;
+
+%make -ve intensities 0
+moving_out.img(moving_out.img<0) = 0;
 save_untouch_nii_gz(moving_out, epi_output_filename, workDir);
 
 % save distortion map

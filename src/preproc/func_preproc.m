@@ -192,7 +192,7 @@ if ~exist([example,'.func2t1.nii.gz'],'file')
         moving_filename = [example,'.func.nii.gz'];
         static_filename = [t1,'.bfc.nii.gz'];
         output_filename = [example,'.func2t1.nii.gz'];
-        usc_rigid_reg(moving_filename, static_filename, output_filename, 'inversion');
+        usc_rigid_reg(moving_filename, static_filename, output_filename, config.uscrigid_similarity);
         fprintf(fp, '--Registration to T1: Option USC rigid registration\n');
     end
 else

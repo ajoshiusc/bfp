@@ -166,6 +166,10 @@ else
     ps.Pool.AutoCreate = false;
 end
 
+if ~isfield(config,'uscrigid_similarity')
+    config.uscrigid_similarity = 'inversion';
+end
+
 if isfield(config, 'T1SpaceProcessing')
     config.T1SpaceProcessing=str2double(config.T1SpaceProcessing);
     if isnan(config.T1SpaceProcessing)

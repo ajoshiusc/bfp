@@ -242,7 +242,7 @@ t = now;
 d = datetime(t,'ConvertFrom','datenum');
 fprintf(fp,'%s\n',d);
 fprintf(fp, 'BFP version: %s\n', ver);
-fprintf(fp,'config: %s\nt1: %s\nfmri: %s\nstudydir: %s\nsubid: %s\nsessionid: %s\nTR: %0.2f\n\n', configfile,t1,fmri_orig,studydir,subid,sessionid{:},TR);
+fprintf(fp,'config: %s\nt1: %s\nfmri: %s\nstudydir: %s\nsubid: %s\nsessionid: %s\nTR: %0.2f\n\n', configfile,t1,fmri_orig{:},studydir,subid,sessionid{:},TR);
 
 fclose(fp);
 

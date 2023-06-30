@@ -148,7 +148,7 @@ function nii = make_nii(varargin)
    end
 
    return;					% make_nii
-
+end
 
 %---------------------------------------------------------------------
 function hdr = make_header(dims, voxel_size, origin, datatype, ...
@@ -159,7 +159,7 @@ function hdr = make_header(dims, voxel_size, origin, datatype, ...
    hdr.hist = data_history(origin, descrip);
     
    return;					% make_header
-
+end
 
 %---------------------------------------------------------------------
 function hk = header_key
@@ -173,7 +173,7 @@ function hk = header_key
     hk.dim_info         = 0;
     
     return;					% header_key
-
+end
 
 %---------------------------------------------------------------------
 function dime = image_dimension(dims, voxel_size, datatype, maxval, minval)
@@ -230,7 +230,7 @@ function dime = image_dimension(dims, voxel_size, datatype, maxval, minval)
    dime.glmin = minval;
    
    return;					% image_dimension
-
+end
 
 %---------------------------------------------------------------------
 function hist = data_history(origin, descrip)
@@ -253,4 +253,5 @@ function hist = data_history(origin, descrip)
    hist.originator = origin;
    
    return;					% data_history
+end
 

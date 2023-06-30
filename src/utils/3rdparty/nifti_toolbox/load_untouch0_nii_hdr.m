@@ -66,8 +66,8 @@ else
 end
 
 hk.sizeof_hdr    = fread(fid, 1,'int32')';	% should be 348!
-hk.data_type     = deblank(fread(fid,10,directchar)');
-hk.db_name       = deblank(fread(fid,18,directchar)');
+hk.data_type     = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hk.db_name       = deblank(sanitize_ascii(fread(fid,18,directchar)')); % added sanitize_ascii -- dws 17jun2023
 hk.extents       = fread(fid, 1,'int32')';
 hk.session_error = fread(fid, 1,'int16')';
 hk.regular       = fread(fid, 1,directchar)';
@@ -177,16 +177,16 @@ else
    directchar = 'uchar=>char';
 end
 
-hist.descrip     = deblank(fread(fid,80,directchar)');
-hist.aux_file    = deblank(fread(fid,24,directchar)');
+hist.descrip     = deblank(sanitize_ascii(fread(fid,80,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.aux_file    = deblank(sanitize_ascii(fread(fid,24,directchar)')); % added sanitize_ascii -- dws 17jun2023
 hist.orient      = fread(fid, 1,'char')';
 hist.originator  = fread(fid, 5,'int16')';
-hist.generated   = deblank(fread(fid,10,directchar)');
-hist.scannum     = deblank(fread(fid,10,directchar)');
-hist.patient_id  = deblank(fread(fid,10,directchar)');
-hist.exp_date    = deblank(fread(fid,10,directchar)');
-hist.exp_time    = deblank(fread(fid,10,directchar)');
-hist.hist_un0    = deblank(fread(fid, 3,directchar)');
+hist.generated   = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.scannum     = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.patient_id  = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.exp_date    = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.exp_time    = deblank(sanitize_ascii(fread(fid,10,directchar)')); % added sanitize_ascii -- dws 17jun2023
+hist.hist_un0    = deblank(sanitize_ascii(fread(fid, 3,directchar)')); % added sanitize_ascii -- dws 17jun2023
 hist.views       = fread(fid, 1,'int32')';
 hist.vols_added  = fread(fid, 1,'int32')';
 hist.start_field = fread(fid, 1,'int32')';

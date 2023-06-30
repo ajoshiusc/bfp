@@ -62,13 +62,13 @@ fwrite(fid, hk.sizeof_hdr(1),    'int32');	% must be 348.
 % data_type = sprintf('%-10s',hk.data_type);	% ensure it is 10 chars from left
 % fwrite(fid, data_type(1:10), 'uchar');
 pad = zeros(1, 10-length(hk.data_type));
-hk.data_type = [hk.data_type  char(pad)];
+hk.data_type = [sanitize_ascii(hk.data_type)  char(pad)]; % -- added sanitize_ascii - dws
 fwrite(fid, hk.data_type(1:10), 'uchar');
 
 % db_name   = sprintf('%-18s', hk.db_name);	% ensure it is 18 chars from left
 % fwrite(fid, db_name(1:18), 'uchar');
 pad = zeros(1, 18-length(hk.db_name));
-hk.db_name = [hk.db_name  char(pad)];
+hk.db_name = [sanitize_ascii(hk.db_name)  char(pad)]; % -- added sanitize_ascii - dws
 fwrite(fid, hk.db_name(1:18), 'uchar');
 
 fwrite(fid, hk.extents(1),       'int32');
@@ -170,13 +170,13 @@ function data_history_save_untouch_nii_hdr(fid, hist)
 % descrip     = sprintf('%-80s', hist.descrip);     % 80 chars from left
 % fwrite(fid, descrip(1:80),    'uchar');
 pad = zeros(1, 80-length(hist.descrip));
-hist.descrip = [hist.descrip  char(pad)];
+hist.descrip = [sanitize_ascii(hist.descrip)  char(pad)]; % -- added sanitize_ascii - dws
 fwrite(fid, hist.descrip(1:80), 'uchar');
 
 % aux_file    = sprintf('%-24s', hist.aux_file);    % 24 chars from left
 % fwrite(fid, aux_file(1:24),   'uchar');
 pad = zeros(1, 24-length(hist.aux_file));
-hist.aux_file = [hist.aux_file  char(pad)];
+hist.aux_file = [sanitize_ascii(hist.aux_file)  char(pad)]; % -- added sanitize_ascii - dws
 fwrite(fid, hist.aux_file(1:24), 'uchar');
 
 fwrite(fid, hist.qform_code,    'int16');
@@ -194,7 +194,7 @@ fwrite(fid, hist.srow_z(1:4), 'float32');
 % intent_name = sprintf('%-16s', hist.intent_name);	% 16 chars from left
 % fwrite(fid, intent_name(1:16),    'uchar');
 pad = zeros(1, 16-length(hist.intent_name));
-hist.intent_name = [hist.intent_name  char(pad)];
+hist.intent_name = [sanitize_ascii(hist.intent_name)  char(pad)]; % -- added sanitize_ascii - dws
 fwrite(fid, hist.intent_name(1:16), 'uchar');
 
 % magic	= sprintf('%-4s', hist.magic);		% 4 chars from left

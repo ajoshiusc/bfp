@@ -1,22 +1,3 @@
-% SVReg: Surface-Constrained Volumetric Registration
-% Copyright (C) 2017 The Regents of the University of California and the University of Southern California
-% Created by Anand A. Joshi, Chitresh Bhushan, David W. Shattuck, Richard M. Leahy 
-% 
-% This program is free software; you can redistribute it and/or
-% modify it under the terms of the GNU General Public License
-% as published by the Free Software Foundation; version 2.
-% 
-% This program is distributed in the hope that it will be useful,
-% but WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-% GNU General Public License for more details.
-% 
-% You should have received a copy of the GNU General Public License
-% along with this program; if not, write to the Free Software
-% Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
-% USA.
-
-
 function [outnii, outFile] = add_qform(dataIn, outFile, force_flag)
 % Adds qform (Quaternion) parameters to nifti header. The parameters are defined to match sform
 % matrix. This function is intended to be used with NIFTI1 files/structs with NIFTI1_XFORM_CODE set
@@ -66,7 +47,7 @@ elseif nii.hdr.hist.sform_code==0 && ~force_flag
    
 elseif nii.hdr.hist.qform_code>0 && ~force_flag
    outnii = nii;
-%   warning('BDP:addQform:QformSet', 'qform is already set. Nothing to do.');
+   warning('BDP:addQform:QformSet', 'qform is already set. Nothing to do.');
    
 else
    outnii = nii;
@@ -94,7 +75,7 @@ else
    % sanity checks on R
    if (abs(det(R))-1)>1e-2
       R
-      error('BDP:addQform','Matrix R is not proper, ie determinant is not 1. Check the header. det(R) = %f', det(R));
+      error('BDP:addQform','Matrix R is not proper, i.e. determinant is not 1. Check the header. det(R) = %f', det(R));
    end
    
    if abs(det(R)-1)<1e-2 % det(R)==1

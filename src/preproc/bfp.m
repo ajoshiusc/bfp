@@ -108,6 +108,18 @@ fprintf(' done\n');
  % creating parsing errors. This takes care of that.
  setenv('AFNI_NIFTI_TYPE_WARN','NO');
 
+fprintf('****DISPLAYING ENVIRONMANT******\n');
+system('env');
+fprintf('****done******\n');
+
+fprintf('Checking FSL (flirt) version \n');
+system('flirt -version');
+fprintf('done\n');
+
+fprintf('Checking AFNI version\n');
+system('afni --version');
+fprintf('done\n');
+
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');

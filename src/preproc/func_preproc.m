@@ -31,7 +31,7 @@ lp = config.LOWPASS;
 SimRef = config.SimRef;
 
 nuisance_template=fullfile(BFPPATH,'supp_data','nuisance.fsf');
-[~,n_vols]=unix(['3dinfo -nv ',fmri,'.nii.gz']); n_vols=str2double(n_vols);
+[~,n_vols]=system(['3dinfo -nv ',fmri,'.nii.gz'],'LD_LIBRARY_PATH',''); n_vols=str2double(n_vols);
 TRstart=0;
 TRend=n_vols-1;
 sigma=str2double(FWHM)/2.3548;
@@ -69,8 +69,8 @@ fclose(fid);
 %% Deoblique
 disp('Deobliquing');
 if ~exist([fmri,'.dr.nii.gz'],'file')
-    unix(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'.dr.nii.gz']);
-    unix(['3drefit -deoblique ',fmri,'.dr.nii.gz']);
+    system(['3dcalc -a ',fmri,'.nii.gz[',num2str(TRstart),'..',num2str(TRend),'] -expr ''a'' -prefix ',fmri,'.dr.nii.gz'],'LD_LIBRARY_PATH','');
+    system(['3drefit -deoblique ',fmri,'.dr.nii.gz'],'LD_LIBRARY_PATH','');
     fprintf(fp, '\n--Deoblique \n');
 else
     disp('file found. skipping step')
@@ -79,7 +79,7 @@ end
 %% Reorient into fsl friendly space (what AFNI calls RPI)
 disp('Reorienting');
 if ~exist([fmri,'.ro.nii.gz'],'file')
-    unix(['3dresample -orient RPI -inset ',fmri,'.dr.nii.gz -prefix ',fmri,'.ro.nii.gz']);
+    system(['3dresample -orient RPI -inset ',fmri,'.dr.nii.gz -prefix ',fmri,'.ro.nii.gz'],'LD_LIBRARY_PATH','');
     fprintf(fp, '--Reorient \n');
 else
     disp('file found. skipping step');
@@ -103,7 +103,7 @@ if ~exist(outfile,'file')
         fprintf(fp,['--Option SimRef: Reference volume is timpoint #',num2str(v_ref),'\n']);
         clear new orig
     else
-        unix(['3dTstat -mean -prefix ',outfile,' ',fmri,'.ro.nii.gz']);
+        system(['3dTstat -mean -prefix ',outfile,' ',fmri,'.ro.nii.gz'],'LD_LIBRARY_PATH','');
         disp('Reference volume computed by averaging all volumes.')
         fprintf(fp,'--Reference volume computed by averaging all volumes.\n');
     end
@@ -115,7 +115,7 @@ disp('Motion correcting');
 infile = outfile; clear outfile; %[fmri,'.ro.mean.nii.gz'];
 outfile = [fmri,'.mc.nii.gz'];
 if ~exist(outfile,'file')
-    unix(['3dvolreg -verbose -Fourier -twopass -base ',infile,' -zpad 4 -prefix ',fmri,'.mc.nii.gz -1Dfile ',fmri,'.mc.1D ',fmri,'.ro.nii.gz']);
+    system(['3dvolreg -verbose -Fourier -twopass -base ',infile,' -zpad 4 -prefix ',fmri,'.mc.nii.gz -1Dfile ',fmri,'.mc.1D ',fmri,'.ro.nii.gz'],'LD_LIBRARY_PATH','');
     fprintf(fp, '--Motion Correction \n');
 else
     disp('file found. skipping step')
@@ -123,7 +123,7 @@ else
 end
 
 if ~exist([fmri,'.mco.txt'],'file')
-    unix(['fsl_motion_outliers -i ',outfile,' -o ',fmri,'.mco -s ',fmri,'.mco.txt -p ',fmri,'.mco.png --dvars --nomoco -v']);
+    system(['fsl_motion_outliers -i ',outfile,' -o ',fmri,'.mco -s ',fmri,'.mco.txt -p ',fmri,'.mco.png --dvars --nomoco -v']);
 end
 if ~exist([fmri,'.mc.ssim.txt'],'file')
     s(:,2) = motionEval(outfile, infile);
@@ -139,7 +139,8 @@ if ~exist([fmri,'.mc.ssim.txt'],'file')
     end
     ylim([0,1.1]);
     ylabel('SSIM');xlabel('vol no.');
-    saveas(p,[fmri,'.mc.ssim.png']);
+    saveas(p,[fmri,'.mc.ssim.png']); 
+    close(p);
     csvwrite([fmri,'.mc.ssim.txt'],s);
 end
     
@@ -168,13 +169,13 @@ if ~exist([example,'.func.nii.gz'],'file')
     if SimRef=='1'
         disp('Using SimRef...')
         refvol = importdata([fmri,'.ssim.vref.txt']);
-        unix(['3dcalc -a ',outfile,'[',num2str(refvol-1),'] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+        system(['3dcalc -a ',outfile,'[',num2str(refvol-1),'] -expr ''a'' -prefix ',example,'.func.nii.gz'],'LD_LIBRARY_PATH','');
     elseif SimRef=='2'
         disp('Using eigth image')
-        unix(['3dcalc -a ',outfile,'[7] -expr ''a'' -prefix ',example,'.func.nii.gz']);
+        system(['3dcalc -a ',outfile,'[7] -expr ''a'' -prefix ',example,'.func.nii.gz'],'LD_LIBRARY_PATH','');
     elseif SimRef=='0'
         disp('Using mean image')
-        unix(['3dTstat -mean -prefix ',example,'.func.nii.gz ',outfile]);
+        system(['3dTstat -mean -prefix ',example,'.func.nii.gz ',outfile],'LD_LIBRARY_PATH','');
     end
 else
     disp('file found. skipping step')
@@ -184,8 +185,8 @@ disp('Performing registration to T1')
 if ~exist([example,'.func2t1.nii.gz'],'file')
     if FSLRigidReg > 0
         disp('Using FSL rigid registration');
-        unix(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'.func.nii.gz -out ',example,'.func2t1.nii.gz -omat ',example,'.func2t1.mat -cost corratio -dof 6 -interp trilinear']);
-        unix(['convert_xfm -inverse -omat ',example,'.t12func.mat ',example,'.func2t1.mat']);
+        system(['flirt -ref ',t1,'.bfc.nii.gz -in ',example,'.func.nii.gz -out ',example,'.func2t1.nii.gz -omat ',example,'.func2t1.mat -cost corratio -dof 6 -interp trilinear']);
+        system(['convert_xfm -inverse -omat ',example,'.t12func.mat ',example,'.func2t1.mat']);
         fprintf(fp, '--Registration to T1: Option FSL\n');
     else
         disp('Using USC rigid registration');
@@ -206,7 +207,7 @@ outfile = [fmri,'.ss.nii.gz'];
 if ~exist(outfile,'file')
     if str2double(config.T1mask) > 0
         if FSLRigidReg > 0
-            unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
+            system(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.mask.nii.gz -out ',fmri,'.mask.temp.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
             fprintf(fp, '--Option T1: mask fMRI\n');
         else
             transform_data_affine([t1,'.mask.nii.gz'], 's', [fmri,'.mask.temp.nii.gz'], ...
@@ -214,17 +215,17 @@ if ~exist(outfile,'file')
             fprintf(fp, '--Option T1: Skull Strip fMRI\n');
         end
     else
-        unix(['3dAutomask -prefix ',fmri,'.mask.temp.nii.gz -dilate 1 ',example,'.func.nii.gz']);
+        system(['3dAutomask -prefix ',fmri,'.mask.temp.nii.gz -dilate 1 ',example,'.func.nii.gz'],'LD_LIBRARY_PATH','');
         fprintf(fp, '--Option autothreshold: Skull Strip fMRI\n');
     end
     
     msk = load_untouch_nii_gz([fmri,'.mask.temp.nii.gz']);
     msk.img(msk.img>0)=1;
     save_untouch_nii_gz(msk,[fmri,'.mask.nii.gz']);
-    unix(['rm ',fmri,'.mask.temp.nii.gz']);
+    system(['rm ',fmri,'.mask.temp.nii.gz']);
     
     % this command shows a lot of warnings
-    unix(['3dcalc -a ',infile,' -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz']);
+    system(['3dcalc -a ',infile,' -b ',fmri,'.mask.nii.gz -expr ''a*b'' -prefix ',fmri,'.ss.nii.gz'],'LD_LIBRARY_PATH','');
 else
     disp('file found. skipping step')
     fprintf(fp, 'Skull Strip fMRI file found. skipping step. \n');
@@ -240,7 +241,7 @@ disp('Spatial Smoothing');
 infile = outfile; clear outfile % ss or mco 
 outfile = [fmri,'.sm.nii.gz'];
 if ~exist(outfile,'file')
-    unix(['fslmaths ', infile,' -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'.mask.nii.gz ',outfile]);
+    system(['fslmaths ', infile,' -kernel gauss ',num2str(sigma),' -fmean -mas ',fmri,'.mask.nii.gz ',outfile]);
     fprintf(fp, '--Spatial Smoothing: sigma %s\n',num2str(sigma));
 else
     disp('file found. skipping step')
@@ -251,7 +252,7 @@ disp('Grand-mean scaling');
 infile = outfile; clear outfile %[fmri,'.sm.nii.gz']
 outfile = [fmri,'.gms.nii.gz'];
 if ~exist(outfile,'file')
-    unix(['fslmaths ',infile,' -ing 10000 ',outfile,' -odt float']);
+    system(['fslmaths ',infile,' -ing 10000 ',outfile,' -odt float']);
     fprintf(fp, '--Grand Mean Scaling \n');
 else
     disp('file found. skipping step')
@@ -264,7 +265,7 @@ if str2double(config.BPoption) > 0
     if str2double(config.RunDetrend) > 0
         outfile = [fmri,'.pp.nii.gz'];
         if ~exist(outfile,'file')
-            unix(['3dBandpass -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile]);
+            system(['3dBandpass -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile],'LD_LIBRARY_PATH','');
             fprintf(fp, '--Temporal Filter option 0 with detrending\n');
         else
             disp('file found. skipping step')
@@ -273,7 +274,7 @@ if str2double(config.BPoption) > 0
     else
         outfile = [fmri,'.filt.nii.gz'];
         if ~exist(outfile,'file')
-            unix(['3dBandpass -nodetrend -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile]);
+            system(['3dBandpass -nodetrend -dt ',TR,' -prefix ',outfile,' ',num2str(hp), ' ',num2str(lp),' ',infile],'LD_LIBRARY_PATH','');
             fprintf(fp, '--Temporal Filter option 0 without detrending\n');
         else
             disp('file found. skipping step')
@@ -285,15 +286,15 @@ else
     disp('Band-pass filtering option 0');
     infile = outfile; clear outfile %_gms
     outfile = [fmri,'.filt.nii.gz'];
-    [~,n_vols]=unix(['3dinfo -nv ',infile]); n_vols=str2double(n_vols);
+    [~,n_vols]=system(['3dinfo -nv ',infile],'LD_LIBRARY_PATH',''); n_vols=str2double(n_vols);
     if ~exist(outfile,'file')
         %check if have min number of volumes for high pass filter
         minvol = 1/(str2double(TR)*str2double(hp));
         if minvol <= n_vols
-            unix(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile]);
+            system(['3dFourier -lowpass ',num2str(lp),' -highpass ',num2str(hp),' -retrend -prefix ',outfile,' ',infile],'LD_LIBRARY_PATH','');
             fprintf(fp, '--Temporal Filter option 0\n');
         else
-            unix(['3dFourier -lowpass ',num2str(lp),' -retrend -prefix ',outfile,' ',infile]);
+            system(['3dFourier -lowpass ',num2str(lp),' -retrend -prefix ',outfile,' ',infile],'LD_LIBRARY_PATH','');
             fprintf(fp, '--Temporal Filter option 0: too few volumes. Only lowpass filter was run.\n');
         end
     else
@@ -306,9 +307,9 @@ else
         infile = outfile; clear outfile; %_filt
         outfile = [fmri,'.pp.nii.gz'];
         if ~exist(outfile,'file')
-            unix(['3dTstat -mean -prefix ',fmri,'.filt.mean.nii.gz ',infile]);
-            unix(['3dDetrend -polort 2 -prefix ',fmri,'.dt.nii.gz ',infile]);
-            unix(['3dcalc -a ',fmri,'.filt.mean.nii.gz -b ',fmri,'.dt.nii.gz -expr ''a+b'' -prefix ',outfile]);
+            system(['3dTstat -mean -prefix ',fmri,'.filt.mean.nii.gz ',infile],'LD_LIBRARY_PATH','');
+            system(['3dDetrend -polort 2 -prefix ',fmri,'.dt.nii.gz ',infile],'LD_LIBRARY_PATH','');
+            system(['3dcalc -a ',fmri,'.filt.mean.nii.gz -b ',fmri,'.dt.nii.gz -expr ''a+b'' -prefix ',outfile],'LD_LIBRARY_PATH','');
             fprintf(fp, '--Option Detrend: yes\n');
         else
             disp('file found. skipping step')
@@ -322,9 +323,9 @@ end
 disp('Performing registration to standard space')
 if ~exist([example,'.func2standard.nii.gz'],'file')
     if FSLRigidReg > 0
-        unix(['flirt -ref standard.nii.gz -in ',example,'.func.nii.gz -out ',example,'.func2standard.nii.gz -omat ',example,'.func2standard.mat -cost corratio -dof 6 -interp trilinear']);
+        system(['flirt -ref standard.nii.gz -in ',example,'.func.nii.gz -out ',example,'.func2standard.nii.gz -omat ',example,'.func2standard.mat -cost corratio -dof 6 -interp trilinear']);
         % # Create mat file for conversion from subject's anatomical to functional
-        unix(['convert_xfm -inverse -omat standard2',example,'.func.mat ',example,'.func2standard.mat']);
+        system(['convert_xfm -inverse -omat standard2',example,'.func.mat ',example,'.func2standard.mat']);
         fprintf(fp, '--Registration to Standard: Option FSL\n');
     else
         disp('Using USC rigid registration');
@@ -358,22 +359,22 @@ if str2double(config.RunNSR) > 0
     % # 15. Seperate motion parameters into seperate files
     disp('Splitting up subject motion parameters');
     fmc = [fmri,'.mc.1D'];
-    unix(['awk ''{print $1}'' ',fmc,' > ',nuisance_dir,'/mc1.1D']);
-    unix(['awk ''{print $2}'' ',fmc,' > ',nuisance_dir,'/mc2.1D']);
-    unix(['awk ''{print $3}'' ',fmc,' > ',nuisance_dir,'/mc3.1D']);
-    unix(['awk ''{print $4}'' ',fmc,' > ',nuisance_dir,'/mc4.1D']);
-    unix(['awk ''{print $5}'' ',fmc,' > ',nuisance_dir,'/mc5.1D']);
-    unix(['awk ''{print $6}'' ',fmc,' > ',nuisance_dir,'/mc6.1D']);
+    system(['awk ''{print $1}'' ',fmc,' > ',nuisance_dir,'/mc1.1D']);
+    system(['awk ''{print $2}'' ',fmc,' > ',nuisance_dir,'/mc2.1D']);
+    system(['awk ''{print $3}'' ',fmc,' > ',nuisance_dir,'/mc3.1D']);
+    system(['awk ''{print $4}'' ',fmc,' > ',nuisance_dir,'/mc4.1D']);
+    system(['awk ''{print $5}'' ',fmc,' > ',nuisance_dir,'/mc5.1D']);
+    system(['awk ''{print $6}'' ',fmc,' > ',nuisance_dir,'/mc6.1D']);
     
     %
     % # Extract signal for global, csf, and wm
     % ## 16. Global
     disp('Extracting global signal for subject');
-    unix(['3dmaskave -mask ',fmri,'.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/global.1D']);
+    system(['3dmaskave -mask ',fmri,'.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/global.1D'],'LD_LIBRARY_PATH','');
     %
     % ## 17. csf
     if FSLRigidReg > 0
-        unix(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
+        system(['flirt -ref ',example,'.func.nii.gz -in ',t1,'.pvc.label.nii.gz -out ',fmri,'.pvc.label.nii.gz -applyxfm -init ',example,'.t12func.mat -interp nearestneighbour']);
     else
         transform_data_affine([t1,'.pvc.label.nii.gz'], 's', [fmri,'.pvc.label.nii.gz'], [example,'.func.nii.gz'], [t1,'.bfc.nii.gz'], [fmri,'.example.func2t1.rigid_registration_result.mat'], 'nearest');
     end
@@ -383,31 +384,31 @@ if str2double(config.RunNSR) > 0
     csfmsk.img = zeros(size(pvclbl.img));
     csfmsk.img(pvclbl.img==1 | pvclbl.img==6)=1;
     save_untouch_nii_gz(csfmsk,[fmri,'.csf.mask.nii.gz'],2);
-%     unix(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 5.5 -bin ',fmri,'.csf.mask.nii.gz']);
-    unix(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',fmri,'.wm.mask.nii.gz -odt char']);
+%     system(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 5.5 -bin ',fmri,'.csf.mask.nii.gz']);
+    system(['fslmaths ',fmri,'.pvc.label.nii.gz -thr 2.5 -uthr 3.5 -bin ',fmri,'.wm.mask.nii.gz -odt char']);
     %
     % echo "Extracting signal from csf"
-    unix(['3dmaskave -mask ',fmri,'.csf.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/csf.1D']);
+    system(['3dmaskave -mask ',fmri,'.csf.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/csf.1D'],'LD_LIBRARY_PATH','');
     %
     % ## 18. wm
     disp('Extracting signal from white matter for subject');
-    unix(['3dmaskave -mask ',fmri,'.wm.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/wm.1D']);
+    system(['3dmaskave -mask ',fmri,'.wm.mask.nii.gz -quiet ',outfile,' > ',nuisance_dir,'/wm.1D'],'LD_LIBRARY_PATH','');
     %
     % ## 6. Generate mat file (for use later)
     % ## create fsf file
     %
-    [~,n_vols]=unix(['3dinfo -nv ',fmri,'.pp.nii.gz']); n_vols=str2double(n_vols);
+    [~,n_vols]=system(['3dinfo -nv ',fmri,'.pp.nii.gz'],'LD_LIBRARY_PATH',''); n_vols=str2double(n_vols);
     disp('Modifying model file');
-    unix(['sed -e s:nuisance_dir:"',nuisance_dir,'":g <',nuisance_template,' >',nuisance_dir,'/temp1']);
-    unix(['sed -e s:nuisance_model_outputdir:"',nuisance_dir,'/residuals.feat":g <',nuisance_dir,'/temp1 >',nuisance_dir,'/temp2']);
-    unix(['sed -e s:nuisance_model_TR:"',num2str(TR),'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3']);
-    unix(['sed -e s:nuisance_model_numTRs:"',num2str(n_vols),'":g <',nuisance_dir,'/temp3 >',nuisance_dir,'/temp4']);
-    unix(['sed -e s:nuisance_model_input_data:"',func_dir,'/',outfile,'":g <',nuisance_dir,'/temp4 >',nuisance_dir,'/nuisance.fsf']);
+    system(['sed -e s:nuisance_dir:"',nuisance_dir,'":g <',nuisance_template,' >',nuisance_dir,'/temp1']);
+    system(['sed -e s:nuisance_model_outputdir:"',nuisance_dir,'/residuals.feat":g <',nuisance_dir,'/temp1 >',nuisance_dir,'/temp2']);
+    system(['sed -e s:nuisance_model_TR:"',num2str(TR),'":g <',nuisance_dir,'/temp2 >',nuisance_dir,'/temp3']);
+    system(['sed -e s:nuisance_model_numTRs:"',num2str(n_vols),'":g <',nuisance_dir,'/temp3 >',nuisance_dir,'/temp4']);
+    system(['sed -e s:nuisance_model_input_data:"',func_dir,'/',outfile,'":g <',nuisance_dir,'/temp4 >',nuisance_dir,'/nuisance.fsf']);
     %
     % #rm ${nuisance_dir}/temp*
     %
     disp('Running feat model');
-    unix(['feat_model ',nuisance_dir,'/nuisance']);
+    system(['feat_model ',nuisance_dir,'/nuisance']);
     %
     
     pp = load_untouch_nii_gz(outfile);
@@ -415,19 +416,19 @@ if str2double(config.RunNSR) > 0
     ppimg = pp.img(logical(msk.img));
     minVal = num2str(min(ppimg));
     
-    %[~,minVal]=unix(['3dBrickStat -min -mask ',fmri,'.mask.nii.gz ',fmri,'.pp.nii.gz']);
+    %[~,minVal]=system(['3dBrickStat -min -mask ',fmri,'.mask.nii.gz ',fmri,'.pp.nii.gz']);
     %minVal=str2double(minVal);
     %
     % ## 7. Get residuals
     disp('Running film to get residuals');
-    unix(['film_gls --rn=',nuisance_dir,'/stats --noest --sa --ms=5 --in=',outfile,' --pd=',nuisance_dir,'/nuisance.mat --thr=',minVal]);
+    system(['film_gls --rn=',nuisance_dir,'/stats --noest --sa --ms=5 --in=',outfile,' --pd=',nuisance_dir,'/nuisance.mat --thr=',minVal]);
     %
     % ## 8. Demeaning residuals and ADDING 100
-    unix(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d.mean.nii.gz ',nuisance_dir,'/stats/res4d.nii.gz']);
+    system(['3dTstat -mean -prefix ',nuisance_dir,'/stats/res4d.mean.nii.gz ',nuisance_dir,'/stats/res4d.nii.gz'],'LD_LIBRARY_PATH','');
     if exist([fmri,'.res.nii.gz'],'file')
         delete([fmri,'.res.nii.gz'])
     end
-    unix(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/res4d.mean.nii.gz -expr ''(a-b)+100'' -prefix ',fmri,'.res.nii.gz']);
+    system(['3dcalc -a ',nuisance_dir,'/stats/res4d.nii.gz -b ',nuisance_dir,'/stats/res4d.mean.nii.gz -expr ''(a-b)+100'' -prefix ',fmri,'.res.nii.gz'],'LD_LIBRARY_PATH','');
     
     RS_infile = [fmri,'.res.nii.gz'];
     BFP_outfile = [fmri,'.res2standard.nii.gz'];
@@ -447,7 +448,7 @@ else
 end
 %% Resampling residuals to standard space
 if FSLRigidReg > 0
-    unix(['flirt -ref ',func_dir,'/standard.nii.gz -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',example,'.func2standard.mat -interp trilinear']);
+    system(['flirt -ref ',func_dir,'/standard.nii.gz -in ',RS_infile,' -out ',BFP_outfile,' -applyxfm -init ',example,'.func2standard.mat -interp trilinear']);
 else
         transform_data_affine(RS_infile, 'm', BFP_outfile, [example,'.func.nii.gz'], 'standard.nii.gz', [fmri,'.example.func2standard.rigid_registration_result.mat'], 'linear');
 end

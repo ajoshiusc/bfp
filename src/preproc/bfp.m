@@ -109,7 +109,7 @@ fprintf(' done\n');
  setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
  setenv('FSLDIR', config.FSLPATH);
  setenv('BrainSuiteDir',config.BrainSuitePath);
- setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
+ %setenv('LD_LIBRARY_PATH', [getenv('LD_LIBRARY_PATH')+';',config.LD_LIBRARY_PATH]);
  % some newer afni versions throw warnings for non-float data
  % creating parsing errors. This takes care of that.
  setenv('AFNI_NIFTI_TYPE_WARN','NO');
@@ -123,7 +123,7 @@ system('flirt -version');
 fprintf('done\n');
 
 fprintf('Checking AFNI version\n');
-system('afni --version');
+system('afni --version','LD_LIBRARY_PATH','');
 fprintf('done\n');
 
 
@@ -167,6 +167,9 @@ else
 end
 
 if config.MultiThreading == 1
+
+    fprintf('using multithreading\n');
+
     pc = parcluster('local');
     % explicitly set the JobStorageLocation to the temp directory that was
     % created in your sbatch script
@@ -179,7 +182,10 @@ if config.MultiThreading == 1
     ps = parallel.Settings;
     ps.Pool.AutoCreate = true;
     delete(gcp('nocreate'));
+    %c = parcluster('local');
     parpool(4); % default to using 4 threads.
+    %parpoolOperator('open', 4, true);
+
 
 else
     ps = parallel.Settings;
@@ -550,7 +556,7 @@ for ind=1:length(fmri)
     % Check if valid Tr is input, if not try to get it from the header of
     % the nifti fmri file
     if (~isnumeric(TR)) || (TR<=0)
-        [~,b]=unix(['3dinfo -tr ',fmri{ind}]); % get TR
+        [~,b]=system(['3dinfo -tr ',fmri{ind}],'LD_LIBRARY_PATH',''); % get TR
         fprintf('TR inputted was not valid, so reading from fmri file, TR=%s\n',b);
         if str2double(b)>0
             TR = num2str(str2double(b));

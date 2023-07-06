@@ -69,16 +69,30 @@ TR=$7
 
 
 # Set up path for MCR applications.
-PATH=${exe_dir}:${PATH} ;
+OLDLDPATH=$LD_LIBRARY_PATH 
+PATH=${exe_dir}:${PATH} ; 
 LD_LIBRARY_PATH=.:${BrainSuiteMCR}/runtime/glnxa64 ;
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 ;
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/sys/os/glnxa64;
-MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 ;
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 ; 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/sys/os/glnxa64; 
+MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 ; 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/native_threads ; 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server ;
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client ;
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ;  
-XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults ;
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server ; 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client ; 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ; 
+XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults ; 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${OLDLDPATH}
+
+# PATH=${exe_dir}:${PATH} ;
+# LD_LIBRARY_PATH=.:${BrainSuiteMCR}/runtime/glnxa64 ;
+# LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 ;
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/sys/os/glnxa64;
+#MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 ;
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/native_threads ; 
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server ;
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client ;
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ;  
+#XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults ;
+
 export PATH;
 export LD_LIBRARY_PATH;
 export XAPPLRESDIR;

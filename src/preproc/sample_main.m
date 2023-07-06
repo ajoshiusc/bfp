@@ -13,7 +13,7 @@ fmri='/home/ajoshi/Downloads/bfp_sample/input/sub08001/func/rest.nii.gz';
 studydir='/home/ajoshi/Downloads/bfp_sample/output';
 subid='sub08001';
 sessionid='task-restingstate';
-TR='';
+TR='2';
  
 % Call the bfp function
 bfp(configfile, t1, fmri, studydir, subid, sessionid,TR);

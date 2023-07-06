@@ -53,6 +53,12 @@ addRequired(p,'TR',@(x) isnumeric(x)||ischar(x));
 fmri_orig=fmri;
 parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 %%
+
+
+if ischar(TR)
+    TR = str2num(TR);
+    fprintf('TR is mentioned on the command line, We converted it to numeric: TR = %.2f\n',TR);
+end
 subdir=fullfile(studydir,subid);
 anatDir=fullfile(subdir,'anat');
 funcDir=fullfile(subdir,sprintf('func'));
@@ -103,7 +109,7 @@ fprintf(' done\n');
  setenv('FSLOUTPUTTYPE',config.FSLOUTPUTTYPE);
  setenv('FSLDIR', config.FSLPATH);
  setenv('BrainSuiteDir',config.BrainSuitePath);
- %setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
+ setenv('LD_LIBRARY_PATH', [config.LD_LIBRARY_PATH]);
  % some newer afni versions throw warnings for non-float data
  % creating parsing errors. This takes care of that.
  setenv('AFNI_NIFTI_TYPE_WARN','NO');
@@ -119,6 +125,8 @@ fprintf('done\n');
 fprintf('Checking AFNI version\n');
 system('afni --version');
 fprintf('done\n');
+
+
 
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
@@ -543,6 +551,7 @@ for ind=1:length(fmri)
     % the nifti fmri file
     if (~isnumeric(TR)) || (TR<=0)
         [~,b]=unix(['3dinfo -tr ',fmri{ind}]); % get TR
+        fprintf('TR inputted was not valid, so reading from fmri file, TR=%s\n',b);
         if str2double(b)>0
             TR = num2str(str2double(b));
         else

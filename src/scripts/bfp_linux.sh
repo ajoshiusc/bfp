@@ -53,9 +53,9 @@ EOF
 # Parse inputs
 if [ $# -lt 7 ]; then
   echo
-  echo "$usage";
+  echo "$usage"
   echo
-  exit;
+#   exit
 fi
 
 configfile=$1
@@ -70,33 +70,27 @@ TR=$7
 
 # Set up path for MCR applications.
 OLDLDPATH=$LD_LIBRARY_PATH 
-PATH=${exe_dir}:${PATH} ; 
-LD_LIBRARY_PATH=.:${BrainSuiteMCR}/runtime/glnxa64 ;
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 ; 
+PATH=${exe_dir}:${PATH} 
+
+LD_LIBRARY_PATH=.
+if [ ! -z "$TIFF_LD_PATH" ]; then
+	echo $TIFF_LD_PATH
+  LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TIFF_LD_PATH}
+fi
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/runtime/glnxa64
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/sys/os/glnxa64; 
-MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 ; 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/native_threads ; 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server ; 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client ; 
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ; 
-XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults ; 
+MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/native_threads 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client 
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} 
+XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults 
 LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${OLDLDPATH}
 
-# PATH=${exe_dir}:${PATH} ;
-# LD_LIBRARY_PATH=.:${BrainSuiteMCR}/runtime/glnxa64 ;
-# LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/bin/glnxa64 ;
-#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${BrainSuiteMCR}/sys/os/glnxa64;
-#MCRJRE=${BrainSuiteMCR}/sys/java/jre/glnxa64/jre/lib/amd64 ;
-#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/native_threads ; 
-#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/server ;
-#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE}/client ;
-#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${MCRJRE} ;  
-#XAPPLRESDIR=${BrainSuiteMCR}/X11/app-defaults ;
-
-export PATH;
-export LD_LIBRARY_PATH;
-export XAPPLRESDIR;
-
+export PATH
+export LD_LIBRARY_PATH
+export XAPPLRESDIR
 
 # Run the BFP Sequence
 ${exe_dir}/bfp "${configfile}" "${t1}" "${fmri}" "${studydir}" "${subid}" "${sessionid}" "${TR}" 

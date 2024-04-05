@@ -134,7 +134,11 @@ fprintf('done\n');
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
-svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_carc.sh');
+if exist(fullfile(BrainSuitePath,'svreg','bin','svreg_carc.sh'),'file')
+    svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_carc.sh');
+else
+    svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
+end
 thicknessPVC_exe=fullfile(BrainSuitePath,'svreg','bin','thicknessPVC.sh');
 thickness_map2atlas_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_thickness2atlas.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain');

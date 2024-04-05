@@ -1,4 +1,4 @@
-function gen_brainordinates(BSTDir, bfp_out, subid, sessionid)
+function gen_brainordinates(BSTDir, bfp_out, subid, sessionid,BFP_outfile)
 %sub_mri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/anat/sub-01_T1w.bfc.nii.gz';
 %subfmri = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/func/sub-01_task-sadln.bold.res2standard.nii.gz';
 %map_file = '/ImagePTE1/ajoshi/usc_music/bfp_out/sub-01/anat/sub-01_T1w.svreg.inv.map.nii.gz';
@@ -7,7 +7,13 @@ function gen_brainordinates(BSTDir, bfp_out, subid, sessionid)
 
 
 sub_mri = fullfile(bfp_out,subid,'anat',[subid,'_T1w.bfc.nii.gz']);
-subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.nii.gz']);
+
+if exist('BFP_outfile','var')
+    subfmri = BFP_outfile;
+else
+    subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold.res2standard.nii.gz']);
+end
+
 if ~isfile(subfmri)
     subfmri = fullfile(bfp_out,subid,'func',[subid,'_',sessionid,'_bold_res2standard.nii.gz']);
     if ~isfile(subfmri)

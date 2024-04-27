@@ -27,7 +27,7 @@
 %% **DO NOT EDIT BELOW THIS****
 %% Commonly used Variables
 %%
-function bfp(configfile,t1,fmri,studydir,subid,sessionid,TR)
+function bfp_vSY(configfile,t1,fmri,studydir,subid,sessionid,TR)
 
 if nargin ~=7
     disp('Incorrect number of input arguments (7 required)');
@@ -56,7 +56,8 @@ parse(p,configfile,t1,fmri,studydir,subid,sessionid,TR);
 subdir=fullfile(studydir,subid);
 anatDir=fullfile(subdir,'anat');
 funcDir=fullfile(subdir,sprintf('func'));
-subbasename=fullfile(anatDir,sprintf('%s_T1w',subid));
+subbasename = remove_extension(t1);
+%subbasename=fullfile(anatDir,sprintf('%s_T1w',subid));
 
 if ischar(fmri) % This is for command line input when fmri data is cell string
     if strfind(fmri,'{')
@@ -146,25 +147,25 @@ else
     config.MultiThreading=1;
 end
 
-if config.MultiThreading == 1
-    pc = parcluster('local');
-    % explicitly set the JobStorageLocation to the temp directory that was
-    % created in your sbatch script
-    par_dir=strcat(subbasename,'_parcluster_tmp');
-    if exist(par_dir,'dir')
-        rmdir(par_dir,'s');
-    end
-    mkdir(par_dir);
-    pc.JobStorageLocation = par_dir;
-    ps = parallel.Settings;
-    ps.Pool.AutoCreate = true;
-    delete(gcp('nocreate'));
-    parpool(4); % default to using 4 threads.
-
-else
-    ps = parallel.Settings;
-    ps.Pool.AutoCreate = false;
-end
+% if config.MultiThreading == 1
+%     pc = parcluster('local');
+%     % explicitly set the JobStorageLocation to the temp directory that was
+%     % created in your sbatch script
+%     par_dir=strcat(subbasename,'_parcluster_tmp');
+%     if exist(par_dir,'dir')
+%         rmdir(par_dir,'s');
+%     end
+%     mkdir(par_dir);
+%     pc.JobStorageLocation = par_dir;
+%     ps = parallel.Settings;
+%     ps.Pool.AutoCreate = true;
+%     delete(gcp('nocreate'));
+%     parpool(4); % default to using 4 threads.
+% 
+% else
+%     ps = parallel.Settings;
+%     ps.Pool.AutoCreate = false;
+% end
 
 if ~isfield(config,'uscrigid_similarity')
     config.uscrigid_similarity = 'inversion';
@@ -246,246 +247,246 @@ fprintf(fp,'config: %s\nt1: %s\nfmri: %s\nstudydir: %s\nsubid: %s\nsessionid: %s
 
 fclose(fp);
 
-
-if ~exist(anatDir,'dir')
-    mkdir(anatDir);
-end
-
-t1hires=fullfile(anatDir,sprintf('%s.orig.hires.nii.gz',subid));
-t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid));
-
-
-if config.T1SpaceProcessing
-    ATLAS=t1hires;
-end
-
-
-if ~exist(t1hires,'file')
-    copyfile(t1,t1hires);
-end
-
-if contains(t1,'.bse.nii.gz')
-
-    t1hires_bse=fullfile(anatDir,sprintf('%s.orig.hires.bse.nii.gz',subid));
-    copyfile(t1,t1hires_bse);
-
-    if config.T1SpaceProcessing    
-        t1_bse=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));    
-        copyfile(t1,t1_bse);
-    end
-    
-end    
-
-
-fprintf('Creating Dir:%s\n',funcDir);
-if ~exist(funcDir,'dir')
-    mkdir(funcDir);
-end
-
-fp=fopen(logfname,'a+');
-fprintf(fp, 'Copying fMRI files\n');
-for ind = 1:length(fmri)
-    if exist(fmri{ind},'file')
-        fmri_out = fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind}));
-        if ~exist(fmri_out,'file')
-            copyfile(fmri{ind},fmri_out);
-            msg = ['--fMRI file rewritten to BIDS format: ', fmri_out];
-        else
-            msg = ['--fMRI file already written to BIDS format: ',fmri_out];
-        end
-    else
-        msg = ['--file does not exist! ', fmri{ind},' exiting.'];
-        fprintf(fp,'%s\n',msg);
-        error(msg);
-    end
-end
-fprintf(fp,'%s\n\n',msg);
-fprintf('done\n');
-fclose(fp);
+% 
+% if ~exist(anatDir,'dir')
+%     mkdir(anatDir);
+% end
+% 
+% t1hires=fullfile(anatDir,sprintf('%s.orig.hires.nii.gz',subid));
+% t1ds=fullfile(anatDir,sprintf('%s_T1w.ds.orig.nii.gz',subid));
+% 
+% 
+% if config.T1SpaceProcessing
+%     ATLAS=t1hires;
+% end
+% 
+% 
+% if ~exist(t1hires,'file')
+%     copyfile(t1,t1hires);
+% end
+% 
+% if contains(t1,'.bse.nii.gz')
+% 
+%     t1hires_bse=fullfile(anatDir,sprintf('%s.orig.hires.bse.nii.gz',subid));
+%     copyfile(t1,t1hires_bse);
+% 
+%     if config.T1SpaceProcessing    
+%         t1_bse=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));    
+%         copyfile(t1,t1_bse);
+%     end
+%     
+% end    
+% 
+% 
+% fprintf('Creating Dir:%s\n',funcDir);
+% if ~exist(funcDir,'dir')
+%     mkdir(funcDir);
+% end
+% 
+% fp=fopen(logfname,'a+');
+% fprintf(fp, 'Copying fMRI files\n');
+% for ind = 1:length(fmri)
+%     if exist(fmri{ind},'file')
+%         fmri_out = fullfile(funcDir,sprintf('%s_%s_bold.nii.gz',subid,sessionid{ind}));
+%         if ~exist(fmri_out,'file')
+%             copyfile(fmri{ind},fmri_out);
+%             msg = ['--fMRI file rewritten to BIDS format: ', fmri_out];
+%         else
+%             msg = ['--fMRI file already written to BIDS format: ',fmri_out];
+%         end
+%     else
+%         msg = ['--file does not exist! ', fmri{ind},' exiting.'];
+%         fprintf(fp,'%s\n',msg);
+%         error(msg);
+%     end
+% end
+% fprintf(fp,'%s\n\n',msg);
+% fprintf('done\n');
+% fclose(fp);
 %% Generate 1mm BCI-DNI_brain brain as a standard template
 % This is used a template for anatomical T1 data
 %%
-if ~config.T1SpaceProcessing
-    ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
-    cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
-    fprintf('Creating 1mm isotropic standard brain\n');
-else
-    ATLAS_DS=fullfile(anatDir,'standard.nii.gz');
-    cmd=sprintf('cp %s %s', ATLAS, ATLAS_DS);
-    fprintf('Creating a copy of the t1 image to be used as the standard brain\n');
-end
-
-%why is this created?
-if ~exist(ATLAS_DS,'file')
-    unix(cmd);
-    if ~exist(ATLAS_DS,'file')
-        error(['Command: ', cmd, 'failed, existing.'])
-    end
-    
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
-%% Resample T1w image to 1mm cubic resolution
-% BrainSuite works best at this resolution
-%%
-if ~(config.T1SpaceProcessing)
-    fprintf('## Resample T1w image to 1mm cubic resolution \n')
-    cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
-else
-    t1ds = t1hires;
-end
-
-if ~exist(t1ds,'file')
-    unix(cmd);
-    if 0 %isdeployed
-        cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
-        unix(cmd);
-    else
-        nii2int16(t1ds,t1ds);
-    end
-
-    if ~exist(t1ds, 'file')
-        error(['Command: ', cmd, 'failed, existing.'])
-    end
-    
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
-
-%% Skull Strip MRI
-%%
-fprintf('## Performing Skull Extraction\n');
-bse=fullfile(BrainSuitePath,'bin','bse');
-
-if config.T1SpaceProcessing
-    bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
-    bsemask=fullfile(anatDir,sprintf('%s_T1w.orig.mask.nii.gz',subid));
-
-    if ~exist(bseout,'file')
-        bseexist=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
-        if exist(bseexist,'file')
-            copyfile(bseexist,bseout);
-        end
-    end
-else
-    bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
-    bsemask=fullfile(anatDir,sprintf('%s_T1w.ds.orig.mask.nii.gz',subid));
-
-end
-
-cmd=sprintf('%s --auto --trim -i %s -o %s --mask %s',bse,t1ds,bseout,bsemask);
-if ~exist(bseout,'file')
-    unix(cmd);
-
-    if ~exist(bseout, 'file')
-        error(['Command: ', cmd, 'failed, existing.'])
-    end    
-    
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
-
-%% Coregister t1 to BCI-DNI Space
-%%
-fprintf('## Coregister t1 to BCI-DNI Space\n');
-bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
-bsemasknew=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
-
-if config.T1SpaceProcessing
-    cmd = sprintf('cp %s %s', t1, bsenew);
-    cmdbse = sprintf('cp %s %s', bsemask,bsemasknew);
-    
-else
-    cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
-    cmdbse=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bsemask,bsemasknew);
-end
-
-if ~exist(bsenew,'file')
-    unix(cmd); unix(cmdbse);
-    
-    if ~exist(bsenew, 'file')
-        error(['Command: ', cmd, 'failed, existing.'])
-    end
-    
-    if 0 %isdeployed
-        cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
-        unix(cmd);
-    else
-        nii2int16(bsenew, bsenew, 0);
-    end
-    %
-end
-
-bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
-
-if ~exist(bsenew2,'file')
-    if config.T1SpaceProcessing
-        copyfile(bseout,bsenew2);
-        %
-        if 0% isdeployed
-            cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
-            unix(cmd);
-        else
-            nii2int16(bsenew2, bsenew2,0);
-        end
-    else
-        copyfile(bsenew,bsenew2);
-    end
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
-
-bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
-cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
-if ~exist(bsemask,'file')
-    unix(cmd);
-end
-
-if ~exist(bsemask, 'file')
-    error(['Command: ', cmd, 'failed, existing.'])
-end
-
-
-%% Run BrainSuite and SVReg
-%%
-fprintf('## Running BrainSuite CSE\n');
-cmd=sprintf('%s %s',bst_exe,subbasename);
-if ~exist([subbasename,'.right.pial.cortex.dfs'],'file')
-    unix(cmd);
-end
-
-if ~exist([subbasename,'.right.pial.cortex.dfs'], 'file')
-    error(['Command: ', cmd, 'failed, existing.'])
-end
-
-fprintf('Running SVReg');
-if (config.MultiThreading == 1)
-    cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
-else
-    cmd=sprintf('%s %s %s -U',svreg_exe,subbasename,BCIbasename);
-end
-
-if ~exist([subbasename,'.svreg.label.nii.gz'],'file')
-    unix(cmd);
-
-    if ~exist([subbasename,'.svreg.label.nii.gz'], 'file')
-        error(['Command: ', cmd, 'failed, existing.'])
-    end
-
-else
-    fprintf('Already ');
-end
-fprintf('done\n');
+% if ~config.T1SpaceProcessing
+%     ATLAS_DS=fullfile(anatDir,'standard1mm.nii.gz');
+%     cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 1',ATLAS,ATLAS,ATLAS_DS);
+%     fprintf('Creating 1mm isotropic standard brain\n');
+% else
+%     ATLAS_DS=fullfile(anatDir,'standard.nii.gz');
+%     cmd=sprintf('cp %s %s', ATLAS, ATLAS_DS);
+%     fprintf('Creating a copy of the t1 image to be used as the standard brain\n');
+% end
+% 
+% %why is this created?
+% if ~exist(ATLAS_DS,'file')
+%     unix(cmd);
+%     if ~exist(ATLAS_DS,'file')
+%         error(['Command: ', cmd, 'failed, existing.'])
+%     end
+%     
+% else
+%     fprintf('Already ');
+% end
+% fprintf('done\n');
+% %% Resample T1w image to 1mm cubic resolution
+% % BrainSuite works best at this resolution
+% %%
+% if ~(config.T1SpaceProcessing)
+%     fprintf('## Resample T1w image to 1mm cubic resolution \n')
+%     cmd=sprintf('flirt -in %s -ref %s -out %s -applyisoxfm 1',t1hires,t1hires,t1ds);
+% else
+%     t1ds = t1hires;
+% end
+% 
+% if ~exist(t1ds,'file')
+%     unix(cmd);
+%     if 0 %isdeployed
+%         cmd=sprintf('%s %s %s', nii2int16_bin, t1ds, t1ds);
+%         unix(cmd);
+%     else
+%         nii2int16(t1ds,t1ds);
+%     end
+% 
+%     if ~exist(t1ds, 'file')
+%         error(['Command: ', cmd, 'failed, existing.'])
+%     end
+%     
+% else
+%     fprintf('Already ');
+% end
+% fprintf('done\n');
+% 
+% %% Skull Strip MRI
+% %%
+% fprintf('## Performing Skull Extraction\n');
+% bse=fullfile(BrainSuitePath,'bin','bse');
+% 
+% if config.T1SpaceProcessing
+%     bseout=fullfile(anatDir,sprintf('%s_T1w.orig.bse.nii.gz',subid));
+%     bsemask=fullfile(anatDir,sprintf('%s_T1w.orig.mask.nii.gz',subid));
+% 
+%     if ~exist(bseout,'file')
+%         bseexist=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
+%         if exist(bseexist,'file')
+%             copyfile(bseexist,bseout);
+%         end
+%     end
+% else
+%     bseout=fullfile(anatDir,sprintf('%s_T1w.ds.orig.bse.nii.gz',subid));
+%     bsemask=fullfile(anatDir,sprintf('%s_T1w.ds.orig.mask.nii.gz',subid));
+% 
+% end
+% 
+% cmd=sprintf('%s --auto --trim -i %s -o %s --mask %s',bse,t1ds,bseout,bsemask);
+% if ~exist(bseout,'file')
+%     unix(cmd);
+% 
+%     if ~exist(bseout, 'file')
+%         error(['Command: ', cmd, 'failed, existing.'])
+%     end    
+%     
+% else
+%     fprintf('Already ');
+% end
+% fprintf('done\n');
+% 
+% %% Coregister t1 to BCI-DNI Space
+% %%
+% fprintf('## Coregister t1 to BCI-DNI Space\n');
+% bsenew=fullfile(anatDir,sprintf('%s_T1w.nii.gz',subid));
+% bsemasknew=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
+% 
+% if config.T1SpaceProcessing
+%     cmd = sprintf('cp %s %s', t1, bsenew);
+%     cmdbse = sprintf('cp %s %s', bsemask,bsemasknew);
+%     
+% else
+%     cmd=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bseout,bsenew);
+%     cmdbse=sprintf('flirt -ref %s -in %s -out %s',ATLAS_DS,bsemask,bsemasknew);
+% end
+% 
+% if ~exist(bsenew,'file')
+%     unix(cmd); unix(cmdbse);
+%     
+%     if ~exist(bsenew, 'file')
+%         error(['Command: ', cmd, 'failed, existing.'])
+%     end
+%     
+%     if 0 %isdeployed
+%         cmd=sprintf('nii2int16.sh %s %s %s', bsenew, bsenew, '0');
+%         unix(cmd);
+%     else
+%         nii2int16(bsenew, bsenew, 0);
+%     end
+%     %
+% end
+% 
+% bsenew2=fullfile(anatDir,sprintf('%s_T1w.bse.nii.gz',subid));
+% 
+% if ~exist(bsenew2,'file')
+%     if config.T1SpaceProcessing
+%         copyfile(bseout,bsenew2);
+%         %
+%         if 0% isdeployed
+%             cmd=sprintf('nii2int16.sh %s %s %s', bsenew2, bsenew2, '0');
+%             unix(cmd);
+%         else
+%             nii2int16(bsenew2, bsenew2,0);
+%         end
+%     else
+%         copyfile(bsenew,bsenew2);
+%     end
+% else
+%     fprintf('Already ');
+% end
+% fprintf('done\n');
+% 
+% bsemask=fullfile(anatDir,sprintf('%s_T1w.mask.nii.gz',subid));
+% cmd=sprintf('fslmaths %s -thr 0 -bin -mul 255 %s -odt char',bsenew2,bsemask);
+% if ~exist(bsemask,'file')
+%     unix(cmd);
+% end
+% 
+% if ~exist(bsemask, 'file')
+%     error(['Command: ', cmd, 'failed, existing.'])
+% end
+% 
+% 
+% %% Run BrainSuite and SVReg
+% %%
+% fprintf('## Running BrainSuite CSE\n');
+% cmd=sprintf('%s %s',bst_exe,subbasename);
+% if ~exist([subbasename,'.right.pial.cortex.dfs'],'file')
+%     unix(cmd);
+% end
+% 
+% if ~exist([subbasename,'.right.pial.cortex.dfs'], 'file')
+%     error(['Command: ', cmd, 'failed, existing.'])
+% end
+% 
+% fprintf('Running SVReg');
+% if (config.MultiThreading == 1)
+%     cmd=sprintf('%s %s %s',svreg_exe,subbasename,BCIbasename);
+% else
+%     cmd=sprintf('%s %s %s -U',svreg_exe,subbasename,BCIbasename);
+% end
+% 
+% if ~exist([subbasename,'.svreg.label.nii.gz'],'file')
+%     unix(cmd);
+% 
+%     if ~exist([subbasename,'.svreg.label.nii.gz'], 'file')
+%         error(['Command: ', cmd, 'failed, existing.'])
+%     end
+% 
+% else
+%     fprintf('Already ');
+% end
+% fprintf('done\n');
 
 %% Generate 3mm BCI-DNI_brain brain as a standard template
 % This is used a template for fMRI data
 %%
 if config.T1SpaceProcessing
-    ATLAS=fullfile(anatDir,sprintf('%s_T1w.bfc.nii.gz',subid));
+    ATLAS=[subbasename,'.bfc.nii.gz'];
 end
 
 cmd=sprintf('flirt -ref %s -in %s -out %s -applyisoxfm 3',ATLAS,ATLAS,fullfile(funcDir,'standard.nii.gz'));
@@ -510,7 +511,8 @@ fprintf('## Run fmri preprocessing script\n');
 fp=fopen(logfname,'a+');
 fprintf(fp, 'Running fMRI preprocessing pipeline\n');
 for ind=1:length(fmri)
-    fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
+    fmribasename = remove_extension(fmri{1});
+    %fmribasename=fullfile(funcDir,sprintf('%s_%s_bold',subid,sessionid{ind}));
     fprintf(fp,'fMRI: %s \nT1: %s \n', fmribasename,subbasename);
     
     logpp_fname=[fmribasename,'.log.txt'];
@@ -565,7 +567,7 @@ fclose(fp);
 % The Grayordinate data is in the same format as HCP data on 32k surfaces.
 % The filename of grayordinate data is fmri_bold.32k.GOrd.nii.gz
 %%
-fprintf('## Transferring data from subject to atlas...\n');res2stand
+fprintf('## Transferring data from subject to atlas...\n');
 flog=fopen(logfname,'a+');
 fprintf(flog, 'Transferring data to grayordinate and filtering\n');
 

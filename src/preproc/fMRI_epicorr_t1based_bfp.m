@@ -45,7 +45,7 @@ if ~exist(infile,'file')
     else
         epi_temp.hdr.dime.dim(1) = 3;
     end
-    save_untouch_nii_gz(epi_temp,infile);
+    save_untouch_nii_gz(epi_temp,infile,64);
 else
     disp('File found: temp reference volume for t1 based distortion correction');
     fprintf(fp, 'input file concatenates reference volume as first volume with motion corrected data: %s\n',infile);

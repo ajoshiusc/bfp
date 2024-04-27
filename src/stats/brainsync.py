@@ -30,6 +30,7 @@ def normalizeData(pre_signal):
     norm_vector = sp.linalg.norm(normed_signal, axis=0, keepdims=True)
     norm_vector[norm_vector == 0] = 1e-116
     normed_signal = normed_signal / norm_vector
+    normed_signal[sp.isnan(normed_signal)]=0
 
     return normed_signal, mean_vector, norm_vector
 

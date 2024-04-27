@@ -1,5 +1,5 @@
 #%%
-config_file = os.environ['CONFIG_FILE']
+config_file = '/home/sychoi/Dropbox/Vanderbilt/Analysis/HCP/stats/Analysis/30vs60_control-sex.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys
@@ -8,9 +8,9 @@ import scipy.io as spio
 import scipy as sp
 import numpy as np
 import configparser
-import csv
-from sklearn.linear_model import LinearRegression
+import csv#ression
 
+from sklearn.linear_model import LinearRegression
 ### Import BrainSync libraries
 config = configparser.ConfigParser()
 config.read(config_file)

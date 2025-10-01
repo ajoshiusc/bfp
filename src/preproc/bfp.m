@@ -164,40 +164,40 @@ fclose(fid);
 
 
 
-if isfield(config, 'MultiThreading')
-    config.MultiThreading=str2double(config.MultiThreading);
-    if isnan(config.MultiThreading)
-        config.MultiThreading = 0;
-    end
-else
-    config.MultiThreading=1;
-end
-
-if config.MultiThreading == 1
-
-    fprintf('using multithreading\n');
-
-    pc = parcluster('local');
-    % explicitly set the JobStorageLocation to the temp directory that was
-    % created in your sbatch script
-    par_dir=strcat(subbasename,'_parcluster_tmp');
-    if exist(par_dir,'dir')
-        rmdir(par_dir,'s');
-    end
-    mkdir(par_dir);
-    pc.JobStorageLocation = par_dir;
-    ps = parallel.Settings;
-    ps.Pool.AutoCreate = true;
-    delete(gcp('nocreate'));
-    %c = parcluster('local');
-    parpool(4); % default to using 4 threads.
-    %parpoolOperator('open', 4, true);
-
-
-else
-    ps = parallel.Settings;
-    ps.Pool.AutoCreate = false;
-end
+% if isfield(config, 'MultiThreading')
+%     config.MultiThreading=str2double(config.MultiThreading);
+%     if isnan(config.MultiThreading)
+%         config.MultiThreading = 0;
+%     end
+% else
+%     config.MultiThreading=1;
+% end
+% 
+% if config.MultiThreading == 1
+% 
+%     fprintf('using multithreading\n');
+% 
+%     pc = parcluster('local');
+%     % explicitly set the JobStorageLocation to the temp directory that was
+%     % created in your sbatch script
+%     par_dir=strcat(subbasename,'_parcluster_tmp');
+%     if exist(par_dir,'dir')
+%         rmdir(par_dir,'s');
+%     end
+%     mkdir(par_dir);
+%     pc.JobStorageLocation = par_dir;
+%     ps = parallel.Settings;
+%     ps.Pool.AutoCreate = true;
+%     delete(gcp('nocreate'));
+%     %c = parcluster('local');
+%     parpool(4); % default to using 4 threads.
+%     %parpoolOperator('open', 4, true);
+% 
+% 
+% else
+%     ps = parallel.Settings;
+%     ps.Pool.AutoCreate = false;
+% end
 
 if ~isfield(config,'uscrigid_similarity')
     config.uscrigid_similarity = 'inversion';

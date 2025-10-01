@@ -1,5 +1,5 @@
 #%%
-config_file = os.environ['CONFIG_FILE']
+config_file = '/home/sychoi/Dropbox/FRIEND/For_Soyoung/HEAL_NASCAR/GM_allsubj/initGMAtlas_vol.ini'
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

@@ -24,8 +24,8 @@ def normalizeData(pre_signal):
     #    if sp.any(sp.isnan(pre_signal)):
     #        print('there are NaNs in the data matrix, making them zero')
 
-    pre_signal[sp.isnan(pre_signal)] = 0
-    mean_vector = sp.mean(pre_signal, axis=0, keepdims=True)
+    pre_signal[np.isnan(pre_signal)] = 0
+    mean_vector = np.mean(pre_signal, axis=0, keepdims=True)
     normed_signal = pre_signal - mean_vector
     norm_vector = sp.linalg.norm(normed_signal, axis=0, keepdims=True)
     norm_vector[norm_vector == 0] = 1e-116

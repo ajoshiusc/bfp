@@ -76,7 +76,7 @@ def sync2atlas(atlas, sub_data):
     print('Syncing to atlas, assume that the data is normalized')
 
     # Assume that the sub_data is already normalized
-    syn_data = sp.zeros(sub_data.shape)
+    syn_data = np.zeros(sub_data.shape)
     for ind in tqdm(range(sub_data.shape[2])):
         syn_data[:, :, ind], _ = brainSync(X=atlas, Y=sub_data[:, :, ind])
 
@@ -92,8 +92,8 @@ def dist2atlas_sub(atlas, syn_data):
     '''
 
     numVert = syn_data.shape[1]
-    pearson_corr = sp.zeros([numVert, 1])
-    geo_dist = sp.zeros([numVert, 1])
+    pearson_corr = np.zeros([numVert, 1])
+    geo_dist = np.zeros([numVert, 1])
 
     pearson_corr = sp.sum((syn_data * atlas), axis=0)
     geo_dist = np.arccos(pearson_corr)
@@ -118,8 +118,8 @@ def dist2atlas(atlas, syn_data):
           ' subjects to the atlas in ' + str(numVert) + ' vertices.')
     count1 = 0
     pbar = tqdm(total=numSub)
-    pearson_corr = sp.zeros([numVert, numSub])
-    geo_dist = sp.zeros([numVert, numSub])
+    pearson_corr = np.zeros([numVert, numSub])
+    geo_dist = np.zeros([numVert, numSub])
 
     for ind in range(numSub):
         pearson_corr[:, ind] = sp.sum((syn_data[:, :, ind] * atlas), axis=0)
@@ -144,7 +144,7 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
     sub_data, _, _ = normalizeData(sub_data[:len_time, :])
 
     num_vert = sub_data.shape[1]
-    fmri_diff = sp.zeros((num_vert, len(ctrl_files)))
+    fmri_diff = np.zeros((num_vert, len(ctrl_files)))
 
     for ind, fname in enumerate(tqdm(ctrl_files)):
         ctrl_data = spio.loadmat(fname)['dtseries'].T
@@ -287,8 +287,8 @@ def pairsdist_regression(bfp_path,
         pairs = [pairs[i] for i in rn]
         pairs = pairs[:num_pairs]
 
-    fmri_diff = sp.zeros((num_vert, len(pairs)))
-    regvar_diff = sp.zeros(len(pairs))
+    fmri_diff = np.zeros((num_vert, len(pairs)))
+    regvar_diff = np.zeros(len(pairs))
 
     print('Computing pairwise differences')
     for pn, pair in enumerate(tqdm(pairs)):
@@ -298,16 +298,16 @@ def pairsdist_regression(bfp_path,
 
     corr_pval = corr_perm_test(X=fmri_diff.T, Y=regvar_diff)
 
-    #    corr_pval = sp.zeros(num_vert)
+    #    corr_pval = np.zeros(num_vert)
     #    for ind in tqdm(range(num_vert)):
     #        _, corr_pval[ind] = sp.stats.pearsonr(fmri_diff[ind, :], regvar_diff)
-    #    corr_pval[sp.isnan(corr_pval)] = .5
+    #    corr_pval[np.isnan(corr_pval)] = .5
     #
 
     labs = spio.loadmat(
         bfp_path +
         '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
+    labs[np.isnan(labs)] = 0
 
     corr_pval[labs == 0] = 0.5
 
@@ -412,7 +412,7 @@ def randpair_groupdiff(sub_grp1_files,
     pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
                                             num_pairs=num_pairs)
 
-    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
+    fmri_diff1 = np.zeros((num_vert, num_pairs1))
 
     # Preload data This only slighly faster, better is to load on the fly and multiprocess
     print('Reading data for group 1')
@@ -434,7 +434,7 @@ def randpair_groupdiff(sub_grp1_files,
     pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
                                             num_pairs=num_pairs)
 
-    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
+    fmri_diff2 = np.zeros((num_vert, num_pairs2))
 
     # Preload data for group 2
     print('Reading data for group 2')
@@ -462,7 +462,7 @@ def randpair_groupdiff(sub_grp1_files,
         list(product(range(len(sub_grp1_files)), range(len(sub_grp2_files)))))
     sp.random.shuffle(all_pairs)
     all_pairs = all_pairs[:num_pairs, :]
-    fmri_diff = sp.zeros((num_vert, all_pairs.shape[0]))
+    fmri_diff = np.zeros((num_vert, all_pairs.shape[0]))
 
     print('Compute differences in fMRI of random pairs from group1 to group 2')
     for i, rand_pair in enumerate(tqdm(all_pairs)):
@@ -505,7 +505,7 @@ def randpair_groupdiff_ftest(sub_grp1_files,
     pairs_grp1, num_pairs1 = gen_rand_pairs(num_sub=len(sub_grp1_files),
                                             num_pairs=num_pairs)
 
-    fmri_diff1 = sp.zeros((num_vert, num_pairs1))
+    fmri_diff1 = np.zeros((num_vert, num_pairs1))
 
     # Preload data This only slighly faster, better is to load on the fly and multiprocess
     print('Reading data for group 1')
@@ -527,7 +527,7 @@ def randpair_groupdiff_ftest(sub_grp1_files,
     pairs_grp2, num_pairs2 = gen_rand_pairs(num_sub=len(sub_grp2_files),
                                             num_pairs=num_pairs)
 
-    fmri_diff2 = sp.zeros((num_vert, num_pairs2))
+    fmri_diff2 = np.zeros((num_vert, num_pairs2))
 
     # Preload data for group 2
     print('Reading data for group 2')
@@ -930,8 +930,8 @@ def randpairs_regression(bfp_path,
     pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
                                       num_pairs=num_pairs)
 
-    fmri_diff = sp.zeros((num_vert, num_pairs))
-    regvar_diff = sp.zeros(num_pairs)
+    fmri_diff = np.zeros((num_vert, num_pairs))
+    regvar_diff = np.zeros(num_pairs)
 
     if num_proc > 1:
         pool = Pool(num_proc)
@@ -975,12 +975,12 @@ def randpairs_regression(bfp_path,
                                                  num_sub=len(sub_files),
                                                  nperm=nperm)
 
-    corr_pval[sp.isnan(corr_pval)] = .5
+    corr_pval[np.isnan(corr_pval)] = .5
 
     labs = spio.loadmat(
         bfp_path +
         '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
+    labs[np.isnan(labs)] = 0
 
     if len(corr_pval) == len(labs):
         corr_pval[labs == 0] = 0.5
@@ -1010,8 +1010,8 @@ def randpairs_regression_simulation(bfp_path,
     pairs, num_pairs = gen_rand_pairs(num_sub=len(sub_files),
                                       num_pairs=num_pairs)
 
-    fmri_diff = sp.zeros((num_vert, num_pairs))
-    regvar_diff = sp.zeros(num_pairs)
+    fmri_diff = np.zeros((num_vert, num_pairs))
+    regvar_diff = np.zeros(num_pairs)
 
     if num_proc > 1:
         pool = Pool(num_proc)
@@ -1055,12 +1055,12 @@ def randpairs_regression_simulation(bfp_path,
                                                  num_sub=len(sub_files),
                                                  nperm=nperm)
 
-    corr_pval[sp.isnan(corr_pval)] = .5
+    corr_pval[np.isnan(corr_pval)] = .5
 
     labs = spio.loadmat(
         bfp_path +
         '/supp_data/USCBrain_grayordinate_labels.mat')['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
+    labs[np.isnan(labs)] = 0
 
     if len(corr_pval) == len(labs):
         corr_pval[labs == 0] = 0.5
@@ -1089,7 +1089,7 @@ def group_diff_fdr(grp1, grp2, alt_hypo='less'):
     alt_hypo: 'less', 'more' or 'two-sided'''
 
     print('Performing Mann Whitney test, checking grp1<grp2')
-    pval = sp.zeros(grp1.shape[0])
+    pval = np.zeros(grp1.shape[0])
 
     for vind in tqdm(range(grp1.shape[0])):
 
@@ -1131,7 +1131,7 @@ def compare_sub2ctrl(bfp_path,
         else:
             num_pairs = len(pairs)
 
-    fmri_diff_null = sp.zeros((num_vert, num_pairs))
+    fmri_diff_null = np.zeros((num_vert, num_pairs))
 
     if num_proc == 1:
         for ind in tqdm(range(len(pairs))):
@@ -1178,7 +1178,7 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
     # for the IQ measure
     reg_var = sp.absolute(reg_var - sp.mean(reg_var))
 
-    diff = sp.zeros((num_vert, num_sub))
+    diff = np.zeros((num_vert, num_sub))
 
     # Compute distance to atlas
     for ind in tqdm(range(num_sub)):
@@ -1187,16 +1187,16 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
         Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
         diff[:, ind] = sp.sum((Y2 - ref_atlas)**2, axis=0)
 
-    corr_pval = sp.zeros(num_vert)
+    corr_pval = np.zeros(num_vert)
     for vrt in tqdm(range(num_vert)):
         _, corr_pval[vrt] = sp.stats.pearsonr(diff[vrt, :], reg_var)
 
-    corr_pval[sp.isnan(corr_pval)] = .5
+    corr_pval[np.isnan(corr_pval)] = .5
 
     lab = spio.loadmat(bfp_path + '/supp_data/USCBrain_grayord_labels.mat')
     labs = lab['labels'].squeeze()
 
-    corr_pval_fdr = sp.zeros(num_vert)
+    corr_pval_fdr = np.zeros(num_vert)
     _, pv = fdrcorrection(corr_pval[labs > 0])
     corr_pval_fdr[labs > 0] = pv
 
@@ -1225,7 +1225,7 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
         diff_resid1 = subTest_diff
         numV = subTest_diff.shape[0]
     else:
-        subTest_varc12 = sp.zeros((subTest_varc1.shape[0], 2))
+        subTest_varc12 = np.zeros((subTest_varc1.shape[0], 2))
         for i in range(subTest_varc1.shape[0]):
             subTest_varc12[i, 0] = subTest_varc1[i]
             subTest_varc12[i, 1] = subTest_varc2[i]
@@ -1257,7 +1257,7 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
     labs = a['labels'].squeeze()
     labs[np.isnan(labs)] = 0
     labs[np.isnan(pval)] = 0
-    pval_fdr = sp.zeros(numV)
+    pval_fdr = np.zeros(numV)
     _, pv = fdrcorrection(pval[labs > 0], alpha=sig_alpha)
     pval_fdr[labs > 0] = pv
 
@@ -1276,27 +1276,27 @@ def multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1,
 
 def LinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2):
     print('regressing out 1st covariate')
-    diff_resid1 = sp.zeros(subTest_diff.shape)
+    diff_resid1 = np.zeros(subTest_diff.shape)
     numV = subTest_diff.shape[0]
     for nv in tqdm(range(numV)):
         diff_resid1[nv, :] = LinReg_resid(subTest_varc1, subTest_diff[nv, :])
 
     print('regressing out 2nd covariate')
-    diff_resid2 = sp.zeros(subTest_diff.shape)
+    diff_resid2 = np.zeros(subTest_diff.shape)
     for nv in tqdm(range(numV)):
         diff_resid2[nv, :] = LinReg_resid(subTest_varc2, diff_resid1[nv, :])
 
     print('computing correlation against main variable')
-    rval = sp.zeros(numV)
-    pval = sp.zeros(numV)
+    rval = np.zeros(numV)
+    pval = np.zeros(numV)
     for nv in tqdm(range(numV)):
         _, _, rval[nv], pval[nv], _ = sp.stats.linregress(
             subTest_varmain, diff_resid2[nv, :])
 
     a = spio.loadmat('supp_data/USCBrain_grayordinate_labels.mat')
     labs = a['labels'].squeeze()
-    labs[sp.isnan(labs)] = 0
-    pval_fdr = sp.zeros(numV)
+    labs[np.isnan(labs)] = 0
+    pval_fdr = np.zeros(numV)
     _, pv = fdrcorrection(pval[labs > 0])
     pval_fdr[labs > 0] = pv
 

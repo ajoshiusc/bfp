@@ -1,5 +1,9 @@
 #%%
-config_file = '/home/sychoi/Dropbox/FRIEND/For_Soyoung/HEAL_NASCAR/GM_allsubj/initGMAtlas_vol.ini'
+config_file = '/Users/sychoi/Library/CloudStorage/Dropbox/FRIEND/Analysis/HBCD_NASCAR/config_BrainSync_atlas.ini'
+import os
+import sys
+sys.stdout.flush()
+#config_file = os.environ['CONFIG_FILE']
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

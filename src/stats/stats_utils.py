@@ -95,7 +95,7 @@ def dist2atlas_sub(atlas, syn_data):
     pearson_corr = np.zeros([numVert, 1])
     geo_dist = np.zeros([numVert, 1])
 
-    pearson_corr = sp.sum((syn_data * atlas), axis=0)
+    pearson_corr = np.sum((syn_data * atlas), axis=0)
     geo_dist = np.arccos(pearson_corr)
 
     a = pearson_corr > 1
@@ -122,7 +122,7 @@ def dist2atlas(atlas, syn_data):
     geo_dist = np.zeros([numVert, numSub])
 
     for ind in range(numSub):
-        pearson_corr[:, ind] = sp.sum((syn_data[:, :, ind] * atlas), axis=0)
+        pearson_corr[:, ind] = np.sum((syn_data[:, :, ind] * atlas), axis=0)
         geo_dist[:, ind] = np.arccos(pearson_corr[:, ind])
 
         count1 += 1
@@ -150,7 +150,7 @@ def sub2ctrl_dist(sub_file, ctrl_files, len_time=235):
         ctrl_data = spio.loadmat(fname)['dtseries'].T
         ctrl_data, _, _ = normalizeData(ctrl_data[:len_time, :])
         ctrl_data, _ = brainSync(X=sub_data, Y=ctrl_data)
-        fmri_diff[:, ind] = sp.sum((sub_data - ctrl_data)**2, axis=0)
+        fmri_diff[:, ind] = np.sum((sub_data - ctrl_data)**2, axis=0)
 
     return fmri_diff
 
@@ -178,7 +178,7 @@ def pair_dist_two_groups(rand_pair,
         sub2_data, _, _ = normalizeData(sub1_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
-    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+    fmri_diff = np.sum((sub2_data - sub1_data)**2, axis=0)
 
     # Returns SQUARE of the distance
     return fmri_diff
@@ -202,7 +202,7 @@ def pair_dist(rand_pair,
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
-    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+    fmri_diff = np.sum((sub2_data - sub1_data)**2, axis=0)
 
     # Returns SQUARE of the distance
     if len(reg_var) > 0:
@@ -249,7 +249,7 @@ def pair_dist_simulation(rand_pair,
         sub2_data, _, _ = normalizeData(sub2_data[:len_time, :])
 
     sub2_data, _ = brainSync(X=sub1_data, Y=sub2_data)
-    fmri_diff = sp.sum((sub2_data - sub1_data)**2, axis=0)
+    fmri_diff = np.sum((sub2_data - sub1_data)**2, axis=0)
 
     # Returns SQUARE of the distance
     if len(reg_var) > 0:
@@ -1185,7 +1185,7 @@ def dist2atlas_reg(bfp_path, ref_atlas, sub_files, reg_var, len_time=235):
         sub_data = spio.loadmat(sub_files[ind])['dtseries'].T
         sub_data, _, _ = normalizeData(sub_data[:len_time, :])
         Y2, _ = brainSync(X=ref_atlas, Y=sub_data)
-        diff[:, ind] = sp.sum((Y2 - ref_atlas)**2, axis=0)
+        diff[:, ind] = np.sum((Y2 - ref_atlas)**2, axis=0)
 
     corr_pval = np.zeros(num_vert)
     for vrt in tqdm(range(num_vert)):

@@ -21,7 +21,7 @@ def normalizeData(pre_signal):
      norm_vector : 1 x Vertices norm for each time series
     """
 
-    #    if sp.any(sp.isnan(pre_signal)):
+    #    if sp.any(np.isnan(pre_signal)):
     #        print('there are NaNs in the data matrix, making them zero')
 
     pre_signal[np.isnan(pre_signal)] = 0

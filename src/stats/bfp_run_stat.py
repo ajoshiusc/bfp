@@ -1,9 +1,9 @@
 #%%
-config_file = '/Users/sychoi/Library/CloudStorage/Dropbox/FRIEND/Analysis/HBCD_NASCAR/config_BrainSync_atlas.ini'
+#config_file = '/Users/sychoi/Library/CloudStorage/Dropbox/FRIEND/Analysis/HBCD_NASCAR/V01_group3/config_BrainSync_atlas.ini'
 import os
 import sys
 sys.stdout.flush()
-#config_file = os.environ['CONFIG_FILE']
+config_file = os.environ['CONFIG_FILE']
 #%%#%%
 ### Import the required librariesimport configparser
 import sys

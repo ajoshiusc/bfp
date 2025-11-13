@@ -47,16 +47,18 @@ writedfs("left_curv.dfs", lsurf)
 rsurf = readdfs("/home/ajoshi/Projects/bfp/supp_data/bci32kright.dfs")
 rsurf.attributes = mean_curvature(rsurf)
 rsurf.attributes = 1 / (1 + np.exp(-rsurf.attributes * 50))
+rsurf = patch_color_attrib(rsurf, cmap="Greys", clim=[0, 1.5])
+# smooth surface
 rsurf = smooth_patch(rsurf, iterations=1000)
 writedfs("right_curv_orig.dfs", rsurf)
-c = c[len(lsurf.vertices) :]
+
+c = cmat["c"]
+c = c[len(lsurf.vertices) : len(lsurf.vertices) + len(rsurf.vertices)]
 r = type("", (), {})()  # create empty object
 r.vertices = rsurf.vertices.copy()
 r.faces = rsurf.faces.copy()
 r.attributes = c.flatten()
 r = patch_color_attrib(r, cmap="jet", clim=[np.min(c), np.max(c)])
-rsurf.vColor[np.abs(c.flatten()) > 0.15, :] = r.vColor[
-    np.abs(c.flatten()) > 0.15, :
-]  # color vertices with curvature > 0.5 with c values
+rsurf.vColor[np.abs(c.flatten()) > 0.15, :] = r.vColor[np.abs(c.flatten()) > 0.15, :]  # color vertices with curvature > 0.5 with c values
 view_patch_vtk(rsurf, azimuth=100, elevation=180, roll=90, outfile="right1.png", show=1)
 writedfs("right_curv.dfs", rsurf)

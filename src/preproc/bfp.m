@@ -126,7 +126,7 @@ system('flirt -version');
 fprintf('done\n');
 
 fprintf('Checking AFNI version\n');
-system('afni --version','LD_LIBRARY_PATH','');
+system('afni --version')%,'LD_LIBRARY_PATH','');
 fprintf('done\n');
 
 
@@ -134,7 +134,11 @@ fprintf('done\n');
 BrainSuitePath=config.BrainSuitePath;
 BFPPATH=config.BFPPATH;
 bst_exe=fullfile(BFPPATH,'supp_data','cortical_extraction_nobse.sh');
-svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
+if exist(fullfile(BrainSuitePath,'svreg','bin','svreg_carc.sh'),'file')
+    svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_carc.sh');
+else
+    svreg_exe=fullfile(BrainSuitePath,'svreg','bin','svreg.sh');
+end
 thicknessPVC_exe=fullfile(BrainSuitePath,'svreg','bin','thicknessPVC.sh');
 thickness_map2atlas_exe=fullfile(BrainSuitePath,'svreg','bin','svreg_thickness2atlas.sh');
 BCIbasename=fullfile(BrainSuitePath,'svreg','BCI-DNI_brain_atlas','BCI-DNI_brain');
@@ -558,8 +562,12 @@ for ind=1:length(fmri)
 
     % Check if valid Tr is input, if not try to get it from the header of
     % the nifti fmri file
+    if isempty(TR)
+        TR=-1;
+    end
+
     if (~isnumeric(TR)) || (TR<=0)
-        [~,b]=system(['3dinfo -tr ',fmri{ind}],'LD_LIBRARY_PATH',''); % get TR
+        [~,b]=system(['3dinfo -tr ',fmri{ind}]);%,'LD_LIBRARY_PATH',''); % get TR
         fprintf('TR inputted was not valid, so reading from fmri file, TR=%s\n',b);
         if str2double(b)>0
             TR = num2str(str2double(b));

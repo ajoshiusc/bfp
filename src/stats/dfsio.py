@@ -40,7 +40,7 @@ def readdfs(fname):
     hdr.ftype_header = np.array(
         struct.unpack('c' * 12, fid.read(12)), dtype='S1')
     #    print(((hdr.ftype_header).tostring()))
-    if b'DFS' not in (hdr.ftype_header).tostring():
+    if b'DFS' not in (hdr.ftype_header).tobytes():
         raise ValueError(
             'Invalid dfs file' +
             fname)  # TODO: Change this to a custom exception in future
@@ -116,12 +116,12 @@ def readdfs(fname):
 def writedfs(fname, NFV):
     ftype_header = np.array(
         ['D', 'F', 'S', '_', 'L', 'E', ' ', 'v', '2', '.', '0',
-         '\x00'])  #DFS_LEv2.0\0
+         '\x00'], dtype='S1')  #DFS_LEv2.0\0
     hdrsize = 184
     mdoffset = 0  # Start of metadata.
     pdoffset = 0  # Start of patient data header.
-    nTriangles = len(NFV.faces.flatten()) / 3
-    nVertices = len(NFV.vertices.flatten()) / 3
+    nTriangles = len(NFV.faces.flatten()) // 3
+    nVertices = len(NFV.vertices.flatten()) // 3
     nStrips = 0
     stripSize = 0
     normals = 0
@@ -154,36 +154,36 @@ def writedfs(fname, NFV):
         attributes = nextarraypos
         nextarraypos = nextarraypos + nVertices * 4  #  4 bytes per attribute (float32)
     fid = open(fname, 'wb')
-    fid.write(np.array(ftype_header, 'S1').tostring())
-    fid.write(np.array(hdrsize, 'int32').tostring())
-    fid.write(np.array(mdoffset, 'int32').tostring())
-    fid.write(np.array(pdoffset, 'int32').tostring())
-    fid.write(np.array(nTriangles, 'int32').tostring())
-    fid.write(np.array(nVertices, 'int32').tostring())
-    fid.write(np.array(nStrips, 'int32').tostring())
-    fid.write(np.array(stripSize, 'int32').tostring())
-    fid.write(np.array(normals, 'int32').tostring())
-    fid.write(np.array(uvoffset, 'int32').tostring())
-    fid.write(np.array(vcoffset, 'int32').tostring())
-    fid.write(np.array(labelOffset, 'int32').tostring())
-    fid.write(np.array(attributes, 'int32').tostring())
-    fid.write(np.zeros([1, 4 + 15 * 8], 'uint8').tostring())
-    fid.write(np.array((NFV.faces), 'int32').tostring())
-    fid.write(np.array(NFV.vertices, 'float32').tostring())
+    fid.write(ftype_header.tobytes())
+    fid.write(np.array(hdrsize, 'int32').tobytes())
+    fid.write(np.array(mdoffset, 'int32').tobytes())
+    fid.write(np.array(pdoffset, 'int32').tobytes())
+    fid.write(np.array(nTriangles, 'int32').tobytes())
+    fid.write(np.array(nVertices, 'int32').tobytes())
+    fid.write(np.array(nStrips, 'int32').tobytes())
+    fid.write(np.array(stripSize, 'int32').tobytes())
+    fid.write(np.array(normals, 'int32').tobytes())
+    fid.write(np.array(uvoffset, 'int32').tobytes())
+    fid.write(np.array(vcoffset, 'int32').tobytes())
+    fid.write(np.array(labelOffset, 'int32').tobytes())
+    fid.write(np.array(attributes, 'int32').tobytes())
+    fid.write(np.zeros([1, 4 + 15 * 8], 'uint8').tobytes())
+    fid.write(np.array((NFV.faces), 'int32').tobytes())
+    fid.write(np.array(NFV.vertices, 'float32').tobytes())
     if (normals > 0):
         #print 'writing normals'
-        fid.write(np.array(NFV.normals, 'float32').tostring())
+        fid.write(np.array(NFV.normals, 'float32').tobytes())
     if vcoffset > 0:
         #print 'writing color'
-        fid.write(np.array(NFV.vColor, 'float32').tostring())
+        fid.write(np.array(NFV.vColor, 'float32').tobytes())
     if uvoffset > 0:
         #print 'writing uv'
-        fid.write(
-            np.array([NFV.u.flatten(), NFV.v.flatten()], 'float32').tostring())
+        uv = np.column_stack((NFV.u.flatten(), NFV.v.flatten()))
+        fid.write(np.array(uv, 'float32').tobytes())
     if (labelOffset > 0):
         #print 'writing labels'
-        fid.write(np.array(NFV.labels, 'int16').tostring())
+        fid.write(np.array(NFV.labels, 'int16').tobytes())
     if (attributes > 0):
         #print 'writing attributes'
-        fid.write(np.array(NFV.attributes, 'float32').tostring())
+        fid.write(np.array(NFV.attributes, 'float32').tobytes())
     fid.close()

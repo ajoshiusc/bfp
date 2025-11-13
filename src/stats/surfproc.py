@@ -95,13 +95,13 @@ def patch_color_attrib(s, values=[], cmap='jet', clim=[0]):
     if len(values) == 0:
         values = s.attributes
     if len(clim) == 1:
-        vmin = sp.amin(values)
-        vmax = sp.amax(values)
+        vmin = np.amin(values)
+        vmax = np.amax(values)
     else:
         vmin = clim[0]
         vmax = clim[1]
 
-    s.vColor = sp.zeros(s.vertices.shape)
+    s.vColor = np.zeros(s.vertices.shape)
     color_norm = colors.Normalize(vmin=vmin, vmax=vmax)
     scalar_map = cmx.ScalarMappable(norm=color_norm, cmap=cmap)
     s.vColor = scalar_map.to_rgba(values)
@@ -337,7 +337,7 @@ if VTK_INSTALLED:
     def mean_curvature(s):
         curve1 = vtkCurvatures()
         s = createPolyData(s.vertices, s.faces)
-        curve1.SetInput(s)
+        curve1.SetInputData(s)
         curve1.SetCurvatureTypeToMean()
         curve1.Update()
         m = curve1.GetOutput()

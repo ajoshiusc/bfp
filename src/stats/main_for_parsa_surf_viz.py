@@ -2,8 +2,11 @@ from dfsio import readdfs, writedfs
 import os
 from surfproc import mean_curvature, view_patch_vtk, patch_color_attrib, smooth_patch
 import numpy as np
+from scipy.io import loadmat
 
+# load mat file /home/ajoshi/Downloads/c.mat
 
+cmat = loadmat('/home/ajoshi/Downloads/c.mat')
 
 lsurf = readdfs('/home/ajoshi/Projects/bfp/supp_data/bci32kleft.dfs')
 

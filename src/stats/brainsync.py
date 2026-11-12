@@ -120,7 +120,18 @@ def ref_avg_atlas(ref_id, sub_files, len_time=235):
 
 def groupBrainSync(S):
     # Group BrainSync algorithm developed by Haleh Akrami
+    if not np.isfinite(S).all():
 
+        print("WARNING: non-finite values found in groupBrainSync input")
+        print("NaNs:", np.isnan(S).sum())
+        print("Infs:", np.isinf(S).sum())
+
+        S = np.nan_to_num(
+            S,
+            nan=0.0,
+            posinf=0.0,
+            neginf=0.0
+        )
     numT = S.shape[0]
     numV = S.shape[1]
     SubNum = S.shape[2]

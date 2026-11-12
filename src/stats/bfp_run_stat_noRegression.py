@@ -1,5 +1,5 @@
 #%%
-#config_file = '/Users/sychoi/Library/CloudStorage/Dropbox/FRIEND/Analysis/HBCD_NASCAR/V02_group3-2/config_BrainSync_atlas.ini'
+#config_file = '/Users/sychoi/Data/HBCD_R2/NASCAR_dataout/testing/test1/config_BrainSync_atlas.ini'
 import os
 import sys
 sys.stdout.flush()
@@ -125,17 +125,17 @@ if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
         write_text_timestamp(log_fname, 'Atlas saved out as '+os.path.join(cf.out_dir + '/atlas.mat')) 
 
 #%% atlas-based linear regression
-if cf.stat_test == 'atlas-linear':
-    #load, sync and calculates geodesic distances
-    subTest_diff, numT = load_bfp_dataT_dist2atlas(subTest_fname, cf.atlas_fname, int(cf.lentime), cf.matcht)
-    spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
+# if cf.stat_test == 'atlas-linear':
+#     #load, sync and calculates geodesic distances
+#     subTest_diff, numT = load_bfp_dataT_dist2atlas(subTest_fname, cf.atlas_fname, int(cf.lentime), cf.matcht)
+#     spio.savemat(os.path.join(cf.out_dir + '/dist2atlas.mat'), {'subTest_diff': subTest_diff})
     
-    #write out csv file of subjects tested and variables used for testing
-    with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
-        if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
-            csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
-        else:
-            csv.writer(csvfile).writerows(zip(subTest_IDs, subTest_varmain, subTest_varc1, subTest_varc2))
+#     #write out csv file of subjects tested and variables used for testing
+#     with open(cf.out_dir + "/subjects_testing.csv", 'w') as csvfile:
+#         if cf.stat_test == 'atlas-linear' or cf.stat_test == 'atlas-group':
+#             csv.writer(csvfile).writerows(zip(subTest_IDs, numT,subTest_varmain, subTest_varc1, subTest_varc2))
+#         else:
+#             csv.writer(csvfile).writerows(zip(subTest_IDs, subTest_varmain, subTest_varc1, subTest_varc2))
     
 #     # computes correlation after controlling for two covariates
 #     rval, pval, pval_fdr, msg = multiLinReg_corr(subTest_diff, subTest_varmain, subTest_varc1, subTest_varc2, float(cf.sig_alpha), 'linear')

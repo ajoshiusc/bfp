@@ -167,6 +167,27 @@ def load_bfp_dataT(sub_fname, LenTime, matchT):
         df = spio.loadmat(fname)
         data = df['dtseries'].T
         numT[ind] = data.shape[0]
+        # --------------------------------------------------
+        # Remove NaN / Inf values BEFORE normalization
+        # --------------------------------------------------
+        n_nan = np.isnan(data).sum()
+        n_inf = np.isinf(data).sum()
+
+        if n_nan > 0 or n_inf > 0:
+
+            print(
+                '\nSubject ' + str(ind) +
+                ': replacing ' + str(n_nan) +
+                ' NaNs and ' + str(n_inf) +
+                ' Infs with 0'
+            )
+
+            data = np.nan_to_num(
+                data,
+                nan=0.0,
+                posinf=0.0,
+                neginf=0.0
+            )
         if int(data.shape[0]) != LenTime:
             if bool(matchT)==True:
                 t = int(LenTime-numT[ind])
@@ -177,6 +198,23 @@ def load_bfp_dataT(sub_fname, LenTime, matchT):
                 print(sub_fname[ind] +
                   ' does not have the correct number of timepoints')
         d, _, _ = normalizeData(data)
+        # Defensive check after normalization
+        if not np.isfinite(d).all():
+
+            print(
+                '\nWARNING: normalizeData produced non-finite values '
+                'for subject ' + str(ind)
+            )
+
+            print('NaNs after normalization:', np.isnan(d).sum())
+            print('Infs after normalization:', np.isinf(d).sum())
+
+            d = np.nan_to_num(
+                d,
+                nan=0.0,
+                posinf=0.0,
+                neginf=0.0
+            )
 
         if count1 == 0:
             sub_data = np.zeros((LenTime, d.shape[1], subN))
